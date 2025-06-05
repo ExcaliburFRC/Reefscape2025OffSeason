@@ -51,6 +51,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     public void setState(ElevatorStates elevatorStates) {
         m_currentState = elevatorStates;
     }
+    //
 
     public Command manualCommand(DoubleSupplier voltage) {
         return m_linearExtension.manualCommand(voltage, this);
