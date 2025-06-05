@@ -22,7 +22,7 @@ public class Intake extends SubsystemBase {
     private final TalonFXMotor m_armMotor;
     private final TalonFXMotor m_rollersMotor;
 
-
+    // === Inputs ===
     private final DigitalInput m_sensor;
     private IntakeState m_currentState;
     private IntakeState m_defaultState;
