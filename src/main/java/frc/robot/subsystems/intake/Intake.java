@@ -69,8 +69,8 @@ public class Intake extends SubsystemBase {
                         TOLERANCE,
                         this
                 ),
-                m_rollers.manualCommand(() -> m_currentState.rollerVoltage),
-                m_centralizer.manualCommand(() -> m_currentState.centraliserVoltage)
+                m_rollers.manualCommand(() -> m_currentState.rollerVoltage, this),
+                m_centralizer.manualCommand(() -> m_currentState.centraliserVoltage, this)
         );
     }
 
