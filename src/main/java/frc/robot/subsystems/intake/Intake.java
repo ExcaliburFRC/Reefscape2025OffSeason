@@ -18,11 +18,15 @@ import java.util.function.DoubleSupplier;
 import static frc.robot.subsystems.intake.Constants.*;
 
 public class Intake extends SubsystemBase {
+    // === Motors ===
     private final TalonFXMotor m_armMotor;
     private final TalonFXMotor m_rollersMotor;
+
+
     private final DigitalInput m_sensor;
     private IntakeState m_currentState;
-    private final Mechanism m_centerlizer, m_rollers;
+    private IntakeState m_defaultState;
+    private final Mechanism m_centralizer, m_rollers;
     private final Arm m_arm;
     private final Trigger m_atPosition;
     private final CANcoder m_armEncoder;
@@ -31,14 +35,15 @@ public class Intake extends SubsystemBase {
     public Intake(IntakeState initialState) {
 
         m_currentState = initialState;
+        m_defaultState = IntakeState.STOW;
         m_armMotor = new TalonFXMotor(ARM_MOTOR_ID);
         m_rollersMotor = new TalonFXMotor(ROLLERS_MOTOR_ID);
-        TalonFXMotor m_centerlizerMotor = new TalonFXMotor(CENTERLIZER_MOTOR_ID);
+        TalonFXMotor m_centralizerMotor = new TalonFXMotor(CENTERLIZER_MOTOR_ID);
 
         m_sensor = new DigitalInput(SENSOR_CHANNEL);
         m_armEncoder = new CANcoder(ENCODER_ID);
         m_angleSupplier = () -> m_armEncoder.getPosition().getValueAsDouble();
-        m_centerlizer = new Mechanism(m_centerlizerMotor);
+        m_centralizer = new Mechanism(m_centralizerMotor);
         m_rollers = new Mechanism(m_rollersMotor);
 
         m_atPosition = new Trigger(
@@ -63,12 +68,18 @@ public class Intake extends SubsystemBase {
                         at -> at = m_atPosition.getAsBoolean(),
                         TOLERANCE,
                         this
-                )
+                ),
+                m_rollers.manualCommand(() -> m_currentState.rollerVoltage),
+                m_centralizer.manualCommand(() -> m_currentState.centraliserVoltage)
         );
     }
 
     public void setState(IntakeState state) {
         this.m_currentState = state;
+    }
+
+    public void returnToDefaultState(){
+        this.m_currentState = this.m_defaultState;
     }
 
 }
