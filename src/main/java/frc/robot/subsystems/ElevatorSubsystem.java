@@ -14,14 +14,13 @@ import java.util.function.DoubleSupplier;
 import static frc.robot.subsystems.constants.*;
 
 public class ElevatorSubsystem extends SubsystemBase {
-    private final TalonFXMotor m_rightMotor;
-    private final TalonFXMotor m_leftMotor;
+    private final TalonFXMotor m_leftMotor, m_rightMotor;
     private final MotorGroup m_elevatorMotors;
-    private  final DoubleSupplier m_elevatorHeight;
+    private final DoubleSupplier m_elevatorHeight;
     private final LinearExtension m_linearExtension;
     private ElevatorStates m_currentState;
 
-    public ElevatorSubsystem(){
+    public ElevatorSubsystem() {
         m_rightMotor = new TalonFXMotor(RIGHT_MOTOR_ID);
         m_leftMotor = new TalonFXMotor(LEFT_MOTOR_ID);
         m_elevatorMotors = new MotorGroup(m_rightMotor, m_leftMotor);
@@ -31,17 +30,21 @@ public class ElevatorSubsystem extends SubsystemBase {
                 m_elevatorHeight,
                 ELEVATOR_ANGLE,
                 new Gains(),
-                new TrapezoidProfile.Constraints(MAX_VELOCITY,MAX_ACCELERATION),
+                new TrapezoidProfile.Constraints(MAX_VELOCITY, MAX_ACCELERATION),
                 TOLERANCE
         );
         m_currentState = ElevatorStates.DEFAULT;
-    };
 
-    public void setState(ElevatorStates elevatorStates){
+        setDefaultCommand(m_linearExtension.extendCommand(() -> m_currentState.getHeight(), this));
+    }
+
+    ;
+
+    public void setState(ElevatorStates elevatorStates) {
         m_currentState = elevatorStates;
     }
 
-    public Command manualCommand(DoubleSupplier voltage){
+    public Command manualCommand(DoubleSupplier voltage) {
         return m_linearExtension.manualCommand(voltage, this);
     }
 
