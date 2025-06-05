@@ -5,35 +5,48 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.excalib.control.gains.Gains;
+import frc.excalib.control.limits.ContinuousSoftLimit;
 import frc.excalib.control.math.physics.Mass;
 import frc.excalib.control.motor.controllers.TalonFXMotor;
 import frc.excalib.mechanisms.Arm.Arm;
 
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 import static frc.robot.subsystems.Constants.*;
 
 public class ArmSubsystem extends SubsystemBase {
 
-    private final TalonFXMotor angleMotor;
-    private final CANcoder canCoder;
-    private final DoubleSupplier angleSupplier;
+    private final TalonFXMotor m_angleMotor;
+    private final CANcoder m_canCoder;
+    private final DoubleSupplier m_angleSupplier;
     private ArmPosition m_currentState;
-    private final Arm armMechanism;
+    private final Arm m_armMechanism;
     private final Trigger toleranceTrigger;
+    private final ContinuousSoftLimit softLimit;
+    private final DoubleSupplier m_elevatorHeightSupplier;
+    private final BooleanSupplier m_intakeOpen;
 
-    public ArmSubsystem() {
+    public ArmSubsystem(DoubleSupplier elevatorHeightSupplier, BooleanSupplier intakeOpen) {
         m_currentState = ArmPosition.DEFAULT;
-        angleMotor = new TalonFXMotor(ANGLE_MOTOR_ID);
-        canCoder = new CANcoder(CAN_CODER_ID);
-        angleSupplier = () -> canCoder.getPosition().getValueAsDouble() * 360;
-        armMechanism = new Arm(angleMotor, angleSupplier, VELOCITY_LIMIT, new Gains(), new Mass(() -> 0, () -> 0, 0));
-        toleranceTrigger = new Trigger(() -> (Math.abs(angleSupplier.getAsDouble() - m_currentState.getAngle()) < TOLERANCE));
+        m_angleMotor = new TalonFXMotor(ANGLE_MOTOR_ID);
+        m_canCoder = new CANcoder(CAN_CODER_ID);
+        m_angleSupplier = () -> m_canCoder.getPosition().getValueAsDouble() * 360;
+        m_armMechanism = new Arm(m_angleMotor, m_angleSupplier, VELOCITY_LIMIT, new Gains(), new Mass(() -> 0, () -> 0, 0));
+        toleranceTrigger = new Trigger(() -> (Math.abs(m_angleSupplier.getAsDouble() - m_currentState.getAngle()) < TOLERANCE));
+        m_elevatorHeightSupplier = elevatorHeightSupplier;
+        m_intakeOpen = intakeOpen;
+
+        softLimit = new ContinuousSoftLimit(
+                () -> m_elevatorHeightSupplier.getAsDouble() < MIN_ELEVATOR_HIGHT_WITH_ARM ?
+                                ARM_LIMIT_CLOSE_ELEVATOR : DEFAULT_MIN_ARM_LIMIT,
+                () -> DEFAULT_MAX_ARM_LIMIT
+        );
 
         setDefaultCommand(
-                armMechanism.anglePositionControlCommand(
+                m_armMechanism.anglePositionControlCommand(
                         () -> m_currentState.getAngle(),
-                        at -> at = toleranceTrigger.getAsBoolean(),
+                        (__) -> toleranceTrigger.getAsBoolean(),
                         TOLERANCE,
                         this
                 )
@@ -41,7 +54,7 @@ public class ArmSubsystem extends SubsystemBase {
     }
 
     public Command manualCommand(DoubleSupplier voltageSupplier) {
-        return armMechanism.manualCommand(voltageSupplier, this);
+        return m_armMechanism.manualCommand(voltageSupplier, this);
     }
 
     public void setState(ArmPosition state) {
