@@ -4,7 +4,7 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.excalib.control.gains.Gains;
-import frc.excalib.control.motor.controllers.Motor;
+import frc.excalib.control.limits.ContinuousSoftLimit;
 import frc.excalib.control.motor.controllers.MotorGroup;
 import frc.excalib.control.motor.controllers.TalonFXMotor;
 import frc.excalib.mechanisms.linear_extension.LinearExtension;
@@ -19,11 +19,14 @@ public class ElevatorSubsystem extends SubsystemBase {
     private final DoubleSupplier m_elevatorHeight;
     private final LinearExtension m_linearExtension;
     private ElevatorStates m_currentState;
+    private ContinuousSoftLimit softLimit;
+    private final DoubleSupplier armAngle;
 
-    public ElevatorSubsystem() {
+    public ElevatorSubsystem(DoubleSupplier armAngle) {
         m_rightMotor = new TalonFXMotor(RIGHT_MOTOR_ID);
         m_leftMotor = new TalonFXMotor(LEFT_MOTOR_ID);
         m_elevatorMotors = new MotorGroup(m_rightMotor, m_leftMotor);
+        this.armAngle = armAngle;
         m_elevatorHeight = m_elevatorMotors::getMotorPosition;
         m_linearExtension = new LinearExtension(
                 m_elevatorMotors,
@@ -36,9 +39,14 @@ public class ElevatorSubsystem extends SubsystemBase {
         m_currentState = ElevatorStates.DEFAULT;
 
         setDefaultCommand(m_linearExtension.extendCommand(() -> m_currentState.getHeight(), this));
-    }
 
-    ;
+        softLimit = new ContinuousSoftLimit(
+                () -> MAX_ELEVATOR_HIGHT,
+                () -> (armAngle.getAsDouble() > UPWARDS_ARM_MAX_LIMIT &&
+                                    armAngle.getAsDouble() < UPWARDS_ARM_MIN_LIMIT) ?
+                            MIN_ELEVATOR_HIGHT : MIN_ELEVATOR_HIGHT_WITH_OPEN_ARM
+                );
+    }
 
     public void setState(ElevatorStates elevatorStates) {
         m_currentState = elevatorStates;
@@ -47,5 +55,6 @@ public class ElevatorSubsystem extends SubsystemBase {
     public Command manualCommand(DoubleSupplier voltage) {
         return m_linearExtension.manualCommand(voltage, this);
     }
+
 
 }
