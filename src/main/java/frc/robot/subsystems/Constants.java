@@ -12,6 +12,10 @@ public class Constants {
     public static final double ARM_LIMIT_CLOSE_ELEVATOR = 90;
     public static final double DEFAULT_MIN_ARM_LIMIT = 0;
     public static final double DEFAULT_MAX_ARM_LIMIT = 270;//TODO!!!
+    public static final double ARM_LENGTH = 10;
+    public static final double SOFTLIMIT_BUFFER = 10;
+
+    public static final double ROTATIONS_TO_RAD = 2 *Math.PI;
 
 
 }
