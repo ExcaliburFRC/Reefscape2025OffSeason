@@ -1,4 +1,4 @@
-package frc.robot.subsystems;
+package frc.robot.subsystems.arm;
 
 import com.ctre.phoenix6.hardware.CANcoder;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -17,7 +17,7 @@ import java.util.function.DoubleSupplier;
 
 import static frc.excalib.control.motor.motor_specs.IdleState.BRAKE;
 import static frc.excalib.control.motor.motor_specs.IdleState.COAST;
-import static frc.robot.subsystems.Constants.*;
+import static frc.robot.subsystems.arm.Constants.*;
 
 public class ArmSubsystem extends SubsystemBase {
 
