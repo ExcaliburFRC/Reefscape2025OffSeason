@@ -3,7 +3,7 @@ package frc.robot.subsystems.intake;
 public enum IntakeState {
     FLOOR_INTAKE(0,0,0),
     STOW(0,0,0),
-    PASS_TO_ARM(0,0,0),
+    HANDOFF(0,0,0),
     L1_SCORE(0, 0, 0),
     GET_CORAL_BACK_FROM_ARM(0, 0, 0);
     final double intakeAngle;

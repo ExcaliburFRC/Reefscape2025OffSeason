@@ -28,20 +28,19 @@ public class ArmSubsystem extends SubsystemBase {
     private final Arm m_armMechanism;
     private final Trigger toleranceTrigger;
     private final ContinuousSoftLimit softLimit;
-    private final DoubleSupplier m_elevatorHeightSupplier;
-    private final BooleanSupplier m_intakeOpen;
+    private DoubleSupplier m_elevatorHeightSupplier;
+    private BooleanSupplier m_intakeOpen;
 
 
-
-    public ArmSubsystem(DoubleSupplier elevatorHeightSupplier, BooleanSupplier intakeOpen) {
+    public ArmSubsystem() {
         m_currentState = ArmPosition.DEFAULT;
         m_angleMotor = new TalonFXMotor(ANGLE_MOTOR_ID);
         m_canCoder = new CANcoder(CAN_CODER_ID);
         m_angleSupplier = () -> m_canCoder.getPosition().getValueAsDouble() * ROTATIONS_TO_RAD;
         m_armMechanism = new Arm(m_angleMotor, m_angleSupplier, VELOCITY_LIMIT, new Gains(), new Mass(() -> 0, () -> 0, 0));
         toleranceTrigger = new Trigger(() -> (Math.abs(m_angleSupplier.getAsDouble() - m_currentState.getAngle()) < TOLERANCE));
-        m_elevatorHeightSupplier = elevatorHeightSupplier;
-        m_intakeOpen = intakeOpen;
+        m_elevatorHeightSupplier = () -> 0;
+        m_intakeOpen = () -> false;
         m_angleMotor.setInverted(DirectionState.FORWARD);
         m_angleMotor.setVelocityConversionFactor(RPS_TO_RAD_PER_SEC);
         m_angleMotor.setMotorPosition(POSITION_CONVERSION_FACTOR);
@@ -72,6 +71,7 @@ public class ArmSubsystem extends SubsystemBase {
     public void setState(ArmPosition state) {
         m_currentState = state;
     }
+
     public Command coastCommand() {
         return new StartEndCommand(
                 () -> m_angleMotor.setIdleState(COAST),
@@ -80,5 +80,16 @@ public class ArmSubsystem extends SubsystemBase {
         ).ignoringDisable(true).withName("Arm Coast Command");
     }
 
+    public DoubleSupplier getAngleSupplier() {
+        return m_angleSupplier;
+    }
+
+    public void setElevatorHeightSupplier(DoubleSupplier elevatorHeightSupplier) {
+        m_elevatorHeightSupplier = elevatorHeightSupplier;
+    }
+
+    public void setIntakeOpen(BooleanSupplier intakeOpen) {
+        m_intakeOpen = intakeOpen;
+    }
 }
 

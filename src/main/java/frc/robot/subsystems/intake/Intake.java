@@ -13,6 +13,7 @@ import frc.excalib.control.motor.controllers.TalonFXMotor;
 import frc.excalib.mechanisms.Arm.Arm;
 import frc.excalib.mechanisms.Mechanism;
 
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 import static frc.robot.subsystems.intake.Constants.*;
@@ -31,6 +32,7 @@ public class Intake extends SubsystemBase {
     private final Trigger m_atPosition;
     private final CANcoder m_armEncoder;
     private final DoubleSupplier m_angleSupplier;
+    private final Trigger intakeOpen;
 
     public Intake(IntakeState initialState) {
 
@@ -49,6 +51,7 @@ public class Intake extends SubsystemBase {
         m_atPosition = new Trigger(
                 () -> Math.abs(m_angleSupplier.getAsDouble() - m_currentState.intakeAngle) < TOLERANCE);
 
+        intakeOpen = new Trigger(() -> (m_atPosition.getAsBoolean() && (m_currentState == IntakeState.FLOOR_INTAKE)));
         m_arm = new Arm(
                 m_armMotor,
                 m_angleSupplier,
@@ -78,8 +81,13 @@ public class Intake extends SubsystemBase {
         this.m_currentState = state;
     }
 
-    public void returnToDefaultState(){
+    public void returnToDefaultState() {
         this.m_currentState = this.m_defaultState;
     }
+
+    public BooleanSupplier isIntakeOpen(){
+        return intakeOpen;
+    }
+
 
 }

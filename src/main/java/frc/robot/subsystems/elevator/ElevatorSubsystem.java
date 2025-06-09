@@ -20,13 +20,13 @@ public class ElevatorSubsystem extends SubsystemBase {
     private final LinearExtension m_linearExtension;
     private ElevatorStates m_currentState;
     private ContinuousSoftLimit softLimit;
-    private final DoubleSupplier armAngle;
+    private  DoubleSupplier armAngle;
 
-    public ElevatorSubsystem(DoubleSupplier armAngle) {
+    public ElevatorSubsystem() {
         m_rightMotor = new TalonFXMotor(RIGHT_MOTOR_ID);
         m_leftMotor = new TalonFXMotor(LEFT_MOTOR_ID);
         m_elevatorMotors = new MotorGroup(m_rightMotor, m_leftMotor);
-        this.armAngle = armAngle;
+        this.armAngle = ()->0;
         m_elevatorHeight = m_elevatorMotors::getMotorPosition;
         m_linearExtension = new LinearExtension(
                 m_elevatorMotors,
@@ -57,5 +57,11 @@ public class ElevatorSubsystem extends SubsystemBase {
         return m_linearExtension.manualCommand(voltage, this);
     }
 
-
+    public DoubleSupplier getElevatorHeight() {
+        return m_elevatorHeight;
+    }
+    public void setArmAngle(DoubleSupplier setArmAngle){
+        armAngle = setArmAngle;
+    }
 }
+
