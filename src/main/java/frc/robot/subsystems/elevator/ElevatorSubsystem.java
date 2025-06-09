@@ -1,4 +1,4 @@
-package frc.robot.subsystems;
+package frc.robot.subsystems.elevator;
 
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -11,7 +11,7 @@ import frc.excalib.mechanisms.linear_extension.LinearExtension;
 
 import java.util.function.DoubleSupplier;
 
-import static frc.robot.subsystems.constants.*;
+import static frc.robot.subsystems.elevator.constants.*;
 
 public class ElevatorSubsystem extends SubsystemBase {
     private final TalonFXMotor m_leftMotor, m_rightMotor;
