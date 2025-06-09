@@ -91,5 +91,9 @@ public class ArmSubsystem extends SubsystemBase {
     public void setIntakeOpen(BooleanSupplier intakeOpen) {
         m_intakeOpen = intakeOpen;
     }
+
+    public BooleanSupplier isAtPosition(){
+        return toleranceTrigger;
+    }
 }
 

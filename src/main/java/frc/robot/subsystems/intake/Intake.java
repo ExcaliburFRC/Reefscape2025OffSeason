@@ -89,5 +89,9 @@ public class Intake extends SubsystemBase {
         return intakeOpen;
     }
 
+    public BooleanSupplier isAtPosition(){
+        return m_atPosition;
+    }
+
 
 }
