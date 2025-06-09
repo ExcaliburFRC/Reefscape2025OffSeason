@@ -2,17 +2,21 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix6.hardware.CANcoder;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.excalib.control.gains.Gains;
 import frc.excalib.control.limits.ContinuousSoftLimit;
 import frc.excalib.control.math.physics.Mass;
 import frc.excalib.control.motor.controllers.TalonFXMotor;
+import frc.excalib.control.motor.motor_specs.DirectionState;
 import frc.excalib.mechanisms.Arm.Arm;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
+import static frc.excalib.control.motor.motor_specs.IdleState.BRAKE;
+import static frc.excalib.control.motor.motor_specs.IdleState.COAST;
 import static frc.robot.subsystems.Constants.*;
 
 public class ArmSubsystem extends SubsystemBase {
@@ -27,6 +31,8 @@ public class ArmSubsystem extends SubsystemBase {
     private final DoubleSupplier m_elevatorHeightSupplier;
     private final BooleanSupplier m_intakeOpen;
 
+
+
     public ArmSubsystem(DoubleSupplier elevatorHeightSupplier, BooleanSupplier intakeOpen) {
         m_currentState = ArmPosition.DEFAULT;
         m_angleMotor = new TalonFXMotor(ANGLE_MOTOR_ID);
@@ -36,6 +42,9 @@ public class ArmSubsystem extends SubsystemBase {
         toleranceTrigger = new Trigger(() -> (Math.abs(m_angleSupplier.getAsDouble() - m_currentState.getAngle()) < TOLERANCE));
         m_elevatorHeightSupplier = elevatorHeightSupplier;
         m_intakeOpen = intakeOpen;
+        m_angleMotor.setInverted(DirectionState.FORWARD);
+        m_angleMotor.setVelocityConversionFactor(RPS_TO_RAD_PER_SEC);
+        m_angleMotor.setMotorPosition(POSITION_CONVERSION_FACTOR);
 
         softLimit = new ContinuousSoftLimit(
                 () -> {
@@ -63,7 +72,13 @@ public class ArmSubsystem extends SubsystemBase {
     public void setState(ArmPosition state) {
         m_currentState = state;
     }
-
+    public Command coastCommand() {
+        return new StartEndCommand(
+                () -> m_angleMotor.setIdleState(COAST),
+                () -> m_angleMotor.setIdleState(BRAKE),
+                this
+        ).ignoringDisable(true).withName("Arm Coast Command");
+    }
 
 }
 
