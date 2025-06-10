@@ -33,6 +33,7 @@ public class Intake extends SubsystemBase {
     private final CANcoder m_armEncoder;
     private final DoubleSupplier m_angleSupplier;
     private final Trigger intakeOpen;
+    public final Trigger hasCoral;
 
     public Intake(IntakeState initialState) {
 
@@ -62,6 +63,8 @@ public class Intake extends SubsystemBase {
 
 
         );
+
+        hasCoral = new Trigger(() -> (true));
     }
 
     public Command defaultCommand() {
@@ -92,6 +95,5 @@ public class Intake extends SubsystemBase {
     public BooleanSupplier isAtPosition(){
         return m_atPosition;
     }
-
 
 }

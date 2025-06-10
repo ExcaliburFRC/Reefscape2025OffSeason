@@ -1,8 +1,6 @@
 package frc.robot.superstructure;
 
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.arm.ArmSubsystem;
 import frc.robot.subsystems.elevator.ElevatorSubsystem;
@@ -23,10 +21,10 @@ public class Superstructure {
 
         armSubsystem = new ArmSubsystem();
         elevatorSubsystem = new ElevatorSubsystem();
-                intakeSubsystem = new Intake(IntakeState.STOW);
+        intakeSubsystem = new Intake(IntakeState.STOW);
 
         atPositionTrigger = new Trigger(
-                ()-> elevatorSubsystem.atPositionTrigger.getAsBoolean()
+                () -> elevatorSubsystem.atPositionTrigger.getAsBoolean()
                         && armSubsystem.isAtPosition().getAsBoolean()
                         && intakeSubsystem.isAtPosition().getAsBoolean());
         gripperSubsystem = new Gripper();
@@ -37,18 +35,52 @@ public class Superstructure {
 
     public Command setCurrentStateCommand(RobotStates state) {
         return new InstantCommand(() -> this.currentState = state);
+//        new WaitUntilCommand(atPositionTrigger); // TODO: sequsudghsfhntial command
     }
 
     public void returnToDefaultState() {
         this.currentState = RobotStates.DEFAULT;
     }
 
-//    public Command L2Command() {
-//        return new SequentialCommandGroup(
-//                setCurrentStateCommand(RobotStates.L2),
-//
-//        )
-//    }
+    public RobotStates findFollowthroughState(RobotStates scoreState) throws IllegalArgumentException {
+        switch (scoreState) {
+            case L2 -> {
+                return RobotStates.L2_FOLLOWTHROUGH;
+            }
+            case L3 -> {
+                return RobotStates.L3_FOLLOWTHROUGH;
+            }
+            case L4 -> {
+                return RobotStates.L4_FOLLOWTHROUGH;
+            }
+            default -> {
+                throw new IllegalArgumentException("Please enter a valid Robot State");
+            }
+        }
+    }
 
 
+    public Command reefScoreCommand(RobotStates scoreState) {
+        return new ConditionalCommand(
+                new SequentialCommandGroup(
+                        setCurrentStateCommand(scoreState),
+                        new WaitUntilCommand(atPositionTrigger),
+                        new ParallelCommandGroup(
+                                gripperSubsystem.releaseCoral(),
+                                setCurrentStateCommand(findFollowthroughState(scoreState))
+                        ),
+                        setCurrentStateCommand(RobotStates.DEFAULT)),
+                new PrintCommand("There is no available coral to score."),
+                intakeSubsystem.hasCoral);
+    }
+
+    public Command intakeCommand() {
+        return new ConditionalCommand(
+                new SequentialCommandGroup(
+                        setCurrentStateCommand(RobotStates.FLOOR_INTAKE),
+                        new WaitUntilCommand(intakeSubsystem.hasCoral),
+                        setCurrentStateCommand(RobotStates.DEFAULT)),
+                new PrintCommand("There is already a coral in the system"),
+                intakeSubsystem.hasCoral);
+    }
 }
