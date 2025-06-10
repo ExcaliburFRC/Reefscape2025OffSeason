@@ -15,9 +15,10 @@ public enum RobotStates {
     ALGAE2(ArmPosition.ALGAE2, ElevatorStates.ALGAE2, IntakeState.STOW),
     ALGAE3(ArmPosition.ALGAE3, ElevatorStates.ALGAE3, IntakeState.STOW),
     FLOOR_INTAKE(ArmPosition.DEFAULT, ElevatorStates.DEFAULT, IntakeState.FLOOR_INTAKE),
+
     DEFAULT(ArmPosition.DEFAULT, ElevatorStates.DEFAULT, IntakeState.STOW),
     HANDOFF(ArmPosition.HANDOFF, ElevatorStates.HANDOFF, IntakeState.HANDOFF),
-    HANDOFF_FROM_ARM(ArmPosition.HANDOFF, ElevatorStates.HANDOFF, IntakeState.HANDOFF),
+    PREHANDOFF(ArmPosition.HANDOFF, ElevatorStates.PRE_HANDOFF , IntakeState.HANDOFF),
     NET(ArmPosition.NET, ElevatorStates.NET, IntakeState.STOW),
     PROCESSOR(ArmPosition.PROCESSOR, ElevatorStates.PROCESSOR, IntakeState.STOW);
 

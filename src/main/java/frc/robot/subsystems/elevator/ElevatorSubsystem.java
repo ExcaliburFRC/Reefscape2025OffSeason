@@ -40,9 +40,11 @@ public class ElevatorSubsystem extends SubsystemBase {
         );
         m_currentState = ElevatorStates.DEFAULT;
 
-        setDefaultCommand(m_linearExtension.extendCommand(() -> m_currentState.getHeight(), this));
+        setDefaultCommand(m_linearExtension.extendCommand(() -> softLimit.limit(m_currentState.getHeight()), this));
 
-        atPositionTrigger = new Trigger(()-> (Math.abs(m_currentState.getHeight() - m_elevatorHeight.getAsDouble()) < TOLERANCE));
+        atPositionTrigger = new Trigger(
+                ()-> (Math.abs(m_currentState.getHeight() - m_elevatorHeight.getAsDouble()) < TOLERANCE));
+
         softLimit = new ContinuousSoftLimit(
                 () -> MAX_ELEVATOR_HIGHT,
                 () -> (armAngle.getAsDouble() > UPWARDS_ARM_MAX_LIMIT &&

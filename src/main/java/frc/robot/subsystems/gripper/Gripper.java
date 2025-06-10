@@ -12,7 +12,7 @@ import static frc.robot.subsystems.gripper.GripperConstants.*;
 public class Gripper extends SubsystemBase {
     // === Motors ===
     private final TalonFXMotor m_rollersMotor;
-    private final Trigger m_hasCoralTrigger;
+    public final Trigger m_hasCoralTrigger;
     // === Inputs ===
     private final FlyWheel m_gripperWheels;
 

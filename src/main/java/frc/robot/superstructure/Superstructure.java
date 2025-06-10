@@ -83,4 +83,19 @@ public class Superstructure {
                 new PrintCommand("There is already a coral in the system"),
                 intakeSubsystem.hasCoral);
     }
+
+    public Command handoffCommand() {
+        return new ConditionalCommand(
+                new SequentialCommandGroup(
+                        setCurrentStateCommand(RobotStates.PREHANDOFF),
+                        new WaitUntilCommand(atPositionTrigger.and(intakeSubsystem.hasCoral.negate())),
+                        setCurrentStateCommand(
+                                RobotStates.HANDOFF).alongWith(
+                                        gripperSubsystem.intakeCoral()).until(
+                                                gripperSubsystem.m_hasCoralTrigger.negate())
+                ),
+                new PrintCommand("There is no a coral in the system"),
+                intakeSubsystem.hasCoral);
+    }
+
 }

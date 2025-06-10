@@ -56,7 +56,7 @@ public class ArmSubsystem extends SubsystemBase {
 
         setDefaultCommand(
                 m_armMechanism.anglePositionControlCommand(
-                        () -> m_currentState.getAngle(),
+                        ()-> softLimit.limit(m_currentState.getAngle()),
                         (__) -> toleranceTrigger.getAsBoolean(),
                         TOLERANCE,
                         this

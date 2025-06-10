@@ -10,9 +10,11 @@ public enum ElevatorStates {
     ALGAE2(0),
     ALGAE3(0),
     HANDOFF(0),
+    PRE_HANDOFF(0),
     NET(0),
     PROCESSOR(0),
     DEFAULT(0);
+
 
     private final double height;
     private ElevatorStates(double height){
