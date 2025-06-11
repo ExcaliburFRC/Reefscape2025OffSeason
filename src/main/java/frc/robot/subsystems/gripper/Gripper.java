@@ -13,6 +13,7 @@ public class Gripper extends SubsystemBase {
     // === Motors ===
     private final TalonFXMotor m_rollersMotor;
     public final Trigger m_hasCoralTrigger;
+    public final Trigger m_hasAlgaeTrigger;
     // === Inputs ===
     private final FlyWheel m_gripperWheels;
 
@@ -20,11 +21,12 @@ public class Gripper extends SubsystemBase {
         m_rollersMotor = new TalonFXMotor(MOTOR_ID);
         m_gripperWheels = new FlyWheel(
                 m_rollersMotor,
-                MAX_ACCELIRATION,
+                MAX_ACCELERATION,
                 MAX_JERK,
                 new Gains()
         );
         m_hasCoralTrigger = new Trigger(() -> HAS_CORAL_CURRENT < m_gripperWheels.logCurrent());
+        m_hasAlgaeTrigger = new Trigger(() -> HAS_CORAL_CURRENT < m_gripperWheels.logCurrent());
     }
 
     public Command releaseCoral() {
@@ -36,5 +38,16 @@ public class Gripper extends SubsystemBase {
         return m_gripperWheels.manualCommand(() -> INTAKE_CORAL_VOLTAGE, this).until(m_hasCoralTrigger);
 
     }
+
+    public Command releaseAlgae() {
+        return m_gripperWheels.manualCommand(() -> RELEASE_CORAL_VOLTAGE, this).until(m_hasAlgaeTrigger.negate());
+
+    }
+
+    public Command intakeAlgae() {
+        return m_gripperWheels.manualCommand(() -> INTAKE_CORAL_VOLTAGE, this).until(m_hasAlgaeTrigger);
+
+    }
+
 
 }

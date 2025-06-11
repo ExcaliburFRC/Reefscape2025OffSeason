@@ -8,6 +8,8 @@ import frc.robot.subsystems.gripper.Gripper;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeState;
 
+import static frc.robot.superstructure.Constants.L1_SCORE_VOLTAGE;
+
 public class Superstructure {
     private final ArmSubsystem armSubsystem;
     private final ElevatorSubsystem elevatorSubsystem;
@@ -74,6 +76,17 @@ public class Superstructure {
                 intakeSubsystem.hasCoral);
     }
 
+    public Command L1ScoreCommand() {
+        return new ConditionalCommand(
+                new SequentialCommandGroup(
+                    setCurrentStateCommand(RobotStates.L1).until(atPositionTrigger),
+                    intakeSubsystem.setRollerVoltage(L1_SCORE_VOLTAGE).until(intakeSubsystem.hasCoral.negate()),
+                    setCurrentStateCommand(RobotStates.DEFAULT)
+        ),
+                new PrintCommand("There is no available coral to score."),
+                intakeSubsystem.hasCoral);
+    }
+
     public Command intakeCommand() {
         return new ConditionalCommand(
                 new SequentialCommandGroup(
@@ -91,11 +104,34 @@ public class Superstructure {
                         new WaitUntilCommand(atPositionTrigger.and(intakeSubsystem.hasCoral.negate())),
                         setCurrentStateCommand(
                                 RobotStates.HANDOFF).alongWith(
-                                        gripperSubsystem.intakeCoral()).until(
-                                                gripperSubsystem.m_hasCoralTrigger.negate())
+                                gripperSubsystem.intakeCoral()).until(
+                                gripperSubsystem.m_hasCoralTrigger)
                 ),
                 new PrintCommand("There is no a coral in the system"),
                 intakeSubsystem.hasCoral);
     }
 
+    public Command ejectCoralCommand() {
+        return new ConditionalCommand(
+                new SequentialCommandGroup(
+                        setCurrentStateCommand(RobotStates.EJECT_CORAL).until(atPositionTrigger.and(intakeSubsystem.hasCoral.negate())),
+                        setCurrentStateCommand(RobotStates.DEFAULT)
+                ),
+                new PrintCommand("There is no a coral in the system"),
+                intakeSubsystem.hasCoral);
+    }
+
+    public Command netScoreCommand() {
+        return new ConditionalCommand(
+                new SequentialCommandGroup(
+                        setCurrentStateCommand(RobotStates.NET).until(atPositionTrigger),
+                        new WaitUntilCommand(gripperSubsystem.m_hasAlgaeTrigger.negate()),
+                        gripperSubsystem.releaseAlgae(),
+                        setCurrentStateCommand(RobotStates.DEFAULT)
+                ),
+                new PrintCommand("There is no available coral to score."),
+                gripperSubsystem.m_hasAlgaeTrigger);
+    }
 }
+
+// algae intake & release | processor score | reverse handoff |

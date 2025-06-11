@@ -6,6 +6,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.excalib.commands.MapCommand;
 import frc.excalib.control.gains.Gains;
 import frc.excalib.control.limits.SoftLimit;
 import frc.excalib.control.math.physics.Mass;
@@ -94,6 +95,10 @@ public class Intake extends SubsystemBase {
 
     public BooleanSupplier isAtPosition(){
         return m_atPosition;
+    }
+
+    public Command setRollerVoltage(double voltage){
+        return this.m_rollers.manualCommand(() -> voltage); //TODO: Check command type!
     }
 
 }
