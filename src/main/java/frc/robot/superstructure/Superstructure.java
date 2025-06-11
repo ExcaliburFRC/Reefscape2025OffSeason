@@ -129,9 +129,21 @@ public class Superstructure {
                         gripperSubsystem.releaseAlgae(),
                         setCurrentStateCommand(RobotStates.DEFAULT)
                 ),
-                new PrintCommand("There is no available coral to score."),
+                new PrintCommand("There is no available algae to score."),
                 gripperSubsystem.m_hasAlgaeTrigger);
     }
+    public  Command processorScoreCommand (){
+        return new ConditionalCommand(
+                new SequentialCommandGroup(
+                        setCurrentStateCommand(RobotStates.PROCESSOR).until(atPositionTrigger),
+                        new WaitUntilCommand(gripperSubsystem.m_hasAlgaeTrigger.negate()),
+                        gripperSubsystem.releaseAlgae(),
+                        setCurrentStateCommand(RobotStates.DEFAULT)
+        ),
+                new PrintCommand("There is no available algae to score."),
+                gripperSubsystem.m_hasAlgaeTrigger);
+    }
+
 }
 
-// algae intake & release | processor score | reverse handoff |
+// algae intake & release | reverse handoff |
