@@ -6,9 +6,13 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.superstructure.Superstructure;
 
 public class RobotContainer {
+  Superstructure superstructure = new Superstructure();
+
   public RobotContainer() {
+
     configureBindings();
   }
 
