@@ -2,7 +2,6 @@ package frc.robot.superstructure;
 
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.excalib.commands.MapCommand;
 import frc.robot.subsystems.arm.ArmSubsystem;
 import frc.robot.subsystems.elevator.ElevatorSubsystem;
 import frc.robot.subsystems.gripper.Gripper;
@@ -23,7 +22,7 @@ public class Superstructure {
     private RobotStates currentState;
 
     public Superstructure() {
-        currentState = RobotStates.DEFAULT;
+        currentState = RobotStates.DEFAULT_WITHOUT_GAME_PIECE;
 
         armSubsystem = new ArmSubsystem();
         elevatorSubsystem = new ElevatorSubsystem();
@@ -51,7 +50,7 @@ public class Superstructure {
     }
 
     public void returnToDefaultState() {
-        this.currentState = RobotStates.DEFAULT;
+        this.currentState = RobotStates.DEFAULT_WITHOUT_GAME_PIECE;
     }
 
     public RobotStates findFollowthroughState(RobotStates scoreState) throws IllegalArgumentException {
@@ -81,7 +80,7 @@ public class Superstructure {
                                 gripperSubsystem.releaseCoral(),
                                 setCurrentStateCommand(followThroughMap.get(scoreState))
                         ),
-                        setCurrentStateCommand(RobotStates.DEFAULT)),
+                        setCurrentStateCommand(RobotStates.DEFAULT_WITHOUT_GAME_PIECE)),
                 new PrintCommand("There is no available coral to score."),
                 intakeSubsystem.hasCoral);
     }
@@ -91,7 +90,7 @@ public class Superstructure {
                 new SequentialCommandGroup(
                         setCurrentStateCommand(RobotStates.L1).until(atPositionTrigger),
                         intakeSubsystem.setRollerVoltage(L1_SCORE_VOLTAGE).until(intakeSubsystem.hasCoral.negate()),
-                        setCurrentStateCommand(RobotStates.DEFAULT)
+                        setCurrentStateCommand(RobotStates.DEFAULT_WITHOUT_GAME_PIECE)
                 ),
                 new PrintCommand("There is no available coral to score."),
                 intakeSubsystem.hasCoral);
@@ -102,7 +101,7 @@ public class Superstructure {
                 new SequentialCommandGroup(
                         setCurrentStateCommand(RobotStates.FLOOR_INTAKE).until(atPositionTrigger),
                         new WaitUntilCommand(intakeSubsystem.hasCoral),
-                        setCurrentStateCommand(RobotStates.DEFAULT)),
+                        setCurrentStateCommand(RobotStates.DEFAULT_WITHOUT_GAME_PIECE)),
                 new PrintCommand("There is already a coral in the system"),
                 intakeSubsystem.hasCoral);
     }
@@ -123,7 +122,7 @@ public class Superstructure {
         return new ConditionalCommand(
                 new SequentialCommandGroup(
                         setCurrentStateCommand(RobotStates.EJECT_CORAL).until(atPositionTrigger.and(intakeSubsystem.hasCoral.negate())),
-                        setCurrentStateCommand(RobotStates.DEFAULT)
+                        setCurrentStateCommand(RobotStates.DEFAULT_WITHOUT_GAME_PIECE)
                 ),
                 new PrintCommand("There is no a coral in the system"),
                 intakeSubsystem.hasCoral);
@@ -135,7 +134,7 @@ public class Superstructure {
                         setCurrentStateCommand(RobotStates.NET).until(atPositionTrigger),
                         new WaitUntilCommand(gripperSubsystem.m_hasAlgaeTrigger.negate()),
                         gripperSubsystem.releaseAlgae(),
-                        setCurrentStateCommand(RobotStates.DEFAULT)
+                        setCurrentStateCommand(RobotStates.DEFAULT_WITHOUT_GAME_PIECE)
                 ),
                 new PrintCommand("There is no available algae to score."),
                 gripperSubsystem.m_hasAlgaeTrigger);
@@ -147,24 +146,48 @@ public class Superstructure {
                         setCurrentStateCommand(RobotStates.PROCESSOR).until(atPositionTrigger),
                         new WaitUntilCommand(gripperSubsystem.m_hasAlgaeTrigger.negate()),
                         gripperSubsystem.releaseAlgae(),
-                        setCurrentStateCommand(RobotStates.DEFAULT)
+                        setCurrentStateCommand(RobotStates.DEFAULT_WITHOUT_GAME_PIECE)
                 ),
                 new PrintCommand("There is no available algae to score."),
                 gripperSubsystem.m_hasAlgaeTrigger);
     }
 
-    public Command reverseHandoff() {
+    public Command reverseHandoffCommand() {
         return new ConditionalCommand(
                 new SequentialCommandGroup(
                         setCurrentStateCommand(RobotStates.PREHANDOFF),
                         gripperSubsystem.releaseCoral(),
                         new WaitUntilCommand(gripperSubsystem.m_hasCoralTrigger.negate().and(intakeSubsystem.hasCoral)),
-                        setCurrentStateCommand(RobotStates.DEFAULT)
+                        setCurrentStateCommand(RobotStates.DEFAULT_WITHOUT_GAME_PIECE)
                 ),
                 new PrintCommand("There is no available coral to reverse handoff"),
                 gripperSubsystem.m_hasAlgaeTrigger);
     }
 
+    public Command algaeIntakeCommand(RobotStates algaeLevel) {
+        return new ConditionalCommand(
+                new SequentialCommandGroup(
+                        setCurrentStateCommand(algaeLevel).until(atPositionTrigger),
+                        gripperSubsystem.intakeAlgae().until(gripperSubsystem.m_hasAlgaeTrigger),
+                        setCurrentStateCommand(RobotStates.DEFAULT_WITH_GAME_PIECE)
+                        ),
+                new PrintCommand("There is no available place in gripper"),
+
+                (gripperSubsystem.m_hasAlgaeTrigger.or(gripperSubsystem.m_hasCoralTrigger)).negate());
+
+    }   public Command algaeReleaseCommand() {
+        return new ConditionalCommand(
+                new SequentialCommandGroup(
+                        gripperSubsystem.releaseAlgae().until(gripperSubsystem.m_hasAlgaeTrigger.negate()),
+                        setCurrentStateCommand(RobotStates.DEFAULT_WITHOUT_GAME_PIECE)
+                ),
+                new PrintCommand("There is no available algae to release"),
+
+                (gripperSubsystem.m_hasAlgaeTrigger));
+
+    }
+
+
 }
 
-// algae intake & release | reverse handoff |
+

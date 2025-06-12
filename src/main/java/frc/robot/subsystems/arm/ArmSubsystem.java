@@ -33,7 +33,7 @@ public class ArmSubsystem extends SubsystemBase {
 
 
     public ArmSubsystem() {
-        m_currentState = ArmPosition.DEFAULT;
+        m_currentState = ArmPosition.DEFAULT_WITHOUT_GAME_PIECE;
         m_angleMotor = new TalonFXMotor(ANGLE_MOTOR_ID);
         m_canCoder = new CANcoder(CAN_CODER_ID);
         m_angleSupplier = () -> m_canCoder.getPosition().getValueAsDouble() * ROTATIONS_TO_RAD;
