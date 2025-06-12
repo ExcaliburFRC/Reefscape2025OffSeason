@@ -20,14 +20,15 @@ public enum RobotStates {
 
 
     // ------ INTAKE ------
-    L1(ArmPosition.DEFAULT, ElevatorStates.DEFAULT, IntakeState.L1_SCORE),
+    L1(ArmPosition.DEFAULT_WITH_GAME_PIECE, ElevatorStates.DEFAULT_WITH_GAME_PIECE, IntakeState.L1_SCORE),
     L2(ArmPosition.L2, ElevatorStates.L2, IntakeState.STOW),
-    FLOOR_INTAKE(ArmPosition.DEFAULT, ElevatorStates.DEFAULT, IntakeState.FLOOR_INTAKE),
-    EJECT_CORAL(ArmPosition.DEFAULT, ElevatorStates.DEFAULT, IntakeState.EJECT_CORAL),
+    FLOOR_INTAKE(ArmPosition.DEFAULT_WITHOUT_GAME_PIECE, ElevatorStates.DEFAULT_WITHOUT_GAME_PIECE, IntakeState.FLOOR_INTAKE),
+    EJECT_CORAL(ArmPosition.DEFAULT_WITH_GAME_PIECE, ElevatorStates.DEFAULT_WITH_GAME_PIECE, IntakeState.EJECT_CORAL),
 
 
     // ------ GENERAL ------
-    DEFAULT(ArmPosition.DEFAULT, ElevatorStates.DEFAULT, IntakeState.STOW),
+    DEFAULT_WITH_GAME_PIECE(ArmPosition.DEFAULT_WITH_GAME_PIECE, ElevatorStates.DEFAULT_WITH_GAME_PIECE, IntakeState.STOW),
+    DEFAULT_WITHOUT_GAME_PIECE(ArmPosition.DEFAULT_WITHOUT_GAME_PIECE, ElevatorStates.DEFAULT_WITHOUT_GAME_PIECE, IntakeState.STOW),
     PREHANDOFF(ArmPosition.HANDOFF, ElevatorStates.PRE_HANDOFF , IntakeState.HANDOFF),
     HANDOFF(ArmPosition.HANDOFF, ElevatorStates.HANDOFF, IntakeState.HANDOFF);
 
