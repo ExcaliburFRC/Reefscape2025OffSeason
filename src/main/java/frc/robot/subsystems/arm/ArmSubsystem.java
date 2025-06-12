@@ -38,7 +38,7 @@ public class ArmSubsystem extends SubsystemBase {
         m_canCoder = new CANcoder(CAN_CODER_ID);
         m_angleSupplier = () -> m_canCoder.getPosition().getValueAsDouble() * ROTATIONS_TO_RAD;
         m_armMechanism = new Arm(m_angleMotor, m_angleSupplier, VELOCITY_LIMIT, new Gains(), new Mass(() -> 0, () -> 0, 0));
-        toleranceTrigger = new Trigger(() -> (Math.abs(m_angleSupplier.getAsDouble() - m_currentState.getAngle()) < TOLERANCE));
+        toleranceTrigger = new Trigger(() -> (Math.abs(m_angleSupplier.getAsDouble() - m_currentState.getAngle()) < TOLERANCE)).debounce(0.1);
         m_elevatorHeightSupplier = () -> 0;
         m_intakeOpen = () -> false;
         m_angleMotor.setInverted(DirectionState.FORWARD);
@@ -56,7 +56,7 @@ public class ArmSubsystem extends SubsystemBase {
 
         setDefaultCommand(
                 m_armMechanism.anglePositionControlCommand(
-                        ()-> softLimit.limit(m_currentState.getAngle()),
+                        () -> softLimit.getSetpoint(m_angleSupplier.getAsDouble(), m_currentState.getAngle()),
                         (__) -> toleranceTrigger.getAsBoolean(),
                         TOLERANCE,
                         this
@@ -92,7 +92,7 @@ public class ArmSubsystem extends SubsystemBase {
         m_intakeOpen = intakeOpen;
     }
 
-    public BooleanSupplier isAtPosition(){
+    public BooleanSupplier isAtPosition() {
         return toleranceTrigger;
     }
 }

@@ -14,6 +14,7 @@ public enum ArmPosition {
     DEFAULT_WITH_GAME_PIECE(0),
     PROCESSOR(0),
     HANDOFF(0),
+    EJECT_GAME_PIECE(0),
     INTAKE(0);
     private  final double angle;
     private ArmPosition(double angle) {

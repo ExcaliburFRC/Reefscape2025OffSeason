@@ -6,29 +6,30 @@ import frc.robot.subsystems.intake.IntakeState;
 
 public enum RobotStates {
     // ------ HIGH REEF CORAL SCORE ------
-    L2_FOLLOWTHROUGH(ArmPosition.L2_FOLLOWTHROUGH, ElevatorStates.L2_FOLLOWTHROUGH, IntakeState.STOW),
-    L3(ArmPosition.L3, ElevatorStates.L3, IntakeState.STOW),
-    L3_FOLLOWTHROUGH(ArmPosition.L3_FOLLOWTHROUGH, ElevatorStates.L3_FOLLOWTHROUGH, IntakeState.STOW),
-    L4(ArmPosition.L4, ElevatorStates.L4, IntakeState.STOW),
-    L4_FOLLOWTHROUGH(ArmPosition.L4_FOLLOWTHROUGH, ElevatorStates.L4_FOLLOWTHROUGH, IntakeState.STOW),
+    L2_FOLLOWTHROUGH(ArmPosition.L2_FOLLOWTHROUGH, ElevatorStates.L2_FOLLOWTHROUGH, IntakeState.DEFAULT),
+    L3(ArmPosition.L3, ElevatorStates.L3, IntakeState.DEFAULT),
+    L3_FOLLOWTHROUGH(ArmPosition.L3_FOLLOWTHROUGH, ElevatorStates.L3_FOLLOWTHROUGH, IntakeState.DEFAULT),
+    L4(ArmPosition.L4, ElevatorStates.L4, IntakeState.DEFAULT),
+    L4_FOLLOWTHROUGH(ArmPosition.L4_FOLLOWTHROUGH, ElevatorStates.L4_FOLLOWTHROUGH, IntakeState.DEFAULT),
 
     // ------ ALGAE REMOVAL & SCORE ------
-    ALGAE2(ArmPosition.ALGAE2, ElevatorStates.ALGAE2, IntakeState.STOW),
-    ALGAE3(ArmPosition.ALGAE3, ElevatorStates.ALGAE3, IntakeState.STOW),
-    NET(ArmPosition.NET, ElevatorStates.NET, IntakeState.STOW),
-    PROCESSOR(ArmPosition.PROCESSOR, ElevatorStates.PROCESSOR, IntakeState.STOW),
+    ALGAE2(ArmPosition.ALGAE2, ElevatorStates.ALGAE2, IntakeState.DEFAULT),
+    ALGAE3(ArmPosition.ALGAE3, ElevatorStates.ALGAE3, IntakeState.DEFAULT),
+    NET(ArmPosition.NET, ElevatorStates.NET, IntakeState.DEFAULT),
+    PROCESSOR(ArmPosition.PROCESSOR, ElevatorStates.PROCESSOR, IntakeState.DEFAULT),
 
 
     // ------ INTAKE ------
     L1(ArmPosition.DEFAULT_WITH_GAME_PIECE, ElevatorStates.DEFAULT_WITH_GAME_PIECE, IntakeState.L1_SCORE),
-    L2(ArmPosition.L2, ElevatorStates.L2, IntakeState.STOW),
+    L2(ArmPosition.L2, ElevatorStates.L2, IntakeState.DEFAULT),
     FLOOR_INTAKE(ArmPosition.DEFAULT_WITHOUT_GAME_PIECE, ElevatorStates.DEFAULT_WITHOUT_GAME_PIECE, IntakeState.FLOOR_INTAKE),
-    EJECT_CORAL(ArmPosition.DEFAULT_WITH_GAME_PIECE, ElevatorStates.DEFAULT_WITH_GAME_PIECE, IntakeState.EJECT_CORAL),
+    EJECT_CORAL_FROM_INTAKE(ArmPosition.DEFAULT_WITH_GAME_PIECE, ElevatorStates.DEFAULT_WITH_GAME_PIECE, IntakeState.EJECT_CORAL),
+    EJECT_GAME_PIECE_FROM_GRIPPER(ArmPosition.EJECT_GAME_PIECE, ElevatorStates.DEFAULT_WITH_GAME_PIECE, IntakeState.DEFAULT),
 
 
     // ------ GENERAL ------
-    DEFAULT_WITH_GAME_PIECE(ArmPosition.DEFAULT_WITH_GAME_PIECE, ElevatorStates.DEFAULT_WITH_GAME_PIECE, IntakeState.STOW),
-    DEFAULT_WITHOUT_GAME_PIECE(ArmPosition.DEFAULT_WITHOUT_GAME_PIECE, ElevatorStates.DEFAULT_WITHOUT_GAME_PIECE, IntakeState.STOW),
+    DEFAULT_WITH_GAME_PIECE(ArmPosition.DEFAULT_WITH_GAME_PIECE, ElevatorStates.DEFAULT_WITH_GAME_PIECE, IntakeState.DEFAULT),
+    DEFAULT_WITHOUT_GAME_PIECE(ArmPosition.DEFAULT_WITHOUT_GAME_PIECE, ElevatorStates.DEFAULT_WITHOUT_GAME_PIECE, IntakeState.DEFAULT),
     PREHANDOFF(ArmPosition.HANDOFF, ElevatorStates.PRE_HANDOFF , IntakeState.HANDOFF),
     HANDOFF(ArmPosition.HANDOFF, ElevatorStates.HANDOFF, IntakeState.HANDOFF);
 

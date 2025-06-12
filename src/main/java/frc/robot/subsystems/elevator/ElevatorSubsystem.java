@@ -43,7 +43,7 @@ public class ElevatorSubsystem extends SubsystemBase {
         setDefaultCommand(m_linearExtension.extendCommand(() -> softLimit.limit(m_currentState.getHeight()), this));
 
         atPositionTrigger = new Trigger(
-                ()-> (Math.abs(m_currentState.getHeight() - m_elevatorHeight.getAsDouble()) < TOLERANCE));
+                ()-> (Math.abs(m_currentState.getHeight() - m_elevatorHeight.getAsDouble()) < TOLERANCE)).debounce(0.1);
 
         softLimit = new ContinuousSoftLimit(
                 () -> MAX_ELEVATOR_HIGHT,
