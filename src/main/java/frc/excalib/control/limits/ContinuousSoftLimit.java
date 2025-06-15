@@ -13,22 +13,22 @@ public class ContinuousSoftLimit extends SoftLimit {
         super(minLimit, maxLimit);
     }
 
-    public double getSetPoint(double measurement, double wantedSetPoint) {
+    public double getSetpoint(double measurement, double wantedSetpoint) {
         double upperSetPoint, lowerSetPoint;
-        if (wantedSetPoint > measurement) {
-            upperSetPoint = wantedSetPoint;
+        if (wantedSetpoint > measurement) {
+            upperSetPoint = wantedSetpoint;
             while ((upperSetPoint - 2 * Math.PI) > measurement) {
                 upperSetPoint -= 2 * Math.PI;
             }
             lowerSetPoint = upperSetPoint - 2 * Math.PI;
-        } else if (wantedSetPoint < measurement) {
-            lowerSetPoint = wantedSetPoint;
+        } else if (wantedSetpoint < measurement) {
+            lowerSetPoint = wantedSetpoint;
             while ((lowerSetPoint + 2 * Math.PI) < measurement) {
                 lowerSetPoint += 2 * Math.PI;
             }
             upperSetPoint = lowerSetPoint + 2 * Math.PI;
         } else {
-            return wantedSetPoint;
+            return wantedSetpoint;
         }
         if (upperSetPoint > super.getMaxLimit()) {
             return lowerSetPoint;

@@ -25,8 +25,8 @@ public class Gripper extends SubsystemBase {
                 MAX_JERK,
                 new Gains()
         );
-        m_hasCoralTrigger = new Trigger(() -> HAS_CORAL_CURRENT < m_gripperWheels.logCurrent());
-        m_hasAlgaeTrigger = new Trigger(() -> HAS_CORAL_CURRENT < m_gripperWheels.logCurrent());
+        m_hasCoralTrigger = new Trigger(() -> HAS_CORAL_CURRENT < m_gripperWheels.logCurrent()).debounce(0.1);
+        m_hasAlgaeTrigger = new Trigger(() -> HAS_CORAL_CURRENT < m_gripperWheels.logCurrent()).debounce(0.1);
     }
 
     public Command releaseCoral() {

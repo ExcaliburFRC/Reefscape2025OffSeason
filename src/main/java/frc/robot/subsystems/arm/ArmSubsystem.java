@@ -33,12 +33,12 @@ public class ArmSubsystem extends SubsystemBase {
 
 
     public ArmSubsystem() {
-        m_currentState = ArmPosition.DEFAULT;
+        m_currentState = ArmPosition.DEFAULT_WITHOUT_GAME_PIECE;
         m_angleMotor = new TalonFXMotor(ANGLE_MOTOR_ID);
         m_canCoder = new CANcoder(CAN_CODER_ID);
         m_angleSupplier = () -> m_canCoder.getPosition().getValueAsDouble() * ROTATIONS_TO_RAD;
         m_armMechanism = new Arm(m_angleMotor, m_angleSupplier, VELOCITY_LIMIT, new Gains(), new Mass(() -> 0, () -> 0, 0));
-        toleranceTrigger = new Trigger(() -> (Math.abs(m_angleSupplier.getAsDouble() - m_currentState.getAngle()) < TOLERANCE));
+        toleranceTrigger = new Trigger(() -> (Math.abs(m_angleSupplier.getAsDouble() - m_currentState.getAngle()) < TOLERANCE)).debounce(0.1);
         m_elevatorHeightSupplier = () -> 0;
         m_intakeOpen = () -> false;
         m_angleMotor.setInverted(DirectionState.FORWARD);
@@ -47,16 +47,16 @@ public class ArmSubsystem extends SubsystemBase {
 
         softLimit = new ContinuousSoftLimit(
                 () -> {
-                    return (-1 * (Math.acos(m_elevatorHeightSupplier.getAsDouble() / ARM_LENGTH)) - SOFTLIMIT_BUFFER);
+                    return m_elevatorHeightSupplier.getAsDouble() < ARM_LENGTH ? 0 : -Math.PI / 2;
                 },
                 () -> {
-                    return (Math.acos(m_elevatorHeightSupplier.getAsDouble() / ARM_LENGTH) + SOFTLIMIT_BUFFER);
+                    return m_elevatorHeightSupplier.getAsDouble() < ARM_LENGTH ? Math.PI : Math.PI * 1.5;
                 }
         );
 
         setDefaultCommand(
                 m_armMechanism.anglePositionControlCommand(
-                        ()-> softLimit.limit(m_currentState.getAngle()),
+                        () -> softLimit.getSetpoint(m_angleSupplier.getAsDouble(), m_currentState.getAngle()),
                         (__) -> toleranceTrigger.getAsBoolean(),
                         TOLERANCE,
                         this
@@ -92,7 +92,7 @@ public class ArmSubsystem extends SubsystemBase {
         m_intakeOpen = intakeOpen;
     }
 
-    public BooleanSupplier isAtPosition(){
+    public BooleanSupplier isAtPosition() {
         return toleranceTrigger;
     }
 }

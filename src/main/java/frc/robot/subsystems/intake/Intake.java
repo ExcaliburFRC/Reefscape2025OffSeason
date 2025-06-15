@@ -6,7 +6,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.excalib.commands.MapCommand;
 import frc.excalib.control.gains.Gains;
 import frc.excalib.control.limits.SoftLimit;
 import frc.excalib.control.math.physics.Mass;
@@ -39,7 +38,7 @@ public class Intake extends SubsystemBase {
     public Intake(IntakeState initialState) {
 
         m_currentState = initialState;
-        m_defaultState = IntakeState.STOW;
+        m_defaultState = IntakeState.DEFAULT;
         m_armMotor = new TalonFXMotor(ARM_MOTOR_ID);
         m_rollersMotor = new TalonFXMotor(ROLLERS_MOTOR_ID);
         TalonFXMotor m_centralizerMotor = new TalonFXMotor(CENTERLIZER_MOTOR_ID);
@@ -51,9 +50,9 @@ public class Intake extends SubsystemBase {
         m_rollers = new Mechanism(m_rollersMotor);
 
         m_atPosition = new Trigger(
-                () -> Math.abs(m_angleSupplier.getAsDouble() - m_currentState.intakeAngle) < TOLERANCE);
+                () -> Math.abs(m_angleSupplier.getAsDouble() - m_currentState.intakeAngle) < TOLERANCE).debounce(0.1);
 
-        intakeOpen = new Trigger(() -> (m_atPosition.getAsBoolean() && (m_currentState == IntakeState.FLOOR_INTAKE)));
+        intakeOpen = new Trigger(() -> (m_atPosition.getAsBoolean() && (m_currentState == IntakeState.FLOOR_INTAKE))).debounce(0.1);
         m_arm = new Arm(
                 m_armMotor,
                 m_angleSupplier,
@@ -65,7 +64,7 @@ public class Intake extends SubsystemBase {
 
         );
 
-        hasCoral = new Trigger(() -> (true));
+        hasCoral = new Trigger(() -> (true)).debounce(0.1);
     }
 
     public Command defaultCommand() {
