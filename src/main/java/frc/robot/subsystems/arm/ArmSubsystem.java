@@ -47,10 +47,10 @@ public class ArmSubsystem extends SubsystemBase {
 
         softLimit = new ContinuousSoftLimit(
                 () -> {
-                    return (-1 * (Math.acos(m_elevatorHeightSupplier.getAsDouble() / ARM_LENGTH)) - SOFTLIMIT_BUFFER);
+                    return m_elevatorHeightSupplier.getAsDouble() < ARM_LENGTH ? 0 : -Math.PI / 2;
                 },
                 () -> {
-                    return (Math.acos(m_elevatorHeightSupplier.getAsDouble() / ARM_LENGTH) + SOFTLIMIT_BUFFER);
+                    return m_elevatorHeightSupplier.getAsDouble() < ARM_LENGTH ? Math.PI : Math.PI * 1.5;
                 }
         );
 

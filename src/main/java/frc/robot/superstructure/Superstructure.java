@@ -10,6 +10,7 @@ import frc.robot.subsystems.intake.IntakeState;
 
 import java.util.HashMap;
 
+import static frc.robot.superstructure.Constants.AT_POSITION_DEBOUNCE;
 import static frc.robot.superstructure.Constants.L1_SCORE_VOLTAGE;
 
 public class Superstructure {
@@ -31,7 +32,7 @@ public class Superstructure {
         atPositionTrigger = new Trigger(
                 () -> elevatorSubsystem.atPositionTrigger.getAsBoolean()
                         && armSubsystem.isAtPosition().getAsBoolean()
-                        && intakeSubsystem.isAtPosition().getAsBoolean()).debounce(0.1);
+                        && intakeSubsystem.isAtPosition().getAsBoolean()).debounce(AT_POSITION_DEBOUNCE);
         gripperSubsystem = new Gripper();
         elevatorSubsystem.setArmAngle(armSubsystem.getAngleSupplier());
         armSubsystem.setElevatorHeightSupplier(elevatorSubsystem.getElevatorHeight());
@@ -46,7 +47,7 @@ public class Superstructure {
 
     public Command setCurrentStateCommand(RobotStates state) {
         return new InstantCommand(() -> this.currentState = state);
-//        new WaitUntilCommand(atPositionTrigger); // TODO: sequsudghsfhntial command
+//        new WaitUntilCommand(atPositionTrigger); // TODO: sequntinal command
     }
 
     public void returnToDefaultState() {
@@ -69,7 +70,6 @@ public class Superstructure {
             }
         }
     }
-
 
     public Command reefScoreCommand(RobotStates scoreState) {
         return new ConditionalCommand(
@@ -118,7 +118,7 @@ public class Superstructure {
                 intakeSubsystem.hasCoral.and(gripperSubsystem.m_hasAlgaeTrigger.negate()).and(gripperSubsystem.m_hasCoralTrigger.negate())).withName("handoff Command"); //TODO isn't it supposed to be or() instead of and()?
     }
 
-    public Command ejectCommand() { //TODO (needs Yehuda's approval) make the command supercycel friendly
+    public Command ejectCommand() { //TODO (needs Yehuda's approval) make the command supercycle friendly
         return new ConditionalCommand(
                 new SequentialCommandGroup(
                         setCurrentStateCommand(RobotStates.EJECT_CORAL_FROM_INTAKE).until(atPositionTrigger.and(intakeSubsystem.hasCoral.negate())),
@@ -182,7 +182,9 @@ public class Superstructure {
 
                 (gripperSubsystem.m_hasAlgaeTrigger.or(gripperSubsystem.m_hasCoralTrigger)).negate()).withName("Algae Intake Command");
 
-    }   public Command algaeReleaseCommand() {
+    }
+
+    public Command algaeReleaseCommand() {
         return new ConditionalCommand(
                 new SequentialCommandGroup(
                         gripperSubsystem.releaseAlgae().until(gripperSubsystem.m_hasAlgaeTrigger.negate()),
@@ -193,8 +195,6 @@ public class Superstructure {
                 (gripperSubsystem.m_hasAlgaeTrigger)).withName("Algae Intake Command");
 
     }
-
-
 }
 
 
