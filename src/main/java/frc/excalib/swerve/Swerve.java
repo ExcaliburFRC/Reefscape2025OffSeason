@@ -60,7 +60,7 @@ public class Swerve extends SubsystemBase implements Logged {
     private Supplier<Rotation2d> m_angleSetpoint = Rotation2d::new;
     private Supplier<Translation2d> m_translationSetpoint = Translation2d::new;
 
-    private static AllianceUtils.AlliancePose pathPlannnerTargetPose = new AllianceUtils.AlliancePose();
+    private static Pose2d pathPlannnerTargetPose = new Pose2d();
 
     /**
      * A constructor that initialize the Swerve Subsystem
@@ -197,14 +197,17 @@ public class Swerve extends SubsystemBase implements Logged {
     /**
      * A method that drives the robot to a desired pose.
      *
-     * @param setPoint The desired pose.
+     * @param setpoint The desired pose.
      * @return A command that drives the robot to the wanted pose.
      */
-    public Command driveToPoseCommand(Pose2d setPoint) {
-        return AutoBuilder.pathfindToPose(
-                setPoint,
-                MAX_PATH_CONSTRAINTS
-        ).withName("Pathfinding Command");
+    public Command driveToPoseCommand(Pose2d setpoint) {
+        return new SequentialCommandGroup(
+                Swerve.setPathPlannnerTargetPoseCommand(setpoint),
+                AutoBuilder.pathfindToPose(
+                        setpoint,
+                        MAX_PATH_CONSTRAINTS
+                ).withName("Pathfinding Command")
+        );
     }
 
     public Command driveToPoseWithOverrideCommand(
@@ -484,8 +487,8 @@ public class Swerve extends SubsystemBase implements Logged {
         return config;
     }
 
-    public static void setPathPlannnerTargetPose(AllianceUtils.AlliancePose targetPose){
-        pathPlannnerTargetPose = targetPose;
+    public static Command setPathPlannnerTargetPoseCommand(Pose2d targetPose) {
+        return new InstantCommand(() -> pathPlannnerTargetPose = targetPose);
     }
 
     private PPHolonomicDriveController getAutoPathFollowingController() {
@@ -501,24 +504,22 @@ public class Swerve extends SubsystemBase implements Logged {
                 Math.abs(chassisSpeeds.omegaRadiansPerSecond) < velocityDeadband.getAsDouble();
     }
 
-    private void pathPlannerDrive(ChassisSpeeds pathPlannerFeedforward) {
-        if (isSwerveStill(pathPlannerFeedforward)) {
-            pidToPoseCommand(
-                    () -> pathPlannnerTargetPose.get()
-            ).withInterruptBehavior(Command.InterruptionBehavior.kCancelIncoming).schedule();
+    private void pathPlannerDrive(ChassisSpeeds pathPlannerChasisSpeeds) {
+        if (isSwerveStill(pathPlannerChasisSpeeds)) {
+            pidToPoseCommand(() -> pathPlannnerTargetPose).schedule();
         } else {
             driveRobotRelativeChassisSpeeds(
                     new ChassisSpeeds(
                             xController.calculate(
                                     getPose2D().getX(),
-                                    pathPlannnerTargetPose.get().getX()) * AllianceUtils.getdirection(),
+                                    pathPlannnerTargetPose.getX()),
                             yController.calculate(
                                     getPose2D().getY(),
-                                    pathPlannnerTargetPose.get().getY()) * AllianceUtils.getdirection(),
+                                    pathPlannnerTargetPose.getY()),
                             angleController.calculate(
                                     getPose2D().getRotation().getRadians(),
-                                    pathPlannnerTargetPose.get().getRotation().getRadians())
-                    ).times(PATH_PLANNER_DEESCALATION_SCALAR)
+                                    pathPlannnerTargetPose.getRotation().getRadians())
+                    ).plus(pathPlannerChasisSpeeds.times(PATH_PLANNER_DEESCALATION_SCALAR))
             );
         }
     }
