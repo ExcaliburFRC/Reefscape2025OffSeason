@@ -91,6 +91,8 @@ public final class Constants {
 
         private static final IMU GYRO = new Pigeon(GYRO_ID, SWERVE_CANBUS, new Rotation3d());
 
+        public static final double PATH_PLANNER_DEESCALATION_SCALAR = 0; //todo <0
+
         public static final double DEADBAND_VALUE = 0.06;
 
         public static Swerve configureSwerve(Pose2d initialPose) {
@@ -149,7 +151,8 @@ public final class Constants {
                                     ROTATION_VELOCITY_CONVERSION_FACTOR
                             )),
                     GYRO,
-                    initialPose
+                    initialPose,
+                    () -> 0.0
             );
         }
     }

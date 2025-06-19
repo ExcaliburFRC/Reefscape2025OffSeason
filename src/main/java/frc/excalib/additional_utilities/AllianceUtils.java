@@ -31,6 +31,12 @@ public class AllianceUtils {
         return !isBlueAlliance();
     }
 
+    public static int getdirection() {
+        if (isBlueAlliance())
+            return 1;
+        return -1;
+    }
+
     /**
      * Converts a pose to the pose relative to the current driver station alliance.
      *
@@ -60,15 +66,19 @@ public class AllianceUtils {
     public static class AlliancePose {
         private Pose2d pose;
 
-        public AlliancePose(double x, double y, double degrees){
+        public AlliancePose(double x, double y, double degrees) {
             this.pose = new Pose2d(x, y, Rotation2d.fromDegrees(degrees));
+        }
+
+        public AlliancePose() {
+            this.pose = new Pose2d(new Translation2d(), new Rotation2d());
         }
 
         public AlliancePose(Translation2d translation, Rotation2d rotation) {
             this.pose = new Pose2d(translation, rotation);
         }
 
-        public AlliancePose(double degrees){
+        public AlliancePose(double degrees) {
             this.pose = new Pose2d(0, 0, Rotation2d.fromDegrees(degrees));
         }
 
