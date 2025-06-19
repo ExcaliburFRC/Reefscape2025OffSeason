@@ -185,17 +185,13 @@ public class Swerve extends SubsystemBase implements Logged {
                             );
                             double distance = getPose2D().getTranslation().getDistance(poseSetpoint.get().getTranslation());
                             vel.setMagnitude(Math.min(vel.getDistance(), velocityLimit.get(distance)));
-//                            vel = vel.rotate(poseSetpoint.get().getRotation());
-//                            vel.setX(Math.signum(vel.getX()) * Math.min(Math.abs(vel.getX()), 1.2));
-//                            vel.setY(Math.signum(vel.getY()) * Math.min(Math.abs(vel.getY()), 0.4));
-//                            vel = vel.rotate(poseSetpoint.get().getRotation().unaryMinus());
                             if (!AllianceUtils.isBlueAlliance()) return vel.rotate(pi);
                             return vel;
                         },
                         () -> angleController.calculate(getRotation2D().getRadians(), poseSetpoint.get().getRotation().getRadians()),
                         () -> true
                 )
-        ).until(finishTrigger).withName("PID To Pose");
+        ).until(finishTrigger).withName("PID to pose");
     }
 
     /**
@@ -507,7 +503,9 @@ public class Swerve extends SubsystemBase implements Logged {
 
     private void pathPlannerDrive(ChassisSpeeds pathPlannerFeedforward) {
         if (isSwerveStill(pathPlannerFeedforward)) {
-            pidToPoseCommand(() -> pathPlannnerTargetPose.get()).schedule();
+            pidToPoseCommand(
+                    () -> pathPlannnerTargetPose.get()
+            ).withInterruptBehavior(Command.InterruptionBehavior.kCancelIncoming).schedule();
         } else {
             driveRobotRelativeChassisSpeeds(
                     new ChassisSpeeds(
