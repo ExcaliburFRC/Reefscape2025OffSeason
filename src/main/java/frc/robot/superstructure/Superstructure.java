@@ -10,8 +10,8 @@ import frc.robot.subsystems.intake.IntakeState;
 
 import java.util.HashMap;
 
-import static frc.robot.superstructure.Constants.AT_POSITION_DEBOUNCE;
-import static frc.robot.superstructure.Constants.L1_SCORE_VOLTAGE;
+import static frc.robot.superstructure.automations.Constants.AT_POSITION_DEBOUNCE;
+import static frc.robot.superstructure.automations.Constants.L1_SCORE_VOLTAGE;
 
 public class Superstructure {
     private final ArmSubsystem armSubsystem;
