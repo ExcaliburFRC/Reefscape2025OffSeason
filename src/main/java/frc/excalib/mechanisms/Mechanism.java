@@ -129,21 +129,12 @@ public class Mechanism implements Logged {
         ).ignoringDisable(true);
     }
 
-    public Command sysIdQuasistatic(SysIdRoutine.Direction direction,
-                                    SubsystemBase subsystem,
-                                    DoubleSupplier positionSupplier,
-                                    SysidConfig config,
-                                    boolean isLinear
-    ) {
+    public Command sysIdQuasistatic(SysIdRoutine.Direction direction, SubsystemBase subsystem, DoubleSupplier positionSupplier, SysidConfig config, boolean isLinear) {
         if (isLinear) return getLinearSysIdRoutine(subsystem, positionSupplier, config).quasistatic(direction);
         return getAngularSysIdRoutine(subsystem, positionSupplier, config).quasistatic(direction);
     }
 
-    public Command sysIdDynamic(SysIdRoutine.Direction direction,
-                                SubsystemBase subsystem,
-                                DoubleSupplier positionSupplier,
-                                SysidConfig config,
-                                boolean isLinear) {
+    public Command sysIdDynamic(SysIdRoutine.Direction direction, SubsystemBase subsystem, DoubleSupplier positionSupplier, SysidConfig config, boolean isLinear) {
         if (isLinear)
             return getLinearSysIdRoutine(subsystem, positionSupplier, config).dynamic(direction);
         return getAngularSysIdRoutine(subsystem, positionSupplier, config).dynamic(direction).withName("quadForward");
