@@ -8,9 +8,11 @@ import com.ctre.phoenix6.hardware.CANcoder;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.path.PathConstraints;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
+import frc.excalib.additional_utilities.AllianceUtils;
 import frc.excalib.control.gains.Gains;
 import frc.excalib.control.imu.IMU;
 import frc.excalib.control.imu.Pigeon;
@@ -157,4 +159,64 @@ public final class Constants {
         }
     }
 
+    public static class FieldConstants {
+        public static Translation2d BLUE_REEF_CENTER = new Translation2d();
+        public static Translation2d RED_REEF_CENTER = new Translation2d();
+
+        public static Translation2d B1 = new Translation2d();
+        public static Translation2d B12 = new Translation2d();
+        public static Translation2d BASE_ALGAE = new Translation2d();
+
+        public static final AllianceUtils.AlliancePose[] LEFT_BRANCHES = {
+                new AllianceUtils.AlliancePose(B1, Rotation2d.fromDegrees(180)),
+                new AllianceUtils.AlliancePose(B1.rotateAround(BLUE_REEF_CENTER, Rotation2d.fromDegrees(-60)), Rotation2d.fromDegrees(120)),
+                new AllianceUtils.AlliancePose(B1.rotateAround(BLUE_REEF_CENTER, Rotation2d.fromDegrees(-120)), Rotation2d.fromDegrees(60)),
+                new AllianceUtils.AlliancePose(B1.rotateAround(BLUE_REEF_CENTER, Rotation2d.fromDegrees(-180)), new Rotation2d()),
+                new AllianceUtils.AlliancePose(B1.rotateAround(BLUE_REEF_CENTER, Rotation2d.fromDegrees(-240)), Rotation2d.fromDegrees(-60)),
+                new AllianceUtils.AlliancePose(B1.rotateAround(BLUE_REEF_CENTER, Rotation2d.fromDegrees(-300)), Rotation2d.fromDegrees(-120)),
+        };
+
+        public static final AllianceUtils.AlliancePose[] RIGHT_BRANCHES = {
+                new AllianceUtils.AlliancePose(B12, Rotation2d.fromDegrees(180)),
+                new AllianceUtils.AlliancePose(B12.rotateAround(BLUE_REEF_CENTER, Rotation2d.fromDegrees(-60)), Rotation2d.fromDegrees(120)),
+                new AllianceUtils.AlliancePose(B12.rotateAround(BLUE_REEF_CENTER, Rotation2d.fromDegrees(-120)), Rotation2d.fromDegrees(60)),
+                new AllianceUtils.AlliancePose(B12.rotateAround(BLUE_REEF_CENTER, Rotation2d.fromDegrees(-180)), new Rotation2d()),
+                new AllianceUtils.AlliancePose(B12.rotateAround(BLUE_REEF_CENTER, Rotation2d.fromDegrees(-240)), Rotation2d.fromDegrees(-60)),
+                new AllianceUtils.AlliancePose(B12.rotateAround(BLUE_REEF_CENTER, Rotation2d.fromDegrees(-300)), Rotation2d.fromDegrees(-120))
+        };
+
+        public static final AllianceUtils.AlliancePose[] ALGAE_POSES = {
+                new AllianceUtils.AlliancePose(BASE_ALGAE, Rotation2d.fromDegrees(0)),
+                new AllianceUtils.AlliancePose(BASE_ALGAE.rotateAround(BLUE_REEF_CENTER, Rotation2d.fromDegrees(-60)), Rotation2d.fromDegrees(-60)),
+                new AllianceUtils.AlliancePose(BASE_ALGAE.rotateAround(BLUE_REEF_CENTER, Rotation2d.fromDegrees(-120)), Rotation2d.fromDegrees(-120)),
+                new AllianceUtils.AlliancePose(BASE_ALGAE.rotateAround(BLUE_REEF_CENTER, Rotation2d.fromDegrees(-180)), Rotation2d.fromDegrees(180)),
+                new AllianceUtils.AlliancePose(BASE_ALGAE.rotateAround(BLUE_REEF_CENTER, Rotation2d.fromDegrees(-240)), Rotation2d.fromDegrees(120)),
+                new AllianceUtils.AlliancePose(BASE_ALGAE.rotateAround(BLUE_REEF_CENTER, Rotation2d.fromDegrees(-300)), Rotation2d.fromDegrees(60)),
+        };
+
+        public enum Side {
+            NORTH(LEFT_BRANCHES[0], RIGHT_BRANCHES[0], ALGAE_POSES[0]),
+            NORTH_EAST(LEFT_BRANCHES[1], RIGHT_BRANCHES[1], ALGAE_POSES[1]),
+            SOUTH_EAST(LEFT_BRANCHES[2], RIGHT_BRANCHES[2], ALGAE_POSES[2]),
+            SOUTH(LEFT_BRANCHES[3], RIGHT_BRANCHES[3], ALGAE_POSES[3]),
+            SOUTH_WEST(LEFT_BRANCHES[4], RIGHT_BRANCHES[4], ALGAE_POSES[4]),
+            NORTH_WEST(LEFT_BRANCHES[5], RIGHT_BRANCHES[5], ALGAE_POSES[5]);
+
+            public final AllianceUtils.AlliancePose leftBranchPose, rightBrachPose, alagePose;
+
+            Side(AllianceUtils.AlliancePose leftBranchPose,
+                 AllianceUtils.AlliancePose rightBrachPose,
+                 AllianceUtils.AlliancePose alagePose) {
+                this.leftBranchPose = leftBranchPose;
+                this.rightBrachPose = rightBrachPose;
+                this.alagePose = alagePose;
+            }
+        }
+
+    }
+
+    public static int DRIVER_CONTROLLER_PORT = 0;
+    public static int OPERATOR_CONTROLLER_PORT = 0;
+
+    public static double MAX_AUTO_ALIGNMENT_DISTANCE = 0;
 }

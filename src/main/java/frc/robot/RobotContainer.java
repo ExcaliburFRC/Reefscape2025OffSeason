@@ -4,21 +4,35 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
+import frc.excalib.swerve.Swerve;
+import frc.robot.superstructure.Superstructure;
+import frc.robot.superstructure.automations.Automations;
+
+import static frc.robot.Constants.DRIVER_CONTROLLER_PORT;
 
 
 public class RobotContainer {
-  public RobotContainer() {
-    configureBindings();
-  }
+    CommandPS5Controller driver = new CommandPS5Controller(DRIVER_CONTROLLER_PORT);
+
+    Swerve swerve = Constants.SwerveConstants.configureSwerve(new Pose2d());
+    Superstructure superstructure = new Superstructure();
+
+    Automations automations = new Automations(swerve, superstructure);
+
+    public RobotContainer() {
+        configureBindings();
+    }
 
 
-  private void configureBindings() {
+    private void configureBindings() {
 
-  }
+    }
 
-  public Command getAutonomousCommand() {
-    return Commands.none();
-  }
+    public Command getAutonomousCommand() {
+        return Commands.none();
+    }
 }
