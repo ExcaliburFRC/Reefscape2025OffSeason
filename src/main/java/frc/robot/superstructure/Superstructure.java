@@ -9,6 +9,7 @@ import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeState;
 
 import java.util.HashMap;
+import java.util.function.BooleanSupplier;
 
 import static frc.robot.superstructure.automations.Constants.AT_POSITION_DEBOUNCE;
 import static frc.robot.superstructure.automations.Constants.L1_SCORE_VOLTAGE;
@@ -71,18 +72,21 @@ public class Superstructure {
         }
     }
 
-    public Command reefScoreCommand(RobotStates scoreState) {
+    public Command openToScoreCommand(RobotStates scoreState) {
         return new ConditionalCommand(
                 new SequentialCommandGroup(
                         setCurrentStateCommand(scoreState),
                         new WaitUntilCommand(atPositionTrigger),
-                        new ParallelCommandGroup(
-                                gripperSubsystem.releaseCoral(),
-                                setCurrentStateCommand(followThroughMap.get(scoreState))
-                        ),
                         setCurrentStateCommand(RobotStates.DEFAULT_WITHOUT_GAME_PIECE)),
                 handoffCommand(),
                 gripperSubsystem.m_hasCoralTrigger);
+    }
+
+    public Command scoreCommand() {
+        return new ParallelCommandGroup(
+                gripperSubsystem.releaseCoral(),
+                setCurrentStateCommand(followThroughMap.get(currentState))
+        );
     }
 
     public Command L1ScoreCommand() {
@@ -126,8 +130,8 @@ public class Superstructure {
                 ),
                 new ConditionalCommand(
                         new SequentialCommandGroup(
-                            setCurrentStateCommand(RobotStates.EJECT_GAME_PIECE_FROM_GRIPPER).until(atPositionTrigger.and((gripperSubsystem.m_hasAlgaeTrigger.or(gripperSubsystem.m_hasCoralTrigger)).negate())),
-                            setCurrentStateCommand(RobotStates.DEFAULT_WITHOUT_GAME_PIECE)
+                                setCurrentStateCommand(RobotStates.EJECT_GAME_PIECE_FROM_GRIPPER).until(atPositionTrigger.and((gripperSubsystem.m_hasAlgaeTrigger.or(gripperSubsystem.m_hasCoralTrigger)).negate())),
+                                setCurrentStateCommand(RobotStates.DEFAULT_WITHOUT_GAME_PIECE)
                         ),
                         new PrintCommand("There is no a game piece in the system"),
                         gripperSubsystem.m_hasCoralTrigger.or(gripperSubsystem.m_hasAlgaeTrigger)
@@ -177,7 +181,7 @@ public class Superstructure {
                         setCurrentStateCommand(algaeLevel).until(atPositionTrigger),
                         gripperSubsystem.intakeAlgae().until(gripperSubsystem.m_hasAlgaeTrigger),
                         setCurrentStateCommand(RobotStates.DEFAULT_WITH_GAME_PIECE)
-                        ),
+                ),
                 new PrintCommand("There is no available place in gripper"),
 
                 (gripperSubsystem.m_hasAlgaeTrigger.or(gripperSubsystem.m_hasCoralTrigger)).negate()).withName("Algae Intake Command");
@@ -191,9 +195,15 @@ public class Superstructure {
                         setCurrentStateCommand(RobotStates.DEFAULT_WITHOUT_GAME_PIECE)
                 ),
                 new PrintCommand("There is no available algae to release"),
-
                 (gripperSubsystem.m_hasAlgaeTrigger)).withName("Algae Intake Command");
+    }
 
+    public Command secureCommand(){
+        return Commands.none();
+    }
+
+    public BooleanSupplier isAtPosition() {
+        return atPositionTrigger;
     }
 }
 

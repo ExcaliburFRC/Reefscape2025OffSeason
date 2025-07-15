@@ -95,7 +95,7 @@ public final class Constants {
 
         public static final double PATH_PLANNER_DEESCALATION_SCALAR = 0; //todo <0
 
-        public static final double DEADBAND_VALUE = 0.06;
+        public static final double DEADBAND_VALUE = 0;
 
         public static Swerve configureSwerve(Pose2d initialPose) {
             return new Swerve(

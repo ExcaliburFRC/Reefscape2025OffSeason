@@ -2,13 +2,14 @@ package frc.robot.superstructure.automations;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.*;
 import frc.excalib.additional_utilities.AllianceUtils;
 import frc.excalib.swerve.Swerve;
 import frc.robot.Constants;
+import frc.robot.subsystems.climber.ClimberSubsystem;
 import frc.robot.superstructure.RobotStates;
 import frc.robot.superstructure.Superstructure;
+import frc.robot.superstructure.automations.climbMode.ClimbOperator;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -16,21 +17,25 @@ import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 public class Automations {
-    public Map scoreMap = new HashMap<RobotStates, Command>();
-    public AllianceUtils.AlliancePose opClientPosition = new AllianceUtils.AlliancePose();
+    public Map<RobotStates, Command> scoreMap = new HashMap<>();
     public RobotStates scoreState = RobotStates.DEFAULT_WITH_GAME_PIECE;
     public Swerve swerve;
     public Superstructure superstructure;
+    public ClimberSubsystem climber;
+    public ClimbOperator climbOperator;
 
     public Automations(Swerve swerve, Superstructure superstructure) {
         this.swerve = swerve;
         this.superstructure = superstructure;
 
         scoreMap.put(RobotStates.L1, superstructure.L1ScoreCommand());
-        scoreMap.put(RobotStates.L2, superstructure.reefScoreCommand(RobotStates.L2));
-        scoreMap.put(RobotStates.L3, superstructure.reefScoreCommand(RobotStates.L3));
-        scoreMap.put(RobotStates.L4, superstructure.reefScoreCommand(RobotStates.L4));
+        scoreMap.put(RobotStates.L2, superstructure.openToScoreCommand(RobotStates.L2));
+        scoreMap.put(RobotStates.L3, superstructure.openToScoreCommand(RobotStates.L3));
+        scoreMap.put(RobotStates.L4, superstructure.openToScoreCommand(RobotStates.L4));
         scoreMap.put(RobotStates.NET, superstructure.netScoreCommand());
+
+        climbOperator = new ClimbOperator();
+        climber = new ClimberSubsystem();
     }
 
     public Command alignToSide(boolean rightBranch) {
@@ -81,6 +86,50 @@ public class Automations {
         Translation2d cuurentPose = swerve.getPose2D().getTranslation();
         return () -> cuurentPose.getDistance(translationCenter) < tolerance.getAsDouble();
     }
+
+    public Command L4Command() {
+        return new ConditionalCommand(
+                superstructure.openToScoreCommand(RobotStates.L4),
+                superstructure.scoreCommand(),
+                superstructure.isAtPosition()
+        );
+    }
+
+    public Command L3Command() {
+        return new ConditionalCommand(
+                superstructure.openToScoreCommand(RobotStates.L3),
+                superstructure.scoreCommand(),
+                superstructure.isAtPosition()
+        );
+    }
+
+    public Command L2Command() {
+        return new ConditionalCommand(
+                superstructure.openToScoreCommand(RobotStates.L2),
+                superstructure.scoreCommand(),
+                superstructure.isAtPosition()
+        );
+    }
+
+    public Command L1Command() {
+        return new ConditionalCommand(
+                superstructure.openToScoreCommand(RobotStates.L1),
+                superstructure.scoreCommand(),
+                superstructure.isAtPosition()
+        );
+    }
+
+    public Command climbOnSelected() {
+        return new SequentialCommandGroup(
+                swerve.driveToPoseCommand(climbOperator.getPrePose()),
+                climber.open(),
+                superstructure.secureCommand(),
+                swerve.pidToPoseCommand(() -> climbOperator.getPose()),
+                climber.retract()
+        );
+    }
+
+
 }
 
 

@@ -1,6 +1,7 @@
 package frc.robot.subsystems.climber;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.excalib.control.motor.controllers.MotorGroup;
@@ -18,7 +19,7 @@ public class ClimberSubsystem extends SubsystemBase {
     private final Trigger atPosition;
     private DoubleSupplier kSetpoint;
 
-    public ClimberSubsystem () {
+    public ClimberSubsystem() {
         motor1 = new TalonFXMotor(MOTOR1_ID);
         motor2 = new TalonFXMotor(MOTOR2_ID);
         motorGroup = new MotorGroup(motor1, motor2);
@@ -37,7 +38,11 @@ public class ClimberSubsystem extends SubsystemBase {
         kSetpoint = () -> setpoint;
     }
 
-//    public Command goToSetpointCommand() {
-//        return climberMechanism.anglePositionControlCommand(kSetpoint, (atPosition) -> , )
-//                }
+    public Command open() {
+        return Commands.none();
+    }
+
+    public Command retract() {
+        return Commands.none();
+    }
 }
