@@ -54,22 +54,22 @@ public class Superstructure {
         this.currentState = RobotStates.DEFAULT_WITHOUT_GAME_PIECE;
     }
 
-    public RobotStates findFollowthroughState(RobotStates scoreState) throws IllegalArgumentException {
-        switch (scoreState) {
-            case L2 -> {
-                return RobotStates.L2_FOLLOWTHROUGH;
-            }
-            case L3 -> {
-                return RobotStates.L3_FOLLOWTHROUGH;
-            }
-            case L4 -> {
-                return RobotStates.L4_FOLLOWTHROUGH;
-            }
-            default -> {
-                throw new IllegalArgumentException("Please enter a valid Robot State");
-            }
-        }
-    }
+//    public RobotStates findFollowthroughState(RobotStates scoreState) throws IllegalArgumentException {
+//        switch (scoreState) {
+//            case L2 -> {
+//                return RobotStates.L2_FOLLOWTHROUGH;
+//            }
+//            case L3 -> {
+//                return RobotStates.L3_FOLLOWTHROUGH;
+//            }
+//            case L4 -> {
+//                return RobotStates.L4_FOLLOWTHROUGH;
+//            }
+//            default -> {
+//                throw new IllegalArgumentException("Please enter a valid Robot State");
+//            }
+//        }
+//    }
 
     public Command reefScoreCommand(RobotStates scoreState) {
         return new ConditionalCommand(
