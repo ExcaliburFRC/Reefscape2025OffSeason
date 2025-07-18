@@ -7,18 +7,19 @@ import frc.excalib.control.motor.controllers.MotorGroup;
 import frc.excalib.control.motor.controllers.TalonFXMotor;
 import frc.excalib.mechanisms.Arm.Arm;
 
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
-import static frc.robot.subsystems.climber.Constants.*;
+import static frc.robot.subsystems.climber.ClimberConstants.*;
 
-public class ClimberSubsystem extends SubsystemBase {
+public class Climber extends SubsystemBase {
     private final TalonFXMotor motor1, motor2;
     private final MotorGroup motorGroup;
     private final Arm climberMechanism;
     private final Trigger atPosition;
     private DoubleSupplier kSetpoint;
 
-    public ClimberSubsystem () {
+    public Climber() {
         motor1 = new TalonFXMotor(MOTOR1_ID);
         motor2 = new TalonFXMotor(MOTOR2_ID);
         motorGroup = new MotorGroup(motor1, motor2);
@@ -31,6 +32,14 @@ public class ClimberSubsystem extends SubsystemBase {
 
     public Command manualCommand(DoubleSupplier voltageSupplier) {
         return climberMechanism.manualCommand(voltageSupplier, this);
+    }
+
+    public BooleanSupplier isAtPosition() {
+        return atPosition;
+    }
+
+    public Command retractClimber() {
+        return null;
     }
 
     public void setSetpoint(double setpoint) {

@@ -3,7 +3,9 @@ package frc.robot.superstructure;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.arm.ArmSubsystem;
-import frc.robot.subsystems.elevator.ElevatorSubsystem;
+import frc.robot.subsystems.climber.Climber;
+import frc.robot.subsystems.climber.ClimberStates;
+import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.gripper.Gripper;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeState;
@@ -15,10 +17,12 @@ import static frc.robot.superstructure.automations.Constants.L1_SCORE_VOLTAGE;
 
 public class Superstructure {
     private final ArmSubsystem armSubsystem;
-    private final ElevatorSubsystem elevatorSubsystem;
+    private final Elevator elevatorSubsystem;
     private final Intake intakeSubsystem;
+    private final Climber climberSubsystem;
     private final Gripper gripperSubsystem;
     private final Trigger atPositionTrigger;
+    private boolean preClimbSequenceExecuted;
     private final HashMap<RobotStates, RobotStates> followThroughMap;
     private RobotStates currentState;
 
@@ -26,13 +30,16 @@ public class Superstructure {
         currentState = RobotStates.DEFAULT_WITHOUT_GAME_PIECE;
 
         armSubsystem = new ArmSubsystem();
-        elevatorSubsystem = new ElevatorSubsystem();
+        climberSubsystem = new Climber();
+        elevatorSubsystem = new Elevator();
         intakeSubsystem = new Intake(IntakeState.DEFAULT);
         followThroughMap = new HashMap<RobotStates, RobotStates>();
         atPositionTrigger = new Trigger(
-                () -> elevatorSubsystem.atPositionTrigger.getAsBoolean()
+                () -> (elevatorSubsystem.atPositionTrigger.getAsBoolean()
                         && armSubsystem.isAtPosition().getAsBoolean()
-                        && intakeSubsystem.isAtPosition().getAsBoolean()).debounce(AT_POSITION_DEBOUNCE);
+                        && intakeSubsystem.isAtPosition().getAsBoolean())
+                        && climberSubsystem.isAtPosition().getAsBoolean());
+        preClimbSequenceExecuted = false;
         gripperSubsystem = new Gripper();
         elevatorSubsystem.setArmAngle(armSubsystem.getAngleSupplier());
         armSubsystem.setElevatorHeightSupplier(elevatorSubsystem.getElevatorHeight());
@@ -47,7 +54,10 @@ public class Superstructure {
 
     public Command setCurrentStateCommand(RobotStates state) {
         return new InstantCommand(() -> this.currentState = state);
-//        new WaitUntilCommand(atPositionTrigger); // TODO: sequntinal command
+    }
+
+    public Command togglePreClimbExecution() {
+        return new InstantCommand(()-> this.preClimbSequenceExecuted = (!preClimbSequenceExecuted));
     }
 
     public void returnToDefaultState() {
@@ -194,6 +204,21 @@ public class Superstructure {
 
                 (gripperSubsystem.m_hasAlgaeTrigger)).withName("Algae Intake Command");
 
+    }
+
+    public Command prepClimbCommand() {
+        return new SequentialCommandGroup(
+                setCurrentStateCommand(RobotStates.PRE_CLIMB).until(atPositionTrigger),
+                togglePreClimbExecution()
+        );
+    }
+
+    public Command retractCLimberCommand() {
+        return new ConditionalCommand(
+                climberSubsystem.retractClimber(),
+                new PrintCommand("Unable to exucute climbing sequence - pr-climb sequence was not executed."),
+                () -> preClimbSequenceExecuted
+        );
     }
 }
 

@@ -1,11 +1,10 @@
 package frc.robot.subsystems.climber;
 
-import edu.wpi.first.math.geometry.Rotation2d;
 import frc.excalib.control.gains.Gains;
 import frc.excalib.control.limits.SoftLimit;
 import frc.excalib.control.math.physics.Mass;
 
-public class Constants {
+public class ClimberConstants {
     public static final int MOTOR1_ID = 0; // TODO: add values.
     public static final int MOTOR2_ID = 0; // TODO: add values.
     public static final double ARM_POSITION_CONVERSION_FACTOR = 0;

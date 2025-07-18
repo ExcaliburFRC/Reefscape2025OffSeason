@@ -14,7 +14,7 @@ public enum ElevatorStates {
     NET(0),
     PROCESSOR(0),
     DEFAULT_WITH_GAME_PIECE(0),
-    DEFAULT_WITHOUT_GAME_PIECE(0);
+    DEFAULT(0);
 
     private final double height;
     private ElevatorStates(double height){
