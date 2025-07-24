@@ -4,7 +4,6 @@ import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.arm.ArmSubsystem;
 import frc.robot.subsystems.climber.Climber;
-import frc.robot.subsystems.climber.ClimberStates;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.gripper.Gripper;
 import frc.robot.subsystems.intake.Intake;
@@ -220,6 +219,8 @@ public class Superstructure {
                 () -> preClimbSequenceExecuted
         );
     }
+
+
 }
 
 
