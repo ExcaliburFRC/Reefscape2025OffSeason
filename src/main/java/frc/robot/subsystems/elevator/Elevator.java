@@ -12,9 +12,9 @@ import frc.excalib.mechanisms.linear_extension.LinearExtension;
 
 import java.util.function.DoubleSupplier;
 
-import static frc.robot.subsystems.elevator.constants.*;
+import static frc.robot.subsystems.elevator.ElevatorConstants.*;
 
-public class ElevatorSubsystem extends SubsystemBase {
+public class Elevator extends SubsystemBase {
     private final TalonFXMotor m_leftMotor, m_rightMotor;
     private final MotorGroup m_elevatorMotors;
     private final DoubleSupplier m_elevatorHeight;
@@ -24,7 +24,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     private DoubleSupplier armAngle;
     public final Trigger atPositionTrigger;
 
-    public ElevatorSubsystem() {
+    public Elevator() {
         m_rightMotor = new TalonFXMotor(RIGHT_MOTOR_ID);
         m_leftMotor = new TalonFXMotor(LEFT_MOTOR_ID);
         m_elevatorMotors = new MotorGroup(m_rightMotor, m_leftMotor);

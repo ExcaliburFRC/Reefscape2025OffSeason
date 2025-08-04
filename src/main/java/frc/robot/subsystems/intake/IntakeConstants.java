@@ -1,6 +1,6 @@
 package frc.robot.subsystems.intake;
 
-public class Constants {
+public class IntakeConstants {
     public static final int ARM_MOTOR_ID = 0;
     public static final int ROLLERS_MOTOR_ID = 0;
     public static final int CENTERLIZER_MOTOR_ID = 0;

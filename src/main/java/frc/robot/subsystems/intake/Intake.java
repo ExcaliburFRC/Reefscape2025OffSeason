@@ -16,7 +16,7 @@ import frc.excalib.mechanisms.Mechanism;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
-import static frc.robot.subsystems.intake.Constants.*;
+import static frc.robot.subsystems.intake.IntakeConstants.*;
 
 public class Intake extends SubsystemBase {
     // === Motors ===
