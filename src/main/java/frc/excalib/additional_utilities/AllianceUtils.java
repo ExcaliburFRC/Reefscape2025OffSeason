@@ -4,8 +4,12 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.TimedRobot;
+import frc.robot.Constants;
+import frc.robot.Constants.FieldConstants;
 
 import static edu.wpi.first.wpilibj.DriverStation.Alliance.Blue;
+import static frc.robot.Constants.FieldConstants.*;
 
 /**
  * the purpose of this class is too supply different utility functions for functionality
@@ -35,6 +39,10 @@ public class AllianceUtils {
         if (isBlueAlliance())
             return 1;
         return -1;
+    }
+
+    public static Translation2d getReefCenter(){
+        return isBlueAlliance()? BLUE_REEF_CENTER : RED_REEF_CENTER;
     }
 
     /**

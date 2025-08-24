@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
+import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.excalib.additional_utilities.AllianceUtils;
@@ -48,6 +49,7 @@ public class Swerve extends SubsystemBase implements Logged {
     private final Trigger finishTrigger;
     private Rotation2d pi = new Rotation2d(Math.PI);
     private final InterpolatingDoubleTreeMap velocityLimit = new InterpolatingDoubleTreeMap();
+    private final InterpolatingDoubleTreeMap controllerInterpolation = new InterpolatingDoubleTreeMap();
 
     private final SwerveDriveKinematics m_swerveDriveKinematics;
     private final DoubleSupplier velocityDeadband;
@@ -90,6 +92,8 @@ public class Swerve extends SubsystemBase implements Logged {
 
         m_swerveDriveKinematics = this.modules.getSwerveDriveKinematics();
         velocityLimit.put(0.0, 0.0); //TODO
+
+        controllerInterpolation.put(0.0, 0.0); //TODO
 
         this.velocityDeadband = velocityDeadband;
 
@@ -523,4 +527,22 @@ public class Swerve extends SubsystemBase implements Logged {
             );
         }
     }
+
+    public void applyDriveControllerCommand(CommandPS5Controller controller) {
+        this.setDefaultCommand(
+                driveCommand(
+                        () -> new Vector2D(
+                                applyDeadband(-controller.getLeftY()) * MAX_VEL * controllerInterpolation.get(controller.getRawAxis(3)),
+                                applyDeadband(-controller.getLeftX()) * MAX_VEL * controllerInterpolation.get(controller.getRawAxis(3))),
+                        () -> applyDeadband(-controller.getRightX()) * MAX_OMEGA_RAD_PER_SEC * controllerInterpolation.get(controller.getRawAxis(3)),
+                        () -> true
+                )
+        );
+    }
+
+    private double applyDeadband(double value) {
+        return Math.abs(value) < DEADBAND_VALUE ? 0 : value;
+    }
+
+
 }
