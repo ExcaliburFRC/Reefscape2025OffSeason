@@ -28,7 +28,6 @@ import frc.excalib.slam.mapper.Odometry;
 import monologue.Logged;
 import org.json.simple.parser.ParseException;
 
-import java.awt.geom.QuadCurve2D;
 import java.io.IOException;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
@@ -529,7 +528,7 @@ public class Swerve extends SubsystemBase implements Logged {
         }
     }
 
-    public void applyDefaultCommand(CommandPS5Controller controller) {
+    public void applyDriveControllerCommand(CommandPS5Controller controller) {
         this.setDefaultCommand(
                 driveCommand(
                         () -> new Vector2D(

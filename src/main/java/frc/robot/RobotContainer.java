@@ -32,7 +32,7 @@ public class RobotContainer {
 
 
     private void configureBindings() {
-        swerve.applyDefaultCommand(driver);
+        swerve.applyDriveControllerCommand(driver);
 
         driver.R1().whileTrue(automations.alignToSide(true));
         driver.L1().whileTrue(automations.alignToSide(false));

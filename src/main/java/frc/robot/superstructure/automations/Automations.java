@@ -6,6 +6,7 @@ import edu.wpi.first.wpilibj2.command.*;
 import frc.excalib.additional_utilities.AllianceUtils;
 import frc.excalib.swerve.Swerve;
 import frc.robot.Constants;
+import frc.robot.Constants.FieldConstants;
 import frc.robot.subsystems.climber.ClimberSubsystem;
 import frc.robot.superstructure.RobotStates;
 import frc.robot.superstructure.Superstructure;
@@ -53,7 +54,7 @@ public class Automations {
     }
 
     private AllianceUtils.AlliancePose getAlignmentTargetPose(Pose2d currentPose, boolean rightBranch) {
-        Constants.FieldConstants.Side currentSide = getClosestSide(currentPose);
+        FieldConstants.Side currentSide = getClosestSide(currentPose);
 
         if (rightBranch)
             return currentSide.rightBrachPose;
@@ -61,25 +62,25 @@ public class Automations {
     }
 
 
-    private Constants.FieldConstants.Side getClosestSide(Pose2d currentPose) {
+    private FieldConstants.Side getClosestSide(Pose2d currentPose) {
         Translation2d diff = currentPose.minus(swerve.getPose2D()).getTranslation();
         double robotAngleByReefCenter = diff.getAngle().getDegrees();
         if (robotAngleByReefCenter < 30 && robotAngleByReefCenter > -30) {
-            return Constants.FieldConstants.Side.NORTH;
+            return FieldConstants.Side.NORTH;
         }
         if (robotAngleByReefCenter < -30 && robotAngleByReefCenter > -90) {
-            return Constants.FieldConstants.Side.NORTH_EAST;
+            return FieldConstants.Side.NORTH_EAST;
         }
         if (robotAngleByReefCenter < -90 && robotAngleByReefCenter > -150) {
-            return Constants.FieldConstants.Side.NORTH_WEST;
+            return FieldConstants.Side.NORTH_WEST;
         }
         if (robotAngleByReefCenter > 150 || robotAngleByReefCenter < -150) {
-            return Constants.FieldConstants.Side.SOUTH;
+            return FieldConstants.Side.SOUTH;
         }
         if (robotAngleByReefCenter > 90 && robotAngleByReefCenter < 150) {
-            return Constants.FieldConstants.Side.SOUTH_EAST;
+            return FieldConstants.Side.SOUTH_EAST;
         }
-        return Constants.FieldConstants.Side.SOUTH_WEST;
+        return FieldConstants.Side.SOUTH_WEST;
     }
 
     public BooleanSupplier isInTranslationTolerance(Translation2d translationCenter, DoubleSupplier tolerance) {
