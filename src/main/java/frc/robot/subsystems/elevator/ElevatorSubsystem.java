@@ -38,7 +38,7 @@ public class ElevatorSubsystem extends SubsystemBase {
                 new TrapezoidProfile.Constraints(MAX_VELOCITY, MAX_ACCELERATION),
                 TOLERANCE
         );
-        m_currentState = ElevatorStates.DEFAULT;
+        m_currentState = ElevatorStates.DEFAULT_WITH_GAME_PIECE;
 
         setDefaultCommand(m_linearExtension.extendCommand(() -> softLimit.limit(m_currentState.getHeight()), this));
 
