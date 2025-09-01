@@ -16,10 +16,12 @@ public enum ArmPosition {
     HANDOFF(0),
     EJECT_GAME_PIECE(0),
     INTAKE(0);
+
     private  final double angle;
-    private ArmPosition(double angle) {
+    ArmPosition(double angle) {
         this.angle = angle;
     }
+
     public double getAngle() {
         return angle;
     }
