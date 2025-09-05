@@ -217,6 +217,7 @@ public final class Constants {
     }
 
     public static int DRIVER_CONTROLLER_PORT = 0;
+    public static int DRIVER_SIMULATION_CONTROLLER_PORT = 0;
     public static int OPERATOR_CONTROLLER_PORT = 0;
     public static double MAX_AUTO_ALIGNMENT_DISTANCE = 0;
     public static final double DEADBAND_VALUE = 0;
