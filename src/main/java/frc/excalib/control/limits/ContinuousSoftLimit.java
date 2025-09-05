@@ -14,29 +14,29 @@ public class ContinuousSoftLimit extends SoftLimit {
     }
 
     public double getSetpoint(double measurement, double wantedSetpoint) {
-        double upperSetPoint, lowerSetPoint;
+        double upperSetpoint, lowerSetpoint;
         if (wantedSetpoint > measurement) {
-            upperSetPoint = wantedSetpoint;
-            while ((upperSetPoint - 2 * Math.PI) > measurement) {
-                upperSetPoint -= 2 * Math.PI;
+            upperSetpoint = wantedSetpoint;
+            while ((upperSetpoint - 2 * Math.PI) > measurement) {
+                upperSetpoint -= 2 * Math.PI;
             }
-            lowerSetPoint = upperSetPoint - 2 * Math.PI;
+            lowerSetpoint = upperSetpoint - 2 * Math.PI;
         } else if (wantedSetpoint < measurement) {
-            lowerSetPoint = wantedSetpoint;
-            while ((lowerSetPoint + 2 * Math.PI) < measurement) {
-                lowerSetPoint += 2 * Math.PI;
+            lowerSetpoint = wantedSetpoint;
+            while ((lowerSetpoint + 2 * Math.PI) < measurement) {
+                lowerSetpoint += 2 * Math.PI;
             }
-            upperSetPoint = lowerSetPoint + 2 * Math.PI;
+            upperSetpoint = lowerSetpoint + 2 * Math.PI;
         } else {
             return wantedSetpoint;
         }
-        if (upperSetPoint > super.getMaxLimit()) {
-            return lowerSetPoint;
-        } else if (lowerSetPoint < super.getMinLimit()) {
-            return upperSetPoint;
+        if (upperSetpoint > super.getMaxLimit()) {
+            return lowerSetpoint;
+        } else if (lowerSetpoint < super.getMinLimit()) {
+            return upperSetpoint;
         }
         return
-                Math.abs(measurement - upperSetPoint) < Math.abs(measurement - lowerSetPoint) ?
-                        upperSetPoint : lowerSetPoint;
+                Math.abs(measurement - upperSetpoint) < Math.abs(measurement - lowerSetpoint) ?
+                        upperSetpoint : lowerSetpoint;
     }
 }
