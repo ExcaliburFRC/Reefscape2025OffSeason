@@ -1,0 +1,41 @@
+name: RobotCode2025OffSeason Java CI
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Make gradlew executable
+      run: chmod +x gradlew
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v4
+
+    - name: Build with Gradle
+      run: ./gradlew build
+
+    - name: Run WPILib Simulation (headless)
+      run: ./gradlew simulateJava -Pheadless
+
+    - name: Upload robot jar
+      uses: actions/upload-artifact@v4
+      with:
+        name: robot-jar
+        path: build/libs/*.jar

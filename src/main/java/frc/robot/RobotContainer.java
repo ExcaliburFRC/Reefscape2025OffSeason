@@ -9,16 +9,16 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
+import frc.excalib.additional_utilities.PS5Controller;
 import frc.excalib.swerve.Swerve;
 import frc.robot.superstructure.Superstructure;
 import frc.robot.superstructure.automations.Automations;
 
-import static frc.robot.Constants.DRIVER_CONTROLLER_PORT;
-import static frc.robot.Constants.OPERATOR_CONTROLLER_PORT;
+import static frc.robot.Constants.*;
 
 
 public class RobotContainer {
-    CommandPS5Controller driver = new CommandPS5Controller(DRIVER_CONTROLLER_PORT);
+    PS5Controller driver = new PS5Controller(DRIVER_CONTROLLER_PORT, true, DRIVER_SIMULATION_CONTROLLER_PORT);
     CommandPS5Controller operator = new CommandPS5Controller(OPERATOR_CONTROLLER_PORT);
 
     Swerve swerve = Constants.SwerveConstants.configureSwerve(new Pose2d());

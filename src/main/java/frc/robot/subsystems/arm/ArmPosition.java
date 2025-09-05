@@ -5,21 +5,23 @@ public enum ArmPosition {
     L2_FOLLOWTHROUGH(0),
     L3(0),
     L3_FOLLOWTHROUGH(0),
-    L4(40),
-    L4_FOLLOWTHROUGH(40),
+    L4(0),
+    L4_FOLLOWTHROUGH(0),
     ALGAE2(0),
     ALGAE3(0),
     NET(0),
-    DEFAULT_WITHOUT_GAME_PIECE(0),
-    DEFAULT_WITH_GAME_PIECE(0),
+    DEFAULT_WITHOUT_GAME_PIECE(Math.PI),
+    DEFAULT_WITH_GAME_PIECE(-Math.PI),
     PROCESSOR(0),
     HANDOFF(0),
     EJECT_GAME_PIECE(0),
     INTAKE(0);
+
     private  final double angle;
-    private ArmPosition(double angle) {
+    ArmPosition(double angle) {
         this.angle = angle;
     }
+
     public double getAngle() {
         return angle;
     }

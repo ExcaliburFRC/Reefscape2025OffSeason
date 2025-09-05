@@ -5,17 +5,25 @@ import java.util.function.DoubleSupplier;
 import static java.lang.Math.*;
 
 public class constants {
-    public static int RIGHT_MOTOR_ID = 0;
-    public static int LEFT_MOTOR_ID = 0;
+    public static int RIGHT_MOTOR_ID = 20;
+    public static int LEFT_MOTOR_ID = 21;
+
     public static DoubleSupplier ELEVATOR_ANGLE = () -> PI / 2;
+
     public static double MAX_VELOCITY = 0;
     public static double MAX_ACCELERATION = 0;
+
     public static double TOLERANCE = 0.1;
+
     public static final double MAX_ELEVATOR_HIGHT = 0;
     public static final double MIN_ELEVATOR_HIGHT = 0;
+
     public static final double MIN_ELEVATOR_HIGHT_WITH_OPEN_ARM = 0;
+
     public static final double UPWARDS_ARM_MIN_LIMIT = 0;
     public static final double UPWARDS_ARM_MAX_LIMIT = 0;
+
+    public static final double VELOCITY_CONVERSION_FACTOR = 0;
 
 
 }
