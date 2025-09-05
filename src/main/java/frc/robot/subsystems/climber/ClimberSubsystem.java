@@ -13,21 +13,28 @@ import java.util.function.DoubleSupplier;
 import static frc.robot.subsystems.climber.Constants.*;
 
 public class ClimberSubsystem extends SubsystemBase {
-    private final TalonFXMotor motor1, motor2;
+    private final TalonFXMotor firstMotor, secondMotor;
     private final MotorGroup motorGroup;
     private final Arm climberMechanism;
     private final Trigger atPosition;
-    private DoubleSupplier kSetpoint;
+    private DoubleSupplier setpoint;
 
     public ClimberSubsystem() {
-        motor1 = new TalonFXMotor(MOTOR1_ID);
-        motor2 = new TalonFXMotor(MOTOR2_ID);
-        motorGroup = new MotorGroup(motor1, motor2);
+        firstMotor = new TalonFXMotor(MOTOR1_ID);
+        secondMotor = new TalonFXMotor(MOTOR2_ID);
+
+        motorGroup = new MotorGroup(firstMotor, secondMotor);
+
         motorGroup.setPositionConversionFactor(ARM_POSITION_CONVERSION_FACTOR);
-        motorGroup.setMotorPosition(0);
+        motorGroup.setVelocityConversionFactor(ARM_POSITION_CONVERSION_FACTOR);
+
+        motorGroup.setMotorPosition(INITIAL_START_ANGLE);
+
         climberMechanism = new Arm(motorGroup, motorGroup::getMotorPosition, VELOCITY_SOFTLIMIT, GAINS, MASS);
-        kSetpoint = () -> 0;
-        atPosition = new Trigger(() -> ((kSetpoint.getAsDouble() - motorGroup.getMotorPosition()) < TOLERANCE));
+
+        setpoint = () -> INITIAL_START_ANGLE;
+
+        atPosition = new Trigger(() -> ((setpoint.getAsDouble() - motorGroup.getMotorPosition()) < TOLERANCE));
     }
 
     public Command manualCommand(DoubleSupplier voltageSupplier) {
@@ -35,7 +42,7 @@ public class ClimberSubsystem extends SubsystemBase {
     }
 
     public void setSetpoint(double setpoint) {
-        kSetpoint = () -> setpoint;
+        this.setpoint = () -> setpoint;
     }
 
     public Command open() {

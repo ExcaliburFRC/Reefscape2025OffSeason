@@ -71,13 +71,14 @@ public class ArmSubsystem extends SubsystemBase {
         motorGroup.setMotorPosition(angleSupplier.getAsDouble());
 
         motorGroup.setVelocityConversionFactor(RPS_TO_RAD_PER_SEC);
+        motorGroup.setPositionConversionFactor(RPS_TO_RAD_PER_SEC);
 
         softLimit = new ContinuousSoftLimit(
                 () -> {
-                    return elevatorHeightSupplier.getAsDouble() < ARM_LENGTH ? 0 : -Math.PI / 2;
+                    return elevatorHeightSupplier.getAsDouble() < ARM_COLISION_ELEVATOR_LENGTH ? 0 : -Math.PI / 2;
                 },
                 () -> {
-                    return elevatorHeightSupplier.getAsDouble() < ARM_LENGTH ? Math.PI : Math.PI * 1.5;
+                    return elevatorHeightSupplier.getAsDouble() < ARM_COLISION_ELEVATOR_LENGTH ? Math.PI : Math.PI * 1.5;
                 }
         );
 

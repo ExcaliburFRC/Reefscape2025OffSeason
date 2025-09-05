@@ -15,7 +15,7 @@ public class PS5Controller extends CommandPS5Controller {
      */
 
     private boolean isPrimary;
-    private XboxController simulatedController;
+    private final XboxController simulatedController;
 
     public PS5Controller(int port, boolean isPrimary, int simulationControllerPort) {
         super(port);
