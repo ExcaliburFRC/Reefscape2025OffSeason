@@ -26,22 +26,22 @@ import static com.revrobotics.spark.SparkLowLevel.MotorType.kBrushless;
 
 public final class Constants {
     public static class SwerveConstants {
-        public static final int FRONT_LEFT_DRIVE_ID = 10;
-        public static final int FRONT_RIGHT_DRIVE_ID = 20;
-        public static final int BACK_RIGHT_DRIVE_ID = 30;
-        public static final int BACK_LEFT_DRIVE_ID = 40;
+        public static final int FRONT_LEFT_DRIVE_ID = 20;
+        public static final int FRONT_RIGHT_DRIVE_ID = 10;
+        public static final int BACK_RIGHT_DRIVE_ID = 40;
+        public static final int BACK_LEFT_DRIVE_ID = 30;
 
-        public static final int FRONT_LEFT_ROTATION_ID = 12;
-        public static final int FRONT_RIGHT_ROTATION_ID = 22;
-        public static final int BACK_RIGHT_ROTATION_ID = 32;
-        public static final int BACK_LEFT_ROTATION_ID = 42;
+        public static final int FRONT_LEFT_ROTATION_ID = 22;
+        public static final int FRONT_RIGHT_ROTATION_ID = 12;
+        public static final int BACK_RIGHT_ROTATION_ID = 42;
+        public static final int BACK_LEFT_ROTATION_ID = 32;
 
-        public static final int FRONT_LEFT_ABS_ENCODER_ID = 11;
-        public static final int FRONT_RIGHT_ABS_ENCODER_ID = 21;
-        public static final int BACK_RIGHT_ABS_ENCODER_ID = 31;
-        public static final int BACK_LEFT_ABS_ENCODER_ID = 41;
+        public static final int FRONT_LEFT_ABS_ENCODER_ID = 21;
+        public static final int FRONT_RIGHT_ABS_ENCODER_ID = 11;
+        public static final int BACK_RIGHT_ABS_ENCODER_ID = 41;
+        public static final int BACK_LEFT_ABS_ENCODER_ID = 31;
 
-        public static final int GYRO_PIGEON_ID = 1;
+        public static final int GYRO_PIGEON_ID = 3;
 
         public static final String SWERVE_CANBUS_NAME = "CTRESwerve";
 

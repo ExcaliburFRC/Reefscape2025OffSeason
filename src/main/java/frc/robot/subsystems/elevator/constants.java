@@ -5,8 +5,8 @@ import java.util.function.DoubleSupplier;
 import static java.lang.Math.*;
 
 public class constants {
-    public static int RIGHT_MOTOR_ID = 20;
-    public static int LEFT_MOTOR_ID = 21;
+    public static int RIGHT_MOTOR_ID = 50;
+    public static int LEFT_MOTOR_ID = 51;
 
     public static DoubleSupplier ELEVATOR_ANGLE = () -> PI / 2;
 

@@ -5,8 +5,8 @@ import frc.excalib.control.limits.SoftLimit;
 import frc.excalib.control.math.physics.Mass;
 
 public class Constants {
-    public static final int MOTOR1_ID = 50; // TODO: add values.
-    public static final int MOTOR2_ID = 51; // TODO: add values.
+    public static final int MOTOR1_ID = 60; // TODO: add values.
+    public static final int MOTOR2_ID = 61; // TODO: add values.
 
     public static final double ARM_POSITION_CONVERSION_FACTOR = 0;
 
