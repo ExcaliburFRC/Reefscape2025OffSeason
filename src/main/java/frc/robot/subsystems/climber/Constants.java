@@ -7,6 +7,7 @@ import frc.excalib.control.math.physics.Mass;
 public class Constants {
     public static final int MOTOR1_ID = 60; // TODO: add values.
     public static final int MOTOR2_ID = 61; // TODO: add values.
+    public static final int MOTOR3_ID = 62; // TODO: add values.
 
     public static final double ARM_POSITION_CONVERSION_FACTOR = 0;
 

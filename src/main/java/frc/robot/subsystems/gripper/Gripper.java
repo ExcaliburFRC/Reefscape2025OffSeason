@@ -6,14 +6,26 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.excalib.control.gains.Gains;
 import frc.excalib.control.motor.controllers.TalonFXMotor;
 import frc.excalib.mechanisms.fly_wheel.FlyWheel;
+import monologue.Annotations;
+import monologue.Logged;
 
 import static frc.robot.subsystems.gripper.GripperConstants.*;
 
-public class Gripper extends SubsystemBase {
+public class Gripper extends SubsystemBase implements Logged {
     // === Motors ===
     private final TalonFXMotor m_rollersMotor;
-    public final Trigger m_hasCoralTrigger;
-    public final Trigger m_hasAlgaeTrigger;
+    public final Trigger m_hasCoralTrigger; //
+    public final Trigger m_hasAlgaeTrigger; //
+
+    @Annotations.Log.NT
+    public Trigger getM_hasAlgaeTrigger() {
+        return m_hasAlgaeTrigger;
+    }
+    @Annotations.Log.NT
+    public Trigger getM_hasCoralTrigger() {
+        return m_hasCoralTrigger;
+    }
+
     // === Inputs ===
     private final FlyWheel m_gripperWheels;
 

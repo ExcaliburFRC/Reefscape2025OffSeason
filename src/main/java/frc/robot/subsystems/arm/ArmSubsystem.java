@@ -11,6 +11,8 @@ import frc.excalib.control.math.physics.Mass;
 import frc.excalib.control.motor.controllers.MotorGroup;
 import frc.excalib.control.motor.controllers.TalonFXMotor;
 import frc.excalib.mechanisms.Arm.Arm;
+import monologue.Annotations;
+import monologue.Logged;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
@@ -20,39 +22,34 @@ import static frc.excalib.control.motor.motor_specs.IdleState.BRAKE;
 import static frc.excalib.control.motor.motor_specs.IdleState.COAST;
 import static frc.robot.subsystems.arm.Constants.*;
 
-public class ArmSubsystem extends SubsystemBase {
+public class ArmSubsystem extends SubsystemBase implements Logged {
 
     // == motors ==
-    private final TalonFXMotor firstMotor, secondMotor;
-    private final MotorGroup motorGroup;
+    private final TalonFXMotor firstMotor;
     private final CANcoder m_canCoder;
 
     private final DoubleSupplier angleSupplier;
     private DoubleSupplier elevatorHeightSupplier;
 
-    private ArmPosition currentState;
+    private ArmPosition currentState; //
     private final Arm armMechanism;
 
-    private final Trigger toleranceTrigger;
-    private final ContinuousSoftLimit softLimit;
+    private final Trigger toleranceTrigger; //
+    private final ContinuousSoftLimit softLimit; //
 
-    private BooleanSupplier isIntakeOpen;
-
+    private BooleanSupplier isIntakeOpen; //
 
     public ArmSubsystem() {
         currentState = ArmPosition.DEFAULT_WITHOUT_GAME_PIECE;
 
         firstMotor = new TalonFXMotor(FIRST_MOTOR_ID);
-        secondMotor = new TalonFXMotor(SECOND_MOTOR_ID);
-
-        motorGroup = new MotorGroup(firstMotor, secondMotor);
 
         m_canCoder = new CANcoder(CAN_CODER_ID);
 
         angleSupplier = () -> m_canCoder.getPosition().getValueAsDouble() * ROTATIONS_TO_RAD;
 
         armMechanism = new Arm(
-                motorGroup,
+                firstMotor,
                 angleSupplier,
                 VELOCITY_LIMIT,
                 new Gains(),
@@ -66,12 +63,11 @@ public class ArmSubsystem extends SubsystemBase {
         isIntakeOpen = () -> false;
 
         firstMotor.setInverted(FORWARD);
-        secondMotor.setInverted(REVERSE);
 
-        motorGroup.setMotorPosition(angleSupplier.getAsDouble());
+        firstMotor.setMotorPosition(angleSupplier.getAsDouble());
 
-        motorGroup.setVelocityConversionFactor(RPS_TO_RAD_PER_SEC);
-        motorGroup.setPositionConversionFactor(RPS_TO_RAD_PER_SEC);
+        firstMotor.setVelocityConversionFactor(RPS_TO_RAD_PER_SEC);
+        firstMotor.setPositionConversionFactor(RPS_TO_RAD_PER_SEC);
 
         softLimit = new ContinuousSoftLimit(
                 () -> {
@@ -102,8 +98,8 @@ public class ArmSubsystem extends SubsystemBase {
 
     public Command coastCommand() {
         return new StartEndCommand(
-                () -> motorGroup.setIdleState(COAST),
-                () -> motorGroup.setIdleState(BRAKE),
+                () -> firstMotor.setIdleState(COAST),
+                () -> firstMotor.setIdleState(BRAKE),
                 this
         ).ignoringDisable(true).withName("Arm Coast Command");
     }
@@ -120,8 +116,13 @@ public class ArmSubsystem extends SubsystemBase {
         isIntakeOpen = intakeOpen;
     }
 
+    @Annotations.Log.NT
     public BooleanSupplier isAtPosition() {
         return toleranceTrigger;
     }
+
+
+
+
 }
 

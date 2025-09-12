@@ -12,28 +12,49 @@ import frc.excalib.control.math.physics.Mass;
 import frc.excalib.control.motor.controllers.TalonFXMotor;
 import frc.excalib.mechanisms.Arm.Arm;
 import frc.excalib.mechanisms.Mechanism;
+import monologue.Annotations;
+import monologue.Logged;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 import static frc.robot.subsystems.intake.Constants.*;
 
-public class Intake extends SubsystemBase {
+public class Intake extends SubsystemBase implements Logged {
     // === Motors ===
     private final TalonFXMotor m_armMotor;
     private final TalonFXMotor m_rollersMotor;
 
     // === Inputs ===
-    private final DigitalInput m_sensor;
-    private IntakeState m_currentState;
-    private IntakeState m_defaultState;
+    private final DigitalInput m_sensor; // . getVsl
+    private IntakeState m_currentState; //
+    private IntakeState m_defaultState; //
     private final Mechanism m_centralizer, m_rollers;
     private final Arm m_arm;
-    private final Trigger m_atPosition;
+    private final Trigger m_atPosition; //
+
+
+    @Annotations.Log.NT
+    public Trigger getM_atPosition() {
+        return m_atPosition;
+    }
+    @Annotations.Log.NT
+    public DigitalInput getM_sensor() {
+        return m_sensor;
+    }
+    @Annotations.Log.NT
+    public IntakeState getM_currentState() {
+        return m_currentState;
+    }
+    @Annotations.Log.NT
+    public IntakeState getM_defaultState() {
+        return m_defaultState;
+    }
+
     private final CANcoder m_armEncoder;
-    private final DoubleSupplier m_angleSupplier;
-    private final Trigger intakeOpen;
-    public final Trigger hasCoral;
+    private final DoubleSupplier m_angleSupplier; //
+    private final Trigger intakeOpen; //
+    public final Trigger hasCoral;//
 
     public Intake(IntakeState initialState) {
 

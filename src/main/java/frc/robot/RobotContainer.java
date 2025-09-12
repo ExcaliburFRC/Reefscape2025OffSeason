@@ -7,24 +7,23 @@ package frc.robot;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
-import frc.excalib.additional_utilities.PS5Controller;
+import frc.excalib.control.math.Vector2D;
 import frc.excalib.swerve.Swerve;
-import frc.robot.superstructure.Superstructure;
-import frc.robot.superstructure.automations.Automations;
+import frc.robot.subsystems.elevator.ElevatorSubsystem;
+import monologue.Annotations.Log.NT;
+import monologue.Logged;
 
-import static frc.robot.Constants.*;
+import static frc.robot.Constants.DRIVER_CONTROLLER_PORT;
+import static frc.robot.Constants.SwerveConstants.MAX_OMEGA_RAD_PER_SEC;
+import static frc.robot.Constants.SwerveConstants.MAX_VEL;
 
 
-public class RobotContainer {
-    PS5Controller driver = new PS5Controller(DRIVER_CONTROLLER_PORT, true, DRIVER_SIMULATION_CONTROLLER_PORT);
-    CommandPS5Controller operator = new CommandPS5Controller(OPERATOR_CONTROLLER_PORT);
+public class RobotContainer implements Logged {
+    CommandPS5Controller driver = new CommandPS5Controller(DRIVER_CONTROLLER_PORT);
 
-    Swerve swerve = Constants.SwerveConstants.configureSwerve(new Pose2d());
-    Superstructure superstructure = new Superstructure();
-
-    Automations automations = new Automations(swerve, superstructure);
+    ElevatorSubsystem elevatorSubsystem = new ElevatorSubsystem();
+//    Swerve swerve = Constants.SwerveConstants.configureSwerve(new Pose2d());
 
     public RobotContainer() {
         configureBindings();
@@ -32,21 +31,35 @@ public class RobotContainer {
 
 
     private void configureBindings() {
-        swerve.applyDriveControllerCommand(driver);
+//        swerve.setDefaultCommand(
+//                swerve.driveCommand(
+//                        () -> new Vector2D(
+//                                -applyDeadband(driver.getLeftY() * MAX_VEL),// * controllerInterpolation.get(controller.getRawAxis(3)),
+//                                -applyDeadband(driver.getLeftX() * MAX_VEL)),
+//                        () -> -applyDeadband(driver.getRightX() * MAX_OMEGA_RAD_PER_SEC),
+//                        () -> true
+//                )
+//        );
+        driver.povDown().whileTrue(elevatorSubsystem.manualCommand(()->-0.1));
+        driver.povUp().whileTrue(elevatorSubsystem.manualCommand(()->0.1));
+//
+//        driver.R1().whileTrue(automations.alignToSide(true));
+//        driver.L1().whileTrue(automations.alignToSide(false));
+//
+//        driver.triangle().onTrue(automations.L4Command());
+//        driver.circle().onTrue(automations.L3Command());
+//        driver.square().onTrue(automations.L2Command());
+//        driver.cross().onTrue(automations.L1Command());
+//
+//        driver.create().toggleOnTrue(automations.climbOnSelected());
+//
+//        operator.povLeft().onTrue(new RunCommand(() -> automations.climbOperator.goToNext()));
+//        operator.povRight().onTrue(new RunCommand(() -> automations.climbOperator.goToPrev()));
 
-        driver.R1().whileTrue(automations.alignToSide(true));
-        driver.L1().whileTrue(automations.alignToSide(false));
+    }
 
-        driver.triangle().onTrue(automations.L4Command());
-        driver.circle().onTrue(automations.L3Command());
-        driver.square().onTrue(automations.L2Command());
-        driver.cross().onTrue(automations.L1Command());
-
-        driver.create().toggleOnTrue(automations.climbOnSelected());
-
-        operator.povLeft().onTrue(new RunCommand(() -> automations.climbOperator.goToNext()));
-        operator.povRight().onTrue(new RunCommand(() -> automations.climbOperator.goToPrev()));
-
+    public double applyDeadband(double val) {
+        return val < 0.05 ? 0 : val;
     }
 
     public Command getAutonomousCommand() {

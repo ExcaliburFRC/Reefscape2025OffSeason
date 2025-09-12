@@ -16,7 +16,6 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
-import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.excalib.additional_utilities.AllianceUtils;
@@ -25,7 +24,6 @@ import frc.excalib.control.gains.SysidConfig;
 import frc.excalib.control.imu.IMU;
 import frc.excalib.control.math.Vector2D;
 import frc.excalib.slam.mapper.Odometry;
-import frc.robot.Constants;
 import monologue.Logged;
 import org.json.simple.parser.ParseException;
 
@@ -36,7 +34,6 @@ import java.util.function.Supplier;
 
 import static edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets.kTextView;
 import static frc.excalib.additional_utilities.Elastic.Notification.NotificationLevel.WARNING;
-import static frc.robot.Constants.DEADBAND_VALUE;
 import static frc.robot.Constants.SwerveConstants.*;
 import static monologue.Annotations.Log;
 
@@ -44,27 +41,28 @@ import static monologue.Annotations.Log;
  * A class representing a swerve subsystem.
  */
 public class Swerve extends SubsystemBase implements Logged {
-    private final ModulesHolder modules;
-    private final IMU imu;
+    private final ModulesHolder m_MODULES;
+    private final IMU m_imu;
     private final Odometry m_odometry;
     private ChassisSpeeds m_desiredChassisSpeeds = new ChassisSpeeds();
-    private final Trigger finishTrigger;
+    private Trigger finishTrigger;
     private Rotation2d pi = new Rotation2d(Math.PI);
-    private final InterpolatingDoubleTreeMap velocityLimit = new InterpolatingDoubleTreeMap();
-    private final InterpolatingDoubleTreeMap controllerInterpolation = new InterpolatingDoubleTreeMap();
+    private InterpolatingDoubleTreeMap velocityLimit = new InterpolatingDoubleTreeMap();
 
     private final SwerveDriveKinematics m_swerveDriveKinematics;
-    private final DoubleSupplier velocityDeadband;
 
-    private final PIDController angleController = new PIDController(ANGLE_PID_GAINS.kp, ANGLE_PID_GAINS.ki, ANGLE_PID_GAINS.kd);
-    private final PIDController xController = new PIDController(TRANSLATION_PID_GAINS.kp, TRANSLATION_PID_GAINS.ki, TRANSLATION_PID_GAINS.kd);
-    private final PIDController yController = new PIDController(TRANSLATION_PID_GAINS.kp, TRANSLATION_PID_GAINS.ki, TRANSLATION_PID_GAINS.kd);
-
+    private final PIDController m_angleController = new PIDController(ANGLE_PID_GAINS.kp, ANGLE_PID_GAINS.ki, ANGLE_PID_GAINS.kd);
+    private final PIDController m_xController = new PIDController(
+            TRANSLATION_PID_GAINS.kp, TRANSLATION_PID_GAINS.ki, TRANSLATION_PID_GAINS.kd
+//            new TrapezoidProfile.Constraints(MAX_VEL, 6)
+    );
+    private final PIDController m_yController = new PIDController(
+            TRANSLATION_PID_GAINS.kp, TRANSLATION_PID_GAINS.ki, TRANSLATION_PID_GAINS.kd
+//            new TrapezoidProfile.Constraints(MAX_VEL, 6)
+    );
     public final Field2d m_field = new Field2d();
     private Supplier<Rotation2d> m_angleSetpoint = Rotation2d::new;
     private Supplier<Translation2d> m_translationSetpoint = Translation2d::new;
-
-    private static Pose2d pathPlannnerTargetPose = new Pose2d();
 
     /**
      * A constructor that initialize the Swerve Subsystem
@@ -73,31 +71,31 @@ public class Swerve extends SubsystemBase implements Logged {
      * @param imu             IMU sensor.
      * @param initialPosition The initial position of the robot.
      */
-    public Swerve(ModulesHolder modules, IMU imu, Pose2d initialPosition, DoubleSupplier velocityDeadband) {
-        this.modules = modules;
-        this.imu = imu;
-        this.imu.resetIMU();
+    public Swerve(ModulesHolder modules,
+                  IMU imu,
+                  Pose2d initialPosition) {
+        this.m_MODULES = modules;
+        this.m_imu = imu;
+        m_imu.resetIMU();
 
-        angleController.enableContinuousInput(-Math.PI, Math.PI);
-        angleController.setTolerance(0.026);
-        xController.setTolerance(0.01);
-        yController.setTolerance(0.01);
+        m_angleController.enableContinuousInput(-Math.PI, Math.PI);
+        m_angleController.setTolerance(0.026);
+        m_xController.setTolerance(0.01);
+        m_yController.setTolerance(0.01);
 
-        finishTrigger = new Trigger(xController::atSetpoint).and(yController::atSetpoint).and(angleController::atSetpoint).debounce(0.1);
+        finishTrigger = new Trigger(m_xController::atSetpoint).and(m_yController::atSetpoint).and(m_angleController::atSetpoint).debounce(0.1);
         // Initialize odometry with the current yaw angle
         this.m_odometry = new Odometry(
                 modules.getSwerveDriveKinematics(),
                 modules.getModulesPositions(),
-                this.imu::getZRotation,
+                m_imu::getZRotation,
                 initialPosition
         );
 
-        m_swerveDriveKinematics = this.modules.getSwerveDriveKinematics();
-        velocityLimit.put(0.0, 0.0); //TODO
-
-        controllerInterpolation.put(0.0, 0.0); //TODO
-
-        this.velocityDeadband = velocityDeadband;
+        m_swerveDriveKinematics = m_MODULES.getSwerveDriveKinematics();
+        velocityLimit.put(0.1, 0.4);
+        velocityLimit.put(0.7, 2.0);
+        velocityLimit.put(1.5, MAX_VEL);
 
         initAutoBuilder();
         initElastic();
@@ -128,7 +126,7 @@ public class Swerve extends SubsystemBase implements Logged {
             return velocity;
         };
 
-        Command driveCommand = new ParallelCommandGroup(modules.setVelocitiesCommand(
+        Command driveCommand = new ParallelCommandGroup(m_MODULES.setVelocitiesCommand(
                 adjustedVelocitySupplier,
                 omegaRadPerSec
         ),
@@ -152,7 +150,7 @@ public class Swerve extends SubsystemBase implements Logged {
      * @param speeds A ChassisSpeeds object represents ROBOT RELATIVE speeds desired speeds.
      */
     public void driveRobotRelativeChassisSpeeds(ChassisSpeeds speeds) {
-        modules.setModulesStates(m_swerveDriveKinematics.toSwerveModuleStates(speeds));
+        m_MODULES.setModulesStates(m_swerveDriveKinematics.toSwerveModuleStates(speeds));
     }
 
     /**
@@ -166,7 +164,7 @@ public class Swerve extends SubsystemBase implements Logged {
                 new InstantCommand(() -> m_angleSetpoint = angleSetpoint),
                 driveCommand(
                         velocityMPS,
-                        () -> angleController.calculate(getRotation2D().getRadians(), angleSetpoint.get().getRadians()),
+                        () -> m_angleController.calculate(getRotation2D().getRadians(), angleSetpoint.get().getRadians()),
                         () -> true
                 )
         ).withName("Turn To Angle");
@@ -176,9 +174,9 @@ public class Swerve extends SubsystemBase implements Logged {
         return new SequentialCommandGroup(
                 new InstantCommand(
                         () -> {
-                            xController.calculate(getPose2D().getX(), poseSetpoint.get().getX());
-                            yController.calculate(getPose2D().getY(), poseSetpoint.get().getY());
-                            angleController.calculate(getRotation2D().getRadians(), poseSetpoint.get().getRotation().getRadians());
+                            m_xController.calculate(getPose2D().getX(), poseSetpoint.get().getX());
+                            m_yController.calculate(getPose2D().getY(), poseSetpoint.get().getY());
+                            m_angleController.calculate(getRotation2D().getRadians(), poseSetpoint.get().getRotation().getRadians());
                             m_translationSetpoint = () -> poseSetpoint.get().getTranslation();
                             m_angleSetpoint = () -> poseSetpoint.get().getRotation();
                         }
@@ -186,34 +184,35 @@ public class Swerve extends SubsystemBase implements Logged {
                 driveCommand(
                         () -> {
                             Vector2D vel = new Vector2D(
-                                    xController.calculate(getPose2D().getX(), poseSetpoint.get().getX()),
-                                    yController.calculate(getPose2D().getY(), poseSetpoint.get().getY())
+                                    m_xController.calculate(getPose2D().getX(), poseSetpoint.get().getX()),
+                                    m_yController.calculate(getPose2D().getY(), poseSetpoint.get().getY())
                             );
                             double distance = getPose2D().getTranslation().getDistance(poseSetpoint.get().getTranslation());
                             vel.setMagnitude(Math.min(vel.getDistance(), velocityLimit.get(distance)));
+//                            vel = vel.rotate(poseSetpoint.get().getRotation());
+//                            vel.setX(Math.signum(vel.getX()) * Math.min(Math.abs(vel.getX()), 1.2));
+//                            vel.setY(Math.signum(vel.getY()) * Math.min(Math.abs(vel.getY()), 0.4));
+//                            vel = vel.rotate(poseSetpoint.get().getRotation().unaryMinus());
                             if (!AllianceUtils.isBlueAlliance()) return vel.rotate(pi);
                             return vel;
                         },
-                        () -> angleController.calculate(getRotation2D().getRadians(), poseSetpoint.get().getRotation().getRadians()),
+                        () -> m_angleController.calculate(getRotation2D().getRadians(), poseSetpoint.get().getRotation().getRadians()),
                         () -> true
                 )
-        ).until(finishTrigger).withName("PID to pose");
+        ).until(finishTrigger).withName("PID To Pose");
     }
 
     /**
      * A method that drives the robot to a desired pose.
      *
-     * @param setpoint The desired pose.
+     * @param setPoint The desired pose.
      * @return A command that drives the robot to the wanted pose.
      */
-    public Command driveToPoseCommand(Pose2d setpoint) {
-        return new SequentialCommandGroup(
-                Swerve.setPathPlannnerTargetPoseCommand(setpoint),
-                AutoBuilder.pathfindToPose(
-                        setpoint,
-                        MAX_PATH_CONSTRAINTS
-                ).withName("Pathfinding Command")
-        );
+    public Command driveToPoseCommand(Pose2d setPoint) {
+        return AutoBuilder.pathfindToPose(
+                setPoint,
+                MAX_PATH_CONSTRAINTS
+        ).withName("Pathfinding Command");
     }
 
     public Command driveToPoseWithOverrideCommand(
@@ -258,21 +257,30 @@ public class Swerve extends SubsystemBase implements Logged {
     }
 
     public Command resetAngleCommand() {
-        return new InstantCommand(imu::resetIMU).ignoringDisable(true);
+        return new InstantCommand(m_imu::resetIMU).ignoringDisable(true);
     }
 
     public Command coastCommand() {
-        Command coastCommand = modules.coastCommand().ignoringDisable(true).withName("Coast Command");
+        Command coastCommand = m_MODULES.coastCommand().ignoringDisable(true).withName("Coast Command");
         coastCommand.addRequirements(this);
         return coastCommand;
     }
-
 
     /**
      * Updates the robot's odometry.
      */
     public void updateOdometry() {
-        m_odometry.updateOdometry(modules.getModulesPositions());
+        m_odometry.updateOdometry(m_MODULES.getModulesPositions());
+
+//        Optional<EstimatedRobotPose> backPose = m_backCamera.getEstimatedGlobalPose(m_odometry.getEstimatedPosition());
+//        if (backPose.isPresent()) {
+//            m_odometry.addVisionMeasurement(backPose.get().estimatedPose.toPose2d(), backPose.get().timestampSeconds);
+//        }
+//
+//        Optional<EstimatedRobotPose> frontPose = m_frontCamera.getEstimatedGlobalPose(m_odometry.getEstimatedPosition());
+//        if (frontPose.isPresent()) {
+//            m_odometry.addVisionMeasurement(frontPose.get().estimatedPose.toPose2d(), frontPose.get().timestampSeconds);
+//        }
     }
 
     /**
@@ -281,7 +289,7 @@ public class Swerve extends SubsystemBase implements Logged {
      * @param newPose the wanted new Pose2d of the robot.
      */
     public void resetOdometry(Pose2d newPose) {
-        m_odometry.resetOdometry(modules.getModulesPositions(), newPose);
+        m_odometry.resetOdometry(m_MODULES.getModulesPositions(), newPose);
     }
 
     /**
@@ -320,7 +328,7 @@ public class Swerve extends SubsystemBase implements Logged {
      * @return The robot's velocity as a Vector2D.
      */
     public Vector2D getVelocity() {
-        return modules.getVelocity();
+        return m_MODULES.getVelocity();
     }
 
     /**
@@ -330,7 +338,7 @@ public class Swerve extends SubsystemBase implements Logged {
      */
     @Log.NT(key = "Acceleration")
     public double getAccelerationDistance() {
-        return new Vector2D(imu.getAccX(), imu.getAccY()).getDistance();
+        return new Vector2D(m_imu.getAccX(), m_imu.getAccY()).getDistance();
     }
 
     /**
@@ -340,7 +348,7 @@ public class Swerve extends SubsystemBase implements Logged {
      */
     @Log.NT(key = "Measured Chassis Speeds")
     public ChassisSpeeds getRobotRelativeSpeeds() {
-        return m_swerveDriveKinematics.toChassisSpeeds(modules.logStates());
+        return m_swerveDriveKinematics.toChassisSpeeds(m_MODULES.logStates());
     }
 
     @Log.NT
@@ -348,6 +356,12 @@ public class Swerve extends SubsystemBase implements Logged {
         return m_desiredChassisSpeeds;
     }
 
+//    @Log.NT
+    ////    public double distanceFromReefCenter() {
+    ////        return AllianceUtils.isBlueAlliance() ?
+    ////                BLUE_REEF_CENTER.getDistance(getPose2D().getTranslation()) :
+    ////                RED_REEF_CENTER.getDistance(getPose2D().getTranslation());
+    ////    }
 
     public Command stopCommand() {
         return driveCommand(() -> new Vector2D(0, 0), () -> 0, () -> true);
@@ -357,15 +371,36 @@ public class Swerve extends SubsystemBase implements Logged {
      * A function that initialize the AutoBuilder for pathplanner.
      */
     private void initAutoBuilder() {
+        // Load the RobotConfig from the GUI settings. You should probably
+        // store this in your Constants file
+        RobotConfig config = null;
+        try {
+            config = RobotConfig.fromGUISettings();
+        } catch (Exception e) {
+            // Handle exception as needed
+            e.printStackTrace();
+        }
+
+        // Configure AutoBuilder last
         AutoBuilder.configure(
-                this::getPose2D,
-                this::resetOdometry,
-                this::getRobotRelativeSpeeds,
-                (speeds, feedforwards) -> pathPlannerDrive(speeds),
-                getAutoPathFollowingController(),
-                getRobotConfig(),
-                AllianceUtils::isRedAlliance,
-                this
+                this::getPose2D, // Robot pose supplier
+                this::resetOdometry, // Method to reset odometry (will be called if your auto has a starting pose)
+                this::getRobotRelativeSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+                (speeds, feedforwards) -> driveRobotRelativeChassisSpeeds(speeds), // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also optionally outputs individual module feedforwards
+                new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller for holonomic drive trains
+                        TRANSLATION_PID_PP_CONSTANTS, // Translation PID constants
+                        ANGLE_PID_PP_CONSTANTS // Rotation PID constants
+                ),
+                config, // The robot configuration
+                () -> {
+                    // Boolean supplier that controls when the path will be mirrored for the red alliance
+                    // This will flip the path being followed to the red side of the field.
+                    // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
+
+                    var alliance = DriverStation.getAlliance();
+                    return alliance.filter(value -> value == DriverStation.Alliance.Red).isPresent();
+                },
+                this // Reference to this subsystem to set requirements
         );
     }
 
@@ -376,17 +411,17 @@ public class Swerve extends SubsystemBase implements Logged {
         SmartDashboard.putData("Swerve Drive", builder -> {
             builder.setSmartDashboardType("SwerveDrive");
 
-            builder.addDoubleProperty("Front Left Angle", () -> modules.m_frontLeft.getPosition().getRadians(), null);
-            builder.addDoubleProperty("Front Left Velocity", () -> modules.m_frontLeft.getVelocity().getDistance(), null);
+            builder.addDoubleProperty("Front Left Angle", () -> m_MODULES.m_frontLeft.getPosition().getRadians(), null);
+            builder.addDoubleProperty("Front Left Velocity", () -> m_MODULES.m_frontLeft.getVelocity().getDistance(), null);
 
-            builder.addDoubleProperty("Front Right Angle", () -> modules.m_frontRight.getPosition().getRadians(), null);
-            builder.addDoubleProperty("Front Right Velocity", () -> modules.m_frontLeft.getVelocity().getDistance(), null);
+            builder.addDoubleProperty("Front Right Angle", () -> m_MODULES.m_frontRight.getPosition().getRadians(), null);
+            builder.addDoubleProperty("Front Right Velocity", () -> m_MODULES.m_frontLeft.getVelocity().getDistance(), null);
 
-            builder.addDoubleProperty("Back Left Angle", () -> modules.m_backLeft.getPosition().getRadians(), null);
-            builder.addDoubleProperty("Back Left Velocity", () -> modules.m_frontLeft.getVelocity().getDistance(), null);
+            builder.addDoubleProperty("Back Left Angle", () -> m_MODULES.m_backLeft.getPosition().getRadians(), null);
+            builder.addDoubleProperty("Back Left Velocity", () -> m_MODULES.m_frontLeft.getVelocity().getDistance(), null);
 
-            builder.addDoubleProperty("Back Right Angle", () -> modules.m_backRight.getPosition().getRadians(), null);
-            builder.addDoubleProperty("Back Right Velocity", () -> modules.m_frontLeft.getVelocity().getDistance(), null);
+            builder.addDoubleProperty("Back Right Angle", () -> m_MODULES.m_backRight.getPosition().getRadians(), null);
+            builder.addDoubleProperty("Back Right Velocity", () -> m_MODULES.m_frontLeft.getVelocity().getDistance(), null);
 
             builder.addDoubleProperty("Robot Angle", () -> getRotation2D().getRadians(), null);
         });
@@ -437,10 +472,10 @@ public class Swerve extends SubsystemBase implements Logged {
         SwerveModule selectedModule;
 
         switch (module) {
-            case 0 -> selectedModule = modules.m_frontLeft;
-            case 1 -> selectedModule = modules.m_frontRight;
-            case 2 -> selectedModule = modules.m_backLeft;
-            case 3 -> selectedModule = modules.m_backRight;
+            case 0 -> selectedModule = m_MODULES.m_frontLeft;
+            case 1 -> selectedModule = m_MODULES.m_frontRight;
+            case 2 -> selectedModule = m_MODULES.m_backLeft;
+            case 3 -> selectedModule = m_MODULES.m_backRight;
             default -> {
                 throw new IllegalArgumentException("Invalid module index: " + module);
             }
@@ -459,14 +494,14 @@ public class Swerve extends SubsystemBase implements Logged {
      * @param dynamic Whether to perform a dynamic or quasistatic test.
      * @return The command to perform the sysid routine.
      */
-    public Command angleSysId(int module, Direction dir, SysidConfig sysidConfig, boolean dynamic) {
+    public  Command angleSysId(int module, Direction dir, SysidConfig sysidConfig, boolean dynamic) {
         SwerveModule selectedModule;
 
         switch (module) {
-            case 0 -> selectedModule = modules.m_frontLeft;
-            case 1 -> selectedModule = modules.m_frontRight;
-            case 2 -> selectedModule = modules.m_backLeft;
-            case 3 -> selectedModule = modules.m_backRight;
+            case 0 -> selectedModule = m_MODULES.m_frontLeft;
+            case 1 -> selectedModule = m_MODULES.m_frontRight;
+            case 2 -> selectedModule = m_MODULES.m_backLeft;
+            case 3 -> selectedModule = m_MODULES.m_backRight;
             default -> {
                 throw new IllegalArgumentException("Invalid module index: " + module);
             }
@@ -479,70 +514,13 @@ public class Swerve extends SubsystemBase implements Logged {
 
     @Override
     public void periodic() {
-        modules.periodic();
+        m_MODULES.periodic();
+//        updateOdometry();
         m_field.setRobotPose(getPose2D());
     }
 
-    private RobotConfig getRobotConfig() {
-        RobotConfig config = null;
-        try {
-            config = RobotConfig.fromGUISettings();
-        } catch (Exception e) {
-            DriverStation.reportError("no robot config dound!", false);
-        }
-        return config;
-    }
-
-    public static Command setPathPlannnerTargetPoseCommand(Pose2d targetPose) {
-        return new InstantCommand(() -> pathPlannnerTargetPose = targetPose);
-    }
-
-    private PPHolonomicDriveController getAutoPathFollowingController() {
-        return new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller for holonomic drive trains
-                TRANSLATION_PID_PP_CONSTANTS, // Translation PID constants
-                ANGLE_PID_PP_CONSTANTS // Rotation PID constants
-        );
-    }
-
-    private boolean isSwerveStill(ChassisSpeeds chassisSpeeds) {
-        return Math.abs(chassisSpeeds.vxMetersPerSecond) < velocityDeadband.getAsDouble() &&
-                Math.abs(chassisSpeeds.vyMetersPerSecond) < velocityDeadband.getAsDouble() &&
-                Math.abs(chassisSpeeds.omegaRadiansPerSecond) < velocityDeadband.getAsDouble();
-    }
-
-    private void pathPlannerDrive(ChassisSpeeds pathPlannerChasisSpeeds) {
-        if (isSwerveStill(pathPlannerChasisSpeeds)) {
-            pidToPoseCommand(() -> pathPlannnerTargetPose).schedule();
-        } else {
-            driveRobotRelativeChassisSpeeds(
-                    new ChassisSpeeds(
-                            xController.calculate(
-                                    getPose2D().getX(),
-                                    pathPlannnerTargetPose.getX()),
-                            yController.calculate(
-                                    getPose2D().getY(),
-                                    pathPlannnerTargetPose.getY()),
-                            angleController.calculate(
-                                    getPose2D().getRotation().getRadians(),
-                                    pathPlannnerTargetPose.getRotation().getRadians())
-                    ).plus(pathPlannerChasisSpeeds.times(PATH_PLANNER_DEESCALATION_SCALAR))
-            );
-        }
-    }
-
-    public void applyDriveControllerCommand(CommandPS5Controller controller) {
-        this.setDefaultCommand(
-                driveCommand(
-                        () -> new Vector2D(
-                                applyDeadband(-controller.getLeftY()) * MAX_VEL * controllerInterpolation.get(controller.getRawAxis(3)),
-                                applyDeadband(-controller.getLeftX()) * MAX_VEL * controllerInterpolation.get(controller.getRawAxis(3))),
-                        () -> applyDeadband(-controller.getRightX()) * MAX_OMEGA_RAD_PER_SEC * controllerInterpolation.get(controller.getRawAxis(3)),
-                        () -> true
-                )
-        );
-    }
-
-    private double applyDeadband(double value) {
-        return Math.abs(value) < DEADBAND_VALUE ? 0 : value;
-    }
+//    @Log.NT
+//    public boolean seenTag() {
+//        return m_frontCamera.getTagTimer() || m_backCamera.getTagTimer();
+//    }
 }

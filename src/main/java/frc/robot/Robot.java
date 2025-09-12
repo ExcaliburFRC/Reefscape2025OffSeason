@@ -19,7 +19,7 @@ public class Robot extends TimedRobot implements Logged {
 
     boolean fileOnly = false;
       boolean lazyLogging = false;
-      Monologue.setupMonologue(this, "Robot", fileOnly, lazyLogging);
+      Monologue.setupMonologue(m_robotContainer, "Robot", fileOnly, lazyLogging);
   }
 
   @Override
