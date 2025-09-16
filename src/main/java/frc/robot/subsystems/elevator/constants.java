@@ -13,7 +13,7 @@ public class constants {
     public static double MAX_VELOCITY = 3;
     public static double MAX_ACCELERATION = 1;
 
-    public static double TOLERANCE = 0.1;
+    public static double TOLERANCE = 0.005;
 
     public static final double MAX_ELEVATOR_HIGHT = 0;
     public static final double MIN_ELEVATOR_HIGHT = 0;

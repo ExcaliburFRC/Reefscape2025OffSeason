@@ -60,7 +60,6 @@ public class Arm extends Mechanism {
                                     m_kg * m_mass.getCenterOfMass().getX();
                     double pid = m_PIDController.calculate(ANGLE_SUPPLIER.getAsDouble(),setPointSupplier.getAsDouble());
                     double output = phyOutput + pid;
-                    System.out.println(output);
                     super.setVoltage(m_VELOCITY_LIMIT.limit(output));
                     toleranceConsumer.accept(Math.abs(error) < maxOffSet);
                 }, requirements);

@@ -3,7 +3,7 @@ package frc.robot.subsystems.elevator;
 public enum ElevatorStates {
     L2(0),
     L2_FOLLOWTHROUGH(0),
-    L3(0),
+    L3(1.1),
     L3_FOLLOWTHROUGH(0),
     L4(0),
     L4_FOLLOWTHROUGH(0),

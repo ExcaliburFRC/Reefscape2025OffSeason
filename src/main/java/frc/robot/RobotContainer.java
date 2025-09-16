@@ -21,6 +21,7 @@ import frc.excalib.slam.mapper.AuroraClient;
 import frc.excalib.swerve.Swerve;
 import frc.robot.subsystems.arm.ArmPosition;
 import frc.robot.subsystems.arm.ArmSubsystem;
+import frc.robot.subsystems.elevator.ElevatorStates;
 import frc.robot.subsystems.elevator.ElevatorSubsystem;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeState;
@@ -41,7 +42,7 @@ public class RobotContainer implements Logged {
 //    AuroraClient client = new AuroraClient(5000);
     Intake intake = new Intake(IntakeState.DEFAULT);
 
-//    ElevatorSubsystem elevatorSubsystem = new ElevatorSubsystem();
+    ElevatorSubsystem elevatorSubsystem = new ElevatorSubsystem();
     Swerve swerve = Constants.SwerveConstants.configureSwerve(new Pose2d());
 
 
@@ -60,9 +61,9 @@ public class RobotContainer implements Logged {
 //        driver.povUp().toggleOnTrue(swerve.m_MODULES.m_frontLeft.m_driveWheel.setDynamicVelocityCommand(()-> Math.PI));
 //        driver.povDown().toggleOnTrue(swerve.m_MODULES.m_frontLeft.m_driveWheel.setDynamicVelocityCommand(()-> -Math.PI));
 
-       driver.square().toggleOnTrue(arm.setStateCommand(ArmPosition.CHECK1));
-       driver.triangle().whileTrue(arm.manualCommand(()-> 0.1));
-       driver.circle().toggleOnTrue(arm.goToStateCommand());
+       driver.square().toggleOnTrue(elevatorSubsystem.setStateCommand(ElevatorStates.L3));
+       driver.triangle().toggleOnTrue(elevatorSubsystem.setStateCommand(ElevatorStates.DEFAULT_WITHOUT_GAME_PIECE));
+
     }
 
     public double applyDeadband(double val) {

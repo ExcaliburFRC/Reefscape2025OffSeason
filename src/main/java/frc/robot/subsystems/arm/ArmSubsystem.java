@@ -88,6 +88,8 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
                 }
         );
 
+        setDefaultCommand(setStateCommand(ArmPosition.CHECK1).withTimeout(0.1).andThen(goToStateCommand()));
+
 //        setDefaultCommand(
 //
 //
@@ -98,7 +100,7 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
         return armMechanism.anglePositionControlCommand(
                 () -> currentState.getAngle(),
                 (at) -> at = false,
-                0,
+                Math.PI/50,
                 this
         );
     }
@@ -140,7 +142,7 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
 
     @NT
     public boolean isInTolernace() {
-        return currentState.getAngle() - angleSupplier.getAsDouble() < 0.05;
+        return Math.abs(currentState.getAngle() - angleSupplier.getAsDouble()) < Math.PI/50;
     }
 
     @NT

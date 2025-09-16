@@ -2,6 +2,7 @@ package frc.robot.subsystems.elevator;
 
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.excalib.control.gains.Gains;
@@ -13,6 +14,7 @@ import frc.excalib.control.motor.motor_specs.DirectionState;
 import frc.excalib.control.motor.motor_specs.IdleState;
 import frc.excalib.mechanisms.linear_extension.LinearExtension;
 import monologue.Annotations;
+import monologue.Annotations.Log.NT;
 import monologue.Logged;
 
 import java.util.function.DoubleSupplier;
@@ -36,10 +38,10 @@ public class ElevatorSubsystem extends SubsystemBase implements Logged {
 
         leftMotor.setPosition(0);
         rightMotor.setPosition(0);
-            leftMotor.setInverted(DirectionState.FORWARD);
+        leftMotor.setInverted(DirectionState.FORWARD);
         rightMotor.setInverted(DirectionState.REVERSE);
         motorGroup = new MotorGroup(rightMotor, leftMotor);
-        motorGroup.setIdleState(IdleState.COAST);
+        motorGroup.setIdleState(IdleState.BRAKE);
 
         motorGroup.setVelocityConversionFactor(VELOCITY_CONVERSION_FACTOR);
         motorGroup.setPositionConversionFactor(POSITION_CONVERSION_FACTOR);
@@ -51,7 +53,7 @@ public class ElevatorSubsystem extends SubsystemBase implements Logged {
                 motorGroup,
                 elevatorHeight,
                 ELEVATOR_ANGLE,
-                new Gains(),
+                new Gains(0, 0, 0, 0, 7.78, 0, 0.15),
                 new TrapezoidProfile.Constraints(MAX_VELOCITY, MAX_ACCELERATION),
                 TOLERANCE
         );
@@ -59,7 +61,7 @@ public class ElevatorSubsystem extends SubsystemBase implements Logged {
         currentState = ElevatorStates.DEFAULT_WITH_GAME_PIECE;
         this.armAngle = () -> 0;
 
-//        setDefaultCommand(linearExtension.extendCommand(() -> softLimit.limit(currentState.getHeight()), this));
+        setDefaultCommand(linearExtension.extendCommand(() -> currentState.getHeight(), this));
 
         atPositionTrigger = new Trigger(
                 () -> (Math.abs(currentState.getHeight() - elevatorHeight.getAsDouble()) < TOLERANCE));
@@ -70,15 +72,15 @@ public class ElevatorSubsystem extends SubsystemBase implements Logged {
         );
     }
 
-    public void setState(ElevatorStates elevatorStates) {
-        currentState = elevatorStates;
+    public Command setStateCommand(ElevatorStates elevatorStates) {
+        return new RunCommand(() -> currentState = elevatorStates, this).withTimeout(0.05);
     }
 
     public Command manualCommand(DoubleSupplier voltage) {
         return linearExtension.manualCommand(voltage, this);
     }
 
-    @Annotations.Log.NT
+    @NT
     public double getElevatorHeight() {
         return elevatorHeight.getAsDouble();
     }
@@ -87,24 +89,26 @@ public class ElevatorSubsystem extends SubsystemBase implements Logged {
         armAngle = setArmAngle;
     }
 
-    @Annotations.Log.NT
+    @NT
     public ElevatorStates getCurrentState() {
         return currentState;
     }
 
-    @Annotations.Log.NT
+    @NT
     public SoftLimit getSoftLimit() {
         return softLimit;
     }
 
-    @Annotations.Log.NT
+    @NT
     public DoubleSupplier getArmAngle() {
         return armAngle;
     }
 
-    @Annotations.Log.NT
+    @NT
     public Trigger getAtPositionTrigger() {
         return atPositionTrigger;
     }
+
+
 }
 
