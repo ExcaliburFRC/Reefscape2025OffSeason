@@ -58,13 +58,13 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
         firstMotor.setVelocityConversionFactor(RPS_TO_RAD_PER_SEC);
         firstMotor.setPositionConversionFactor((1 / 15.8611544) * Math.PI * 2);
 
-        angleSupplier = () -> (canCoder.getPosition().getValueAsDouble() * Math.PI * 2);
-        firstMotor.setMotorPosition(canCoder.getPosition().getValueAsDouble() * 2 * Math.PI);
+        angleSupplier = () -> (canCoder.getAbsolutePosition().getValueAsDouble() * Math.PI * 2);
+        firstMotor.setMotorPosition(canCoder.getAbsolutePosition().getValueAsDouble() * 2 * Math.PI);
         //-0.273923 rotations
         // 4.344735
 
 
-        armGains = new Gains(2, 0, 0, 0, 0, 0, -0.6);
+        armGains = new Gains(1.4, 0, 0.03, 0, 0, 0, 0.6);
         armMechanism = new Arm(
                 firstMotor,
                 angleSupplier,
@@ -89,6 +89,7 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
         );
 
 //        setDefaultCommand(
+//
 //
 //        );
     }
@@ -136,7 +137,6 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
     public BooleanSupplier isAtPosition() {
         return toleranceTrigger;
     }
-
 
     @NT
     public boolean isInTolernace() {
