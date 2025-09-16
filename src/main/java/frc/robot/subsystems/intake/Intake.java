@@ -1,10 +1,8 @@
 package frc.robot.subsystems.intake;
 
 import com.ctre.phoenix6.hardware.CANcoder;
-import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj.AnalogInput;
+import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.excalib.control.gains.Gains;
 import frc.excalib.control.limits.SoftLimit;
@@ -15,6 +13,7 @@ import frc.excalib.mechanisms.Mechanism;
 import monologue.Annotations;
 import monologue.Logged;
 
+import java.security.Permission;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
@@ -26,10 +25,11 @@ public class Intake extends SubsystemBase implements Logged {
     private final TalonFXMotor m_rollersMotor;
 
     // === Inputs ===
-    private final DigitalInput m_sensor; // . getVsl
+    private final AnalogInput rightSensor, leftSensor; // . getVsl
+    private final Trigger rightSensorTrigger, leftSensorTrigger, sensor;
     private IntakeState m_currentState; //
     private IntakeState m_defaultState; //
-    private final Mechanism m_centralizer, m_rollers;
+    private final Mechanism centralizer, rollers;
     private final Arm m_arm;
     private final Trigger m_atPosition; //
 
@@ -38,14 +38,17 @@ public class Intake extends SubsystemBase implements Logged {
     public Trigger getM_atPosition() {
         return m_atPosition;
     }
+
     @Annotations.Log.NT
-    public DigitalInput getM_sensor() {
-        return m_sensor;
+    public AnalogInput getRightSensor() {
+        return rightSensor;
     }
+
     @Annotations.Log.NT
     public IntakeState getM_currentState() {
         return m_currentState;
     }
+
     @Annotations.Log.NT
     public IntakeState getM_defaultState() {
         return m_defaultState;
@@ -64,11 +67,19 @@ public class Intake extends SubsystemBase implements Logged {
         m_rollersMotor = new TalonFXMotor(ROLLERS_MOTOR_ID);
         TalonFXMotor m_centralizerMotor = new TalonFXMotor(CENTERLIZER_MOTOR_ID);
 
-        m_sensor = new DigitalInput(SENSOR_CHANNEL);
+        rightSensor = new AnalogInput(RIGHT_SENSOR_CHANNEL);
+        leftSensor = new AnalogInput(LEFT_SENSOR_CHANNEL);
+
+        sensor = new Trigger(() -> (getLeftSensorData() & !getRightSensorData() || !getLeftSensorData() && getRightSensorData()));
+
+        rightSensorTrigger = new Trigger(() -> leftSensor.getValue() < 4000);
+        leftSensorTrigger = new Trigger(() -> rightSensor.getValue() < 4000);
+
+
         m_armEncoder = new CANcoder(ENCODER_ID);
-        m_angleSupplier = () -> m_armEncoder.getPosition().getValueAsDouble();
-        m_centralizer = new Mechanism(m_centralizerMotor);
-        m_rollers = new Mechanism(m_rollersMotor);
+        m_angleSupplier = () -> m_armEncoder.getPosition().getValueAsDouble() * Math.PI * 2;
+        centralizer = new Mechanism(m_centralizerMotor);
+        rollers = new Mechanism(m_rollersMotor);
 
         m_atPosition = new Trigger(
                 () -> Math.abs(m_angleSupplier.getAsDouble() - m_currentState.intakeAngle) < TOLERANCE).debounce(0.1);
@@ -96,8 +107,8 @@ public class Intake extends SubsystemBase implements Logged {
                         TOLERANCE,
                         this
                 ),
-                m_rollers.manualCommand(() -> m_currentState.rollerVoltage, this),
-                m_centralizer.manualCommand(() -> m_currentState.centraliserVoltage, this)
+                rollers.manualCommand(() -> m_currentState.rollerVoltage, this),
+                centralizer.manualCommand(() -> m_currentState.centraliserVoltage, this)
         );
     }
 
@@ -109,16 +120,51 @@ public class Intake extends SubsystemBase implements Logged {
         this.m_currentState = this.m_defaultState;
     }
 
-    public BooleanSupplier isIntakeOpen(){
+    public BooleanSupplier isIntakeOpen() {
         return intakeOpen;
     }
 
-    public BooleanSupplier isAtPosition(){
+    public BooleanSupplier isAtPosition() {
         return m_atPosition;
     }
 
-    public Command setRollerVoltage(double voltage){
-        return this.m_rollers.manualCommand(() -> voltage); //TODO: Check command type!
+
+    @Annotations.Log.NT
+    public boolean getLeftSensorData() {
+        return !leftSensorTrigger.getAsBoolean();
+    }
+
+    @Annotations.Log.NT
+    public boolean getRightSensorData() {
+        return !rightSensorTrigger.getAsBoolean();
+    }
+
+    @Annotations.Log.NT
+    public boolean getTriggerData() {
+        return sensor.getAsBoolean();
+    }
+
+    @Annotations.Log.NT
+    public boolean getBothSensorData() {
+        return (getRightSensorData() && getLeftSensorData());
+    }
+
+
+    public Command fullIntakeCommand() {
+        Command command =
+                new SequentialCommandGroup(
+                        new InstantCommand(() -> rollers.setVoltage(4)),
+                        new PrintCommand("1"),
+                        new InstantCommand(() -> centralizer.setVoltage(5)),
+                        new PrintCommand("2")
+//                        new WaitUntilCommand(() -> getBothSensorData()),
+//                        new PrintCommand("3"),
+//                        new WaitCommand(0.2),
+//                        new PrintCommand("4"),
+//                        new InstantCommand(() -> rollers.setVoltage(-5)).withTimeout(4)
+                );
+        command.addRequirements(this);
+        return command;
     }
 
 }

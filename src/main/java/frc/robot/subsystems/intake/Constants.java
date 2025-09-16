@@ -9,5 +9,6 @@ public class Constants {
     public static final int ENCODER_ID = 0;
     public static final int TOLERANCE = 0;
 
-    public static final int SENSOR_CHANNEL = 0;
+    public static final int LEFT_SENSOR_CHANNEL = 2;
+    public static final int RIGHT_SENSOR_CHANNEL = 3;
 }

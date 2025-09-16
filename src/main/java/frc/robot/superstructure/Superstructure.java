@@ -35,8 +35,8 @@ public class Superstructure {
                         && armSubsystem.isAtPosition().getAsBoolean()
                         && intakeSubsystem.isAtPosition().getAsBoolean()).debounce(AT_POSITION_DEBOUNCE);
         gripperSubsystem = new Gripper();
-        elevatorSubsystem.setArmAngle(armSubsystem.getAngleSupplier());
-        armSubsystem.setElevatorHeightSupplier(elevatorSubsystem.getElevatorHeight());
+        elevatorSubsystem.setArmAngle(armSubsystem::getAngleSupplier);
+        armSubsystem.setElevatorHeightSupplier(elevatorSubsystem::getElevatorHeight);
 
         armSubsystem.setIntakeOpen(intakeSubsystem.isIntakeOpen());
         followThroughMap.put(RobotStates.L2, RobotStates.L2_FOLLOWTHROUGH);
@@ -93,7 +93,6 @@ public class Superstructure {
         return new ConditionalCommand(
                 new SequentialCommandGroup(
                         setCurrentStateCommand(RobotStates.L1).until(atPositionTrigger),
-                        intakeSubsystem.setRollerVoltage(L1_SCORE_VOLTAGE).until(intakeSubsystem.hasCoral.negate()),
                         setCurrentStateCommand(RobotStates.DEFAULT_WITHOUT_GAME_PIECE)
                 ),
                 new PrintCommand("There is no available coral to score."), //TODO after handoffComand is changed apply it here like applied at reefScoreCommand

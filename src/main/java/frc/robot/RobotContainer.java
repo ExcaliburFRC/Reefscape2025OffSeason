@@ -5,12 +5,27 @@
 package frc.robot;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.excalib.control.gains.Gains;
+import frc.excalib.control.gains.SysidConfig;
 import frc.excalib.control.math.Vector2D;
+import frc.excalib.slam.mapper.AuroraClient;
 import frc.excalib.swerve.Swerve;
+import frc.robot.subsystems.arm.ArmPosition;
+import frc.robot.subsystems.arm.ArmSubsystem;
 import frc.robot.subsystems.elevator.ElevatorSubsystem;
+import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.IntakeState;
+import frc.robot.subsystems.intake.IntakeTest;
+import monologue.Annotations;
 import monologue.Annotations.Log.NT;
 import monologue.Logged;
 
@@ -21,9 +36,14 @@ import static frc.robot.Constants.SwerveConstants.MAX_VEL;
 
 public class RobotContainer implements Logged {
     CommandPS5Controller driver = new CommandPS5Controller(DRIVER_CONTROLLER_PORT);
+//    IntakeTest test = new IntakeTest();
+    ArmSubsystem arm = new ArmSubsystem();
+//    AuroraClient client = new AuroraClient(5000);
+    Intake intake = new Intake(IntakeState.DEFAULT);
 
-    ElevatorSubsystem elevatorSubsystem = new ElevatorSubsystem();
-//    Swerve swerve = Constants.SwerveConstants.configureSwerve(new Pose2d());
+//    ElevatorSubsystem elevatorSubsystem = new ElevatorSubsystem();
+    Swerve swerve = Constants.SwerveConstants.configureSwerve(new Pose2d());
+
 
     public RobotContainer() {
         configureBindings();
@@ -31,38 +51,32 @@ public class RobotContainer implements Logged {
 
 
     private void configureBindings() {
-//        swerve.setDefaultCommand(
-//                swerve.driveCommand(
-//                        () -> new Vector2D(
-//                                -applyDeadband(driver.getLeftY() * MAX_VEL),// * controllerInterpolation.get(controller.getRawAxis(3)),
-//                                -applyDeadband(driver.getLeftX() * MAX_VEL)),
-//                        () -> -applyDeadband(driver.getRightX() * MAX_OMEGA_RAD_PER_SEC),
-//                        () -> true
-//                )
-//        );
-        driver.povDown().whileTrue(elevatorSubsystem.manualCommand(()->-0.1));
-        driver.povUp().whileTrue(elevatorSubsystem.manualCommand(()->0.1));
-//
-//        driver.R1().whileTrue(automations.alignToSide(true));
-//        driver.L1().whileTrue(automations.alignToSide(false));
-//
-//        driver.triangle().onTrue(automations.L4Command());
-//        driver.circle().onTrue(automations.L3Command());
-//        driver.square().onTrue(automations.L2Command());
-//        driver.cross().onTrue(automations.L1Command());
-//
-//        driver.create().toggleOnTrue(automations.climbOnSelected());
-//
-//        operator.povLeft().onTrue(new RunCommand(() -> automations.climbOperator.goToNext()));
-//        operator.povRight().onTrue(new RunCommand(() -> automations.climbOperator.goToPrev()));
 
+//        driver.square().toggleOnTrue(swerve.driveSysId(0, SysIdRoutine.Direction.kReverse, new SysidConfig(1,3,8), false));
+//        driver.triangle().toggleOnTrue(swerve.driveSysId(0, SysIdRoutine.Direction.kForward, new SysidConfig(1,3,8), false));
+//        driver.cross().toggleOnTrue(swerve.driveSysId(0, SysIdRoutine.Direction.kReverse, new SysidConfig(1,3,8), true));
+//        driver.circle().toggleOnTrue(swerve.driveSysId(0, SysIdRoutine.Direction.kForward, new SysidConfig(1,3,8), true));
+//
+//        driver.povUp().toggleOnTrue(swerve.m_MODULES.m_frontLeft.m_driveWheel.setDynamicVelocityCommand(()-> Math.PI));
+//        driver.povDown().toggleOnTrue(swerve.m_MODULES.m_frontLeft.m_driveWheel.setDynamicVelocityCommand(()-> -Math.PI))
+//
+//
+       ;
+       driver.square().toggleOnTrue(arm.setStateCommand(ArmPosition.CHECK1));
+       driver.circle().toggleOnTrue(arm.goToStateCommand());
     }
 
     public double applyDeadband(double val) {
         return val < 0.05 ? 0 : val;
     }
 
+
     public Command getAutonomousCommand() {
         return Commands.none();
     }
+
+//    @NT
+//    public Pose3d getRobotPose() {
+//        return client.getPose3d();
+//    }
 }

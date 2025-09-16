@@ -23,7 +23,8 @@ public class constants {
     public static final double UPWARDS_ARM_MIN_LIMIT = 0;
     public static final double UPWARDS_ARM_MAX_LIMIT = 0;
 
-    public static final double VELOCITY_CONVERSION_FACTOR = 1;
+    public static final double POSITION_CONVERSION_FACTOR = 0.4756373706966272*0.0347879;
+    public static final double VELOCITY_CONVERSION_FACTOR = POSITION_CONVERSION_FACTOR;
 
 
 }

@@ -88,8 +88,8 @@ public final class Constants {
 
         public static final PIDConstants TRANSLATION_PID_PP_CONSTANTS = new PIDConstants(10.0, 0.0, 0.0); //TODO
         public static final PIDConstants ANGLE_PID_PP_CONSTANTS = new PIDConstants(5.0, 0.0, 0.0);
-        public static final Gains ANGLE_PID_GAINS = new Gains(2.0, 0.0, 0.0); //2.5, 0.0, 1.0);
-        public static final Gains TRANSLATION_PID_GAINS = new Gains(15.0, 0.0, 0.0);
+        public static final Gains ANGLE_PID_GAINS = new Gains();
+        public static final Gains TRANSLATION_PID_GAINS = new Gains();
 
         private static final IMU GYRO = new Pigeon(GYRO_ID, SWERVE_CANBUS, new Rotation3d());
 
@@ -101,12 +101,13 @@ public final class Constants {
                             new SwerveModule(
                                     new TalonFXMotor(FRONT_LEFT_DRIVE_ID, SWERVE_CANBUS),
                                     new TalonFXMotor(FRONT_LEFT_ROTATION_ID, SWERVE_CANBUS),
-                                    new Gains(6, 0, 0, 0.32621, 2.6212, 0.33422, 0),
-                                    new Gains(0, 0, 0, 0.0092262, 2.22144, 0.61204, 0), //TODO
+                                    new Gains(3, 0, 0, 0, 2.4738, 0.075667, 0),
+                                    new Gains(0, 0,0,0.17418*0.5, 2.4592*0.5,0,0),
                                     PID_TOLERANCE,
                                     FRONT_LEFT_TRANSLATION,
                                     () -> FRONT_LEFT_ABS_ENCODER.getAbsolutePosition().getValueAsDouble() * 2 * Math.PI,
                                     MAX_MODULE_VEL,
+
                                     VELOCITY_CONVERSION_FACTOR,
                                     POSITION_CONVERSION_FACTOR,
                                     ROTATION_VELOCITY_CONVERSION_FACTOR
@@ -114,8 +115,8 @@ public final class Constants {
                             new SwerveModule(
                                     new TalonFXMotor(FRONT_RIGHT_DRIVE_ID, SWERVE_CANBUS),
                                     new TalonFXMotor(FRONT_RIGHT_ROTATION_ID, SWERVE_CANBUS),
-                                    new Gains(6, 0, 0, 0.32621, 2.6212, 0.33422, 0),
-                                    new Gains(0, 0, 0, 0.0092262, 2.22144, 0.61204, 0), //TODO
+                                    new Gains(1.5657, 0, 0, 0, 2.4738, 0.075667, 0),
+                                    new Gains(),
                                     PID_TOLERANCE,
                                     FRONT_RIGHT_TRANSLATION,
                                     () -> FRONT_RIGHT_ABS_ENCODER.getAbsolutePosition().getValueAsDouble() * 2 * Math.PI,
@@ -127,8 +128,8 @@ public final class Constants {
                             new SwerveModule(
                                     new TalonFXMotor(BACK_LEFT_DRIVE_ID, SWERVE_CANBUS),
                                     new TalonFXMotor(BACK_LEFT_ROTATION_ID, SWERVE_CANBUS),
-                                    new Gains(7, 0, 0, 0.32621, 2.6212, 0.33422, 0),
-                                    new Gains(0, 0, 0, 0.0092262, 2.22144, 0.61204, 0), //TODO
+                                    new Gains(1.5657, 0, 0, 0, 2.4738, 0.075667, 0),
+                                    new Gains(),
                                     PID_TOLERANCE,
                                     BACK_LEFT_TRANSLATION,
                                     () -> BACK_LEFT_ABS_ENCODER.getAbsolutePosition().getValueAsDouble() * 2 * Math.PI,
@@ -140,8 +141,8 @@ public final class Constants {
                             new SwerveModule(
                                     new TalonFXMotor(BACK_RIGHT_DRIVE_ID, SWERVE_CANBUS),
                                     new TalonFXMotor(BACK_RIGHT_ROTATION_ID, SWERVE_CANBUS),
-                                    new Gains(6, 0, 0, 0.32621, 2.6212, 0.33422, 0),
-                                    new Gains(0, 0, 0, 0.0092262, 2.22144, 0.61204, 0), //TODO
+                                    new Gains(1.5657, 0, 0, 0, 2.4738, 0.075667, 0),
+                                    new Gains(),
                                     PID_TOLERANCE,
                                     BACK_RIGHT_TRANSLATION,
                                     () -> BACK_RIGHT_ABS_ENCODER.getAbsolutePosition().getValueAsDouble() * 2 * Math.PI,

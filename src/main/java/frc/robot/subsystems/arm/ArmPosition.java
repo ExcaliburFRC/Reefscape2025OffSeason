@@ -1,5 +1,7 @@
 package frc.robot.subsystems.arm;
 
+import edu.wpi.first.math.util.Units;
+
 public enum ArmPosition {
     L2(0),
     L2_FOLLOWTHROUGH(0),
@@ -15,6 +17,9 @@ public enum ArmPosition {
     PROCESSOR(0),
     HANDOFF(0),
     EJECT_GAME_PIECE(0),
+    CHECK1(-2.6),
+    CHECK2(Units.degreesToRadians(30)),
+    CHECK3(Math.PI),
     INTAKE(0);
 
     private  final double angle;

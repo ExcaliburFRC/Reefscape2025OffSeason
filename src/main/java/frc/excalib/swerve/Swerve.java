@@ -41,7 +41,7 @@ import static monologue.Annotations.Log;
  * A class representing a swerve subsystem.
  */
 public class Swerve extends SubsystemBase implements Logged {
-    private final ModulesHolder m_MODULES;
+    public final ModulesHolder m_MODULES;
     private final IMU m_imu;
     private final Odometry m_odometry;
     private ChassisSpeeds m_desiredChassisSpeeds = new ChassisSpeeds();
@@ -515,12 +515,7 @@ public class Swerve extends SubsystemBase implements Logged {
     @Override
     public void periodic() {
         m_MODULES.periodic();
-//        updateOdometry();
         m_field.setRobotPose(getPose2D());
     }
 
-//    @Log.NT
-//    public boolean seenTag() {
-//        return m_frontCamera.getTagTimer() || m_backCamera.getTagTimer();
-//    }
 }

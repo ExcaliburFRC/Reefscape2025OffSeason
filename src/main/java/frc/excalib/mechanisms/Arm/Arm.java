@@ -53,14 +53,19 @@ public class Arm extends Mechanism {
                 () -> {
             double error = setPointSupplier.getAsDouble() - ANGLE_SUPPLIER.getAsDouble();
             double velocitySetpoint = error / dutyCycle;
+
             velocitySetpoint = m_VELOCITY_LIMIT.limit(velocitySetpoint);
             double phyOutput =
                     m_ks * Math.signum(velocitySetpoint) +
                             m_kg * m_mass.getCenterOfMass().getX();
+                    System.out.println(phyOutput);
             double pid = m_PIDController.calculate(
                     ANGLE_SUPPLIER.getAsDouble(),
                     setPointSupplier.getAsDouble()
             );
+                    System.out.println("pid:    "+pid);
+                    System.out.println("setpoint:    "+setPointSupplier.getAsDouble());
+                    System.out.println("angle:    "+ANGLE_SUPPLIER.getAsDouble());
             double output = phyOutput + pid;
             super.setVoltage(m_VELOCITY_LIMIT.limit(output));
             toleranceConsumer.accept(Math.abs(error) < maxOffSet);

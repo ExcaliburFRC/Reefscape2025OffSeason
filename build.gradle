@@ -78,6 +78,8 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
     implementation 'com.github.shueja:Monologue:v1.0.0-beta5'
+
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.2'
 }
 
 test {

@@ -34,15 +34,18 @@ public class ElevatorSubsystem extends SubsystemBase implements Logged {
         rightMotor = new TalonFXMotor(RIGHT_MOTOR_ID);
         leftMotor = new TalonFXMotor(LEFT_MOTOR_ID);
 
-        leftMotor.setInverted(DirectionState.REVERSE);
-        rightMotor.setInverted(DirectionState.FORWARD);
+        leftMotor.setPosition(0);
+        rightMotor.setPosition(0);
+            leftMotor.setInverted(DirectionState.FORWARD);
+        rightMotor.setInverted(DirectionState.REVERSE);
         motorGroup = new MotorGroup(rightMotor, leftMotor);
-        motorGroup.setIdleState(IdleState.BRAKE);
+        motorGroup.setIdleState(IdleState.COAST);
+
         motorGroup.setVelocityConversionFactor(VELOCITY_CONVERSION_FACTOR);
-        motorGroup.setPositionConversionFactor(VELOCITY_CONVERSION_FACTOR);
+        motorGroup.setPositionConversionFactor(POSITION_CONVERSION_FACTOR);
 
 
-        elevatorHeight = leftMotor::getMotorPosition;
+        elevatorHeight = () -> (leftMotor.getMotorPosition() + rightMotor.getMotorPosition()) / 2;
 
         linearExtension = new LinearExtension(
                 motorGroup,
@@ -76,8 +79,8 @@ public class ElevatorSubsystem extends SubsystemBase implements Logged {
     }
 
     @Annotations.Log.NT
-    public DoubleSupplier getElevatorHeight() {
-        return elevatorHeight;
+    public double getElevatorHeight() {
+        return elevatorHeight.getAsDouble();
     }
 
     public void setArmAngle(DoubleSupplier setArmAngle) {
