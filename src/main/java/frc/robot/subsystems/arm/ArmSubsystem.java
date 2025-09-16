@@ -1,6 +1,7 @@
 package frc.robot.subsystems.arm;
 
 import com.ctre.phoenix6.hardware.CANcoder;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
@@ -17,6 +18,7 @@ import frc.excalib.mechanisms.Arm.Arm;
 import monologue.Annotations;
 import monologue.Annotations.Log.NT;
 import monologue.Logged;
+import org.opencv.core.Mat;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
@@ -49,14 +51,20 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
 
         firstMotor = new TalonFXMotor(FIRST_MOTOR_ID);
         canCoder = new CANcoder(CAN_CODER_ID);
-        firstMotor.setInverted(FORWARD);
-        firstMotor.setIdleState(BRAKE);
 
-        angleSupplier = () -> (canCoder.getAbsolutePosition().getValueAsDouble() * Math.PI * 2);
-        firstMotor.setPosition(angleSupplier.getAsDouble());
+        firstMotor.setInverted(REVERSE);
+        firstMotor.setNeutralMode(NeutralModeValue.Brake);
+
+        firstMotor.setVelocityConversionFactor(RPS_TO_RAD_PER_SEC);
+        firstMotor.setPositionConversionFactor((1 / 15.8611544) * Math.PI * 2);
+
+        angleSupplier = () -> (canCoder.getPosition().getValueAsDouble() * Math.PI * 2);
+        firstMotor.setMotorPosition(canCoder.getPosition().getValueAsDouble() * 2 * Math.PI);
+        //-0.273923 rotations
+        // 4.344735
 
 
-        armGains = new Gains(0.4, 0, 0, 0, 0, 0, -0.6);
+        armGains = new Gains(2, 0, 0, 0, 0, 0, -0.6);
         armMechanism = new Arm(
                 firstMotor,
                 angleSupplier,
@@ -70,11 +78,6 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
 
         elevatorHeightSupplier = () -> 0;
         isIntakeOpen = () -> false;
-
-        firstMotor.setInverted(FORWARD);
-
-        firstMotor.setVelocityConversionFactor(RPS_TO_RAD_PER_SEC);
-        firstMotor.setPositionConversionFactor(RPS_TO_RAD_PER_SEC);
 
         softLimit = new SoftLimit(
                 () -> {
@@ -93,8 +96,8 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
     public Command goToStateCommand() {
         return armMechanism.anglePositionControlCommand(
                 () -> currentState.getAngle(),
-                (at) -> at = toleranceTrigger.getAsBoolean(),
-                TOLERANCE,
+                (at) -> at = false,
+                0,
                 this
         );
     }
@@ -137,7 +140,7 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
 
     @NT
     public boolean isInTolernace() {
-        return toleranceTrigger.getAsBoolean();
+        return currentState.getAngle() - angleSupplier.getAsDouble() < 0.05;
     }
 
     @NT
@@ -148,6 +151,17 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
     @NT
     public double getEncoderValue() {
         return canCoder.getAbsolutePosition().getValueAsDouble();
+    }
+
+    @NT
+    public double getMotorValue() {
+        return firstMotor.getMotorPosition();
+
+    }
+
+    @NT
+    public double getSetpoint() {
+        return currentState.getAngle();
     }
 
 

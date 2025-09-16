@@ -58,11 +58,10 @@ public class RobotContainer implements Logged {
 //        driver.circle().toggleOnTrue(swerve.driveSysId(0, SysIdRoutine.Direction.kForward, new SysidConfig(1,3,8), true));
 //
 //        driver.povUp().toggleOnTrue(swerve.m_MODULES.m_frontLeft.m_driveWheel.setDynamicVelocityCommand(()-> Math.PI));
-//        driver.povDown().toggleOnTrue(swerve.m_MODULES.m_frontLeft.m_driveWheel.setDynamicVelocityCommand(()-> -Math.PI))
-//
-//
-       ;
+//        driver.povDown().toggleOnTrue(swerve.m_MODULES.m_frontLeft.m_driveWheel.setDynamicVelocityCommand(()-> -Math.PI));
+
        driver.square().toggleOnTrue(arm.setStateCommand(ArmPosition.CHECK1));
+       driver.triangle().whileTrue(arm.manualCommand(()-> 0.1));
        driver.circle().toggleOnTrue(arm.goToStateCommand());
     }
 
