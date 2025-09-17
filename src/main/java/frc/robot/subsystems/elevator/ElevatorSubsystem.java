@@ -109,6 +109,16 @@ public class ElevatorSubsystem extends SubsystemBase implements Logged {
         return atPositionTrigger;
     }
 
+    @NT
+    public double getLeftMotorPostion() {
+        return leftMotor.getMotorPosition();
+    }
+
+    @NT
+    public double getRightMotorPosition() {
+        return rightMotor.getMotorPosition();
+    }
+
 
 }
 

@@ -64,7 +64,7 @@ public final class Constants {
         public static final double MAX_SIDE_ACC = 6; //TODO
         public static final double MAX_SKID_ACC = 9; //TODO
         public static final double MAX_FORWARD_ACC = 9; //TODO
-        public static final double MAX_VEL = 4.5; //TODO
+        public static final double MAX_VEL = 4; //TODO
         public static final double MAX_OMEGA_RAD_PER_SEC = 4; //11.2 //TODO
         public static final double MAX_OMEGA_RAD_PER_SEC_SQUARE = 1; //TODO
 
@@ -116,7 +116,7 @@ public final class Constants {
                                     new TalonFXMotor(FRONT_RIGHT_DRIVE_ID, SWERVE_CANBUS),
                                     new TalonFXMotor(FRONT_RIGHT_ROTATION_ID, SWERVE_CANBUS),
                                     new Gains(1.5657, 0, 0, 0, 2.4738, 0.075667, 0),
-                                    new Gains(),
+                                    new Gains(0, 0,0,0.17418*0.5, 2.4592*0.5,0,0),
                                     PID_TOLERANCE,
                                     FRONT_RIGHT_TRANSLATION,
                                     () -> FRONT_RIGHT_ABS_ENCODER.getAbsolutePosition().getValueAsDouble() * 2 * Math.PI,
@@ -129,7 +129,7 @@ public final class Constants {
                                     new TalonFXMotor(BACK_LEFT_DRIVE_ID, SWERVE_CANBUS),
                                     new TalonFXMotor(BACK_LEFT_ROTATION_ID, SWERVE_CANBUS),
                                     new Gains(1.5657, 0, 0, 0, 2.4738, 0.075667, 0),
-                                    new Gains(),
+                                    new Gains(0, 0,0,0.17418*0.5, 2.4592*0.5,0,0),
                                     PID_TOLERANCE,
                                     BACK_LEFT_TRANSLATION,
                                     () -> BACK_LEFT_ABS_ENCODER.getAbsolutePosition().getValueAsDouble() * 2 * Math.PI,
@@ -142,7 +142,7 @@ public final class Constants {
                                     new TalonFXMotor(BACK_RIGHT_DRIVE_ID, SWERVE_CANBUS),
                                     new TalonFXMotor(BACK_RIGHT_ROTATION_ID, SWERVE_CANBUS),
                                     new Gains(1.5657, 0, 0, 0, 2.4738, 0.075667, 0),
-                                    new Gains(),
+                                    new Gains(0, 0,0,0.17418*0.5, 2.4592*0.5,0,0),
                                     PID_TOLERANCE,
                                     BACK_RIGHT_TRANSLATION,
                                     () -> BACK_RIGHT_ABS_ENCODER.getAbsolutePosition().getValueAsDouble() * 2 * Math.PI,

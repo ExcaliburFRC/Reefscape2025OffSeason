@@ -3,6 +3,7 @@ package frc.robot.subsystems.intake;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.wpilibj.AnalogInput;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.excalib.control.gains.Gains;
@@ -13,6 +14,7 @@ import frc.excalib.control.motor.motor_specs.DirectionState;
 import frc.excalib.mechanisms.Arm.Arm;
 import frc.excalib.mechanisms.Mechanism;
 import monologue.Annotations;
+import monologue.Annotations.Log.NT;
 import monologue.Logged;
 
 import java.util.function.BooleanSupplier;
@@ -24,6 +26,7 @@ public class Intake extends SubsystemBase implements Logged {
     // === Motors ===
     private final TalonFXMotor armMotor, centerlizerMotor;
     private final TalonFXMotor rollersMotor;
+    private final DigitalInput digitalInput;
 
     // === Inputs ===
     private final AnalogInput rightSensor, leftSensor; // . getVsl
@@ -50,6 +53,8 @@ public class Intake extends SubsystemBase implements Logged {
         armMotor.setPositionConversionFactor((Math.PI * 2 / 14.8));
         armMotor.setVelocityConversionFactor((Math.PI * 2 / 14.8));
         armMotor.setNeutralMode(NeutralModeValue.Brake);
+
+        digitalInput = new DigitalInput(8);
 
         armMotor.setMotorPosition(Math.PI / 2 - 0.7072895200359199);
         armMotor.setInverted(DirectionState.FORWARD);
@@ -121,22 +126,22 @@ public class Intake extends SubsystemBase implements Logged {
     }
 
 
-    @Annotations.Log.NT
+    @NT
     public boolean getLeftSensorData() {
         return !leftSensorTrigger.getAsBoolean();
     }
 
-    @Annotations.Log.NT
+    @NT
     public boolean getRightSensorData() {
         return !rightSensorTrigger.getAsBoolean();
     }
 
-    @Annotations.Log.NT
+    @NT
     public boolean getTriggerData() {
         return sensor.getAsBoolean();
     }
 
-    @Annotations.Log.NT
+    @NT
     public boolean getBothSensorData() {
         return (getRightSensorData() && getLeftSensorData());
     }
@@ -159,34 +164,38 @@ public class Intake extends SubsystemBase implements Logged {
         return command;
     }
 
-    @Annotations.Log.NT
+    @NT
     public double getAngleSupplier() {
         return m_angleSupplier.getAsDouble();
     }
 
-    @Annotations.Log.NT
+    @NT
     public double getSetPoint() {
         return currentState.intakeAngle;
     }
 
-    @Annotations.Log.NT
+    @NT
     public Trigger getAtPosition() {
         return atPosition;
     }
 
-    @Annotations.Log.NT
+    @NT
     public AnalogInput getRightSensor() {
         return rightSensor;
     }
 
-    @Annotations.Log.NT
+    @NT
     public IntakeState getCurrentState() {
         return currentState;
     }
 
-    @Annotations.Log.NT
+    @NT
     public IntakeState getDefaultState() {
         return defaultState;
     }
 
+    @NT
+    public boolean getDigitalInput() {
+        return digitalInput.get();
+    }
 }

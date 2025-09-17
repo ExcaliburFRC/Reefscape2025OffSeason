@@ -17,7 +17,7 @@ public enum ArmPosition {
     PROCESSOR(0),
     HANDOFF(0),
     EJECT_GAME_PIECE(0),
-    CHECK1(Math.PI/2),
+    CHECK1(-10),
     CHECK2(Math.PI*2),
     CHECK3(Math.PI),
     INTAKE(0);

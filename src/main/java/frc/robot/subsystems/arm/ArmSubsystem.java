@@ -29,7 +29,6 @@ import static frc.excalib.control.motor.motor_specs.IdleState.COAST;
 import static frc.robot.subsystems.arm.Constants.*;
 
 public class ArmSubsystem extends SubsystemBase implements Logged {
-
     // == motors ==
     private final TalonFXMotor firstMotor;
     private final CANcoder canCoder;
@@ -42,7 +41,7 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
     private final Arm armMechanism;
 
     private final Trigger toleranceTrigger; //
-    private final SoftLimit softLimit; //
+    private final ContinuousSoftLimit softLimit; //
 
     private BooleanSupplier isIntakeOpen; //
 
@@ -58,13 +57,10 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
         firstMotor.setVelocityConversionFactor(RPS_TO_RAD_PER_SEC);
         firstMotor.setPositionConversionFactor((1 / 15.8611544) * Math.PI * 2);
 
-        angleSupplier = () -> (canCoder.getAbsolutePosition().getValueAsDouble() * Math.PI * 2);
+        angleSupplier = () -> (canCoder.getPosition().getValueAsDouble() * Math.PI * 2);
         firstMotor.setMotorPosition(canCoder.getAbsolutePosition().getValueAsDouble() * 2 * Math.PI);
-        //-0.273923 rotations
-        // 4.344735
 
-
-        armGains = new Gains(1.4, 0, 0.03, 0, 0, 0, 0.6);
+        armGains = new Gains(2.5, 0, 0.15, 0, 0, 0, 0.61);
         armMechanism = new Arm(
                 firstMotor,
                 angleSupplier,
@@ -79,26 +75,18 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
         elevatorHeightSupplier = () -> 0;
         isIntakeOpen = () -> false;
 
-        softLimit = new SoftLimit(
-                () -> {
-                    return elevatorHeightSupplier.getAsDouble() < ARM_COLISION_ELEVATOR_LENGTH ? 0 : -Math.PI / 2;
-                },
-                () -> {
-                    return elevatorHeightSupplier.getAsDouble() < ARM_COLISION_ELEVATOR_LENGTH ? Math.PI : Math.PI * 1.5;
-                }
+        softLimit = new ContinuousSoftLimit(
+                () -> -11,
+                () -> 0
         );
 
         setDefaultCommand((goToStateCommand()));
 
-//        setDefaultCommand(
-//
-//
-//        );
     }
 
     public Command goToStateCommand() {
         return armMechanism.anglePositionControlCommand(
-                () -> currentState.getAngle(),
+                () -> softLimit.getSetpoint(angleSupplier.getAsDouble(), currentState.getAngle()),
                 (at) -> at = false,
                 Math.PI/50,
                 this
@@ -142,12 +130,7 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
 
     @NT
     public boolean isInTolernace() {
-        return Math.abs(currentState.getAngle() - angleSupplier.getAsDouble()) < Math.PI/50;
-    }
-
-    @NT
-    public double getMotorPowwer() {
-        return 1 * Math.cos(angleSupplier.getAsDouble());
+        return Math.abs(currentState.getAngle() - angleSupplier.getAsDouble()) < Math.PI / 50;
     }
 
     @NT
@@ -158,7 +141,6 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
     @NT
     public double getMotorValue() {
         return firstMotor.getMotorPosition();
-
     }
 
     @NT
@@ -166,6 +148,18 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
         return currentState.getAngle();
     }
 
+    @NT
+    public double getCurrent() {
+        return armMechanism.logCurrent();
+    }
 
+    @NT
+    public double getVoltage() {
+        return armMechanism.logVoltage();
+    }
+
+    @NT
+    public double getLimitedSetpoint() {
+        return softLimit.getSetpoint(angleSupplier.getAsDouble(), currentState.getAngle());
+    }
 }
-
