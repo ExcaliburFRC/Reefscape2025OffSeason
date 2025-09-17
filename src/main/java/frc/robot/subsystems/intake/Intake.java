@@ -1,6 +1,7 @@
 package frc.robot.subsystems.intake;
 
 import com.ctre.phoenix6.hardware.CANcoder;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -8,12 +9,12 @@ import frc.excalib.control.gains.Gains;
 import frc.excalib.control.limits.SoftLimit;
 import frc.excalib.control.math.physics.Mass;
 import frc.excalib.control.motor.controllers.TalonFXMotor;
+import frc.excalib.control.motor.motor_specs.DirectionState;
 import frc.excalib.mechanisms.Arm.Arm;
 import frc.excalib.mechanisms.Mechanism;
 import monologue.Annotations;
 import monologue.Logged;
 
-import java.security.Permission;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
@@ -21,52 +22,37 @@ import static frc.robot.subsystems.intake.Constants.*;
 
 public class Intake extends SubsystemBase implements Logged {
     // === Motors ===
-    private final TalonFXMotor m_armMotor;
-    private final TalonFXMotor m_rollersMotor;
+    private final TalonFXMotor armMotor, centerlizerMotor;
+    private final TalonFXMotor rollersMotor;
 
     // === Inputs ===
     private final AnalogInput rightSensor, leftSensor; // . getVsl
     private final Trigger rightSensorTrigger, leftSensorTrigger, sensor;
-    private IntakeState m_currentState; //
-    private IntakeState m_defaultState; //
+    private IntakeState currentState; //
+    private IntakeState defaultState; //
     private final Mechanism centralizer, rollers;
-    private final Arm m_arm;
-    private final Trigger m_atPosition; //
+    private final Arm arm;
+    private final Trigger atPosition; //
 
-
-    @Annotations.Log.NT
-    public Trigger getM_atPosition() {
-        return m_atPosition;
-    }
-
-    @Annotations.Log.NT
-    public AnalogInput getRightSensor() {
-        return rightSensor;
-    }
-
-    @Annotations.Log.NT
-    public IntakeState getM_currentState() {
-        return m_currentState;
-    }
-
-    @Annotations.Log.NT
-    public IntakeState getM_defaultState() {
-        return m_defaultState;
-    }
-
-    private final CANcoder m_armEncoder;
     private final DoubleSupplier m_angleSupplier; //
     private final Trigger intakeOpen; //
     public final Trigger hasCoral;//
 
+    public final SoftLimit positionLimit;
+
     public Intake(IntakeState initialState) {
 
-        m_currentState = initialState;
-        m_defaultState = IntakeState.DEFAULT;
-        m_armMotor = new TalonFXMotor(ARM_MOTOR_ID);
-        m_rollersMotor = new TalonFXMotor(ROLLERS_MOTOR_ID);
-        TalonFXMotor m_centralizerMotor = new TalonFXMotor(CENTERLIZER_MOTOR_ID);
+        currentState = initialState;
+        defaultState = IntakeState.DEFAULT;
+        armMotor = new TalonFXMotor(ARM_MOTOR_ID);
+        rollersMotor = new TalonFXMotor(ROLLERS_MOTOR_ID);
+        centerlizerMotor = new TalonFXMotor(CENTERLIZER_MOTOR_ID);
+        armMotor.setPositionConversionFactor((Math.PI * 2 / 14.8));
+        armMotor.setVelocityConversionFactor((Math.PI * 2 / 14.8));
+        armMotor.setNeutralMode(NeutralModeValue.Brake);
 
+        armMotor.setMotorPosition(Math.PI / 2 - 0.7072895200359199);
+        armMotor.setInverted(DirectionState.FORWARD);
         rightSensor = new AnalogInput(RIGHT_SENSOR_CHANNEL);
         leftSensor = new AnalogInput(LEFT_SENSOR_CHANNEL);
 
@@ -76,48 +62,54 @@ public class Intake extends SubsystemBase implements Logged {
         leftSensorTrigger = new Trigger(() -> rightSensor.getValue() < 4000);
 
 
-        m_armEncoder = new CANcoder(ENCODER_ID);
-        m_angleSupplier = () -> m_armEncoder.getPosition().getValueAsDouble() * Math.PI * 2;
-        centralizer = new Mechanism(m_centralizerMotor);
-        rollers = new Mechanism(m_rollersMotor);
+        m_angleSupplier = armMotor::getMotorPosition;
+        centralizer = new Mechanism(centerlizerMotor);
+        rollers = new Mechanism(rollersMotor);
 
-        m_atPosition = new Trigger(
-                () -> Math.abs(m_angleSupplier.getAsDouble() - m_currentState.intakeAngle) < TOLERANCE).debounce(0.1);
+        atPosition = new Trigger(
+                () -> Math.abs(m_angleSupplier.getAsDouble() - currentState.intakeAngle) < TOLERANCE);
 
-        intakeOpen = new Trigger(() -> (m_atPosition.getAsBoolean() && (m_currentState == IntakeState.FLOOR_INTAKE))).debounce(0.1);
-        m_arm = new Arm(
-                m_armMotor,
-                m_angleSupplier,
+        intakeOpen = new Trigger(() -> (atPosition.getAsBoolean() && (currentState == IntakeState.FLOOR_INTAKE))).debounce(0.1);
+        arm = new Arm(
+                armMotor,
+                () -> armMotor.getMotorPosition(),
                 new SoftLimit(() -> ARM_VELOCITY_MIN, () -> ARM_VELOCITY_MAX),
-                new Gains(),
+//                new Gains(0.1, 0, 0, 0, 0, 0, 1.07
+                new Gains(0, 0, 0, 0, 0, 0, 1.07
+                ),
                 new Mass((() -> Math.cos(m_angleSupplier.getAsDouble())),
-                        (() -> Math.sin(m_angleSupplier.getAsDouble())), 0)
-
-
+                        (() -> Math.sin(m_angleSupplier.getAsDouble())), 1)
         );
-
         hasCoral = new Trigger(() -> (true)).debounce(0.1);
+
+        positionLimit = new SoftLimit(() -> 0, () -> 0);
+//        setDefaultCommand(defaultCommand());
+
+    }
+
+    public Command manualCommand(DoubleSupplier db) {
+        return arm.manualCommand(db::getAsDouble);
     }
 
     public Command defaultCommand() {
-        return new ParallelCommandGroup(
-                m_arm.anglePositionControlCommand(
-                        () -> m_currentState.intakeAngle,
-                        at -> at = m_atPosition.getAsBoolean(),
+        Command command = new ParallelCommandGroup(
+                arm.anglePositionControlCommand(
+                        () -> currentState.intakeAngle,
+                        at -> at = false,
                         TOLERANCE,
                         this
-                ),
-                rollers.manualCommand(() -> m_currentState.rollerVoltage, this),
-                centralizer.manualCommand(() -> m_currentState.centraliserVoltage, this)
+                )
         );
+        command.addRequirements(this);
+        return command;
     }
 
     public void setState(IntakeState state) {
-        this.m_currentState = state;
+        this.currentState = state;
     }
 
     public void returnToDefaultState() {
-        this.m_currentState = this.m_defaultState;
+        this.currentState = this.defaultState;
     }
 
     public BooleanSupplier isIntakeOpen() {
@@ -125,7 +117,7 @@ public class Intake extends SubsystemBase implements Logged {
     }
 
     public BooleanSupplier isAtPosition() {
-        return m_atPosition;
+        return atPosition;
     }
 
 
@@ -165,6 +157,36 @@ public class Intake extends SubsystemBase implements Logged {
                 );
         command.addRequirements(this);
         return command;
+    }
+
+    @Annotations.Log.NT
+    public double getAngleSupplier() {
+        return m_angleSupplier.getAsDouble();
+    }
+
+    @Annotations.Log.NT
+    public double getSetPoint() {
+        return currentState.intakeAngle;
+    }
+
+    @Annotations.Log.NT
+    public Trigger getAtPosition() {
+        return atPosition;
+    }
+
+    @Annotations.Log.NT
+    public AnalogInput getRightSensor() {
+        return rightSensor;
+    }
+
+    @Annotations.Log.NT
+    public IntakeState getCurrentState() {
+        return currentState;
+    }
+
+    @Annotations.Log.NT
+    public IntakeState getDefaultState() {
+        return defaultState;
     }
 
 }

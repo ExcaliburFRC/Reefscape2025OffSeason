@@ -2,7 +2,7 @@ package frc.robot.subsystems.intake;
 
 public enum IntakeState {
     FLOOR_INTAKE(0,0,0),
-    DEFAULT(0,0,0),
+    DEFAULT(2.5,0,0),
     HANDOFF(0,0,0),
     L1_SCORE(0, 0, 0),
     GET_CORAL_BACK_FROM_ARM(0, 0, 0),
@@ -10,7 +10,7 @@ public enum IntakeState {
     final double intakeAngle;
     final double rollerVoltage;
     final double centraliserVoltage;
-    private IntakeState(int intakeAngle, int rollerVoltage, int centraliserVoltage){
+    private IntakeState(double intakeAngle, double rollerVoltage, double centraliserVoltage){
         this.intakeAngle = intakeAngle;
         this.rollerVoltage = rollerVoltage;
         this.centraliserVoltage = centraliserVoltage;

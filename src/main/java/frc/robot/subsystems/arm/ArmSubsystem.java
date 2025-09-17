@@ -47,7 +47,7 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
     private BooleanSupplier isIntakeOpen; //
 
     public ArmSubsystem() {
-        currentState = ArmPosition.DEFAULT_WITHOUT_GAME_PIECE;
+        currentState = ArmPosition.CHECK1;
 
         firstMotor = new TalonFXMotor(FIRST_MOTOR_ID);
         canCoder = new CANcoder(CAN_CODER_ID);
@@ -88,7 +88,7 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
                 }
         );
 
-        setDefaultCommand(setStateCommand(ArmPosition.CHECK1).withTimeout(0.1).andThen(goToStateCommand()));
+        setDefaultCommand((goToStateCommand()));
 
 //        setDefaultCommand(
 //
