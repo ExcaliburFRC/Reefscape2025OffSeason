@@ -15,10 +15,7 @@ public class constants {
 
     public static double TOLERANCE = 0.005;
 
-    public static final double MAX_ELEVATOR_HIGHT = 0;
-    public static final double MIN_ELEVATOR_HIGHT = 0;
-
-    public static final double MIN_ELEVATOR_HIGHT_WITH_OPEN_ARM = 0;
+    public static final double MAX_ELEVATOR_HIGHT = 1.35;
 
     public static final double UPWARDS_ARM_MIN_LIMIT = 0;
     public static final double UPWARDS_ARM_MAX_LIMIT = 0;

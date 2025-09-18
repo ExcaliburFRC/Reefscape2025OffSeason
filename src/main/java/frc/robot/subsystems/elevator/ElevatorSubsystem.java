@@ -32,7 +32,7 @@ public class ElevatorSubsystem extends SubsystemBase implements Logged {
     private SoftLimit softLimit; //
     private DoubleSupplier armAngle; //
     public final Trigger atPositionTrigger; //
-    public Trigger intakeOpenTrigger = new Trigger(()-> true);
+    public Trigger intakeOpenTrigger = new Trigger(() -> true);
 
     public ElevatorSubsystem() {
         rightMotor = new TalonFXMotor(RIGHT_MOTOR_ID);
@@ -69,8 +69,13 @@ public class ElevatorSubsystem extends SubsystemBase implements Logged {
                 () -> (Math.abs(currentState.getHeight() - elevatorHeight.getAsDouble()) < TOLERANCE));
 
         softLimit = new SoftLimit(
-                () -> {return 0;},
-                () -> {return 0;}
+                () -> {
+                    if (isIntakeOpen()) {
+                        return 0.4;
+                    }
+                    return 0;
+                },
+                () -> MAX_ELEVATOR_HIGHT
         );
     }
 
@@ -126,7 +131,7 @@ public class ElevatorSubsystem extends SubsystemBase implements Logged {
     }
 
     @NT
-    public boolean isIntakeOpen(){
+    public boolean isIntakeOpen() {
         return intakeOpenTrigger.getAsBoolean();
     }
 
