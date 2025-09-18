@@ -25,7 +25,8 @@ public class Intake extends SubsystemBase implements Logged {
     // === Motors ===
     public final TalonFXMotor armMotor, centerlizerMotor;
     private final TalonFXMotor rollersMotor;
-    private final DigitalInput digitalInput;
+    private final DigitalInput limitSwitch;
+    private final Trigger limitSwitchTrigger;
 
     // === Inputs ===
     private final AnalogInput rightSensor, leftSensor; // . getVsl
@@ -37,11 +38,9 @@ public class Intake extends SubsystemBase implements Logged {
     public final Arm arm;
     private final Trigger atPosition; //
 
-    public final DoubleSupplier m_angleSupplier; //
+    public DoubleSupplier angleSupplier; //
     private final Trigger intakeOpen; //
     public final Trigger hasCoral;//
-
-    public final SoftLimit positionLimit;
 
     public Intake(IntakeState initialState) {
 
@@ -60,7 +59,9 @@ public class Intake extends SubsystemBase implements Logged {
 
         armMotor.setNeutralMode(NeutralModeValue.Brake);
 
-        digitalInput = new DigitalInput(8);
+        limitSwitch = new DigitalInput(9);
+        limitSwitchTrigger = new Trigger(() -> !limitSwitch.get());
+
 
         armMotor.setMotorPosition(Math.PI / 2 - 0.7072895200359199);
         armMotor.setInverted(DirectionState.FORWARD);
@@ -72,11 +73,11 @@ public class Intake extends SubsystemBase implements Logged {
         rightSensorTrigger = new Trigger(() -> leftSensor.getValue() < 4000);
         leftSensorTrigger = new Trigger(() -> rightSensor.getValue() < 4000);
 
-        m_angleSupplier = armMotor::getMotorPosition;
+        angleSupplier = armMotor::getMotorPosition;
         centralizer = new Mechanism(centerlizerMotor);
         rollers = new Mechanism(rollersMotor);
 
-        atPosition = new Trigger(() -> Math.abs(currentState.intakeAngle - m_angleSupplier.getAsDouble()) < TOLERANCE);
+        atPosition = new Trigger(() -> Math.abs(currentState.intakeAngle - angleSupplier.getAsDouble()) < TOLERANCE);
 
         intakeOpen = new Trigger(() -> (atPosition.getAsBoolean() && (currentState == IntakeState.FLOOR_INTAKE))).debounce(0.1);
         arm = new Arm(
@@ -84,16 +85,15 @@ public class Intake extends SubsystemBase implements Logged {
                 armMotor::getMotorPosition,
                 new SoftLimit(() -> ARM_VELOCITY_MIN, () -> ARM_VELOCITY_MAX),
                 new Gains(2.5, 0, 0, 0, 0, 0, 0.8),
-                new Mass((() -> Math.cos(m_angleSupplier.getAsDouble())), (() -> Math.sin(m_angleSupplier.getAsDouble())), 1));
+                new Mass((() -> Math.cos(angleSupplier.getAsDouble())), (() -> Math.sin(angleSupplier.getAsDouble())), 1));
 
         hasCoral = new Trigger(() -> (true)).debounce(0.1);
 
-        positionLimit = new SoftLimit(() -> 0, () -> 0);
+        limitSwitchTrigger.whileTrue(resetAngleCommand());
+
         setDefaultCommand(goToStateCommand());
         either = new Trigger(() -> (getRightSensorData() || getLeftSensorData()));
         both = new Trigger(() -> (getRightSensorData() && getLeftSensorData()));
-
-
     }
 
 
@@ -152,15 +152,10 @@ public class Intake extends SubsystemBase implements Logged {
 
     public Command intakeCommand() {
         Command command = new SequentialCommandGroup(
-                new PrintCommand("help"),
                 setStateCommand(IntakeState.FLOOR_INTAKE),
-                new PrintCommand("please work"),
                 new WaitUntilCommand(either),
-                new PrintCommand("it worked!"),
                 setStateCommand(IntakeState.CENTERLIZE),
-                new PrintCommand("2"),
                 new WaitUntilCommand(both),
-                new PrintCommand("3"),
                 setStateCommand(IntakeState.DEFAULT)
         );
         command.addRequirements(this);
@@ -173,7 +168,7 @@ public class Intake extends SubsystemBase implements Logged {
 
     @NT
     public double getAngleSupplier() {
-        return m_angleSupplier.getAsDouble();
+        return angleSupplier.getAsDouble();
     }
 
     @NT
@@ -197,21 +192,18 @@ public class Intake extends SubsystemBase implements Logged {
     }
 
     @NT
-    public boolean getDigitalInput() {
-        return digitalInput.get();
+    public boolean getLimitSwitch() {
+        return !limitSwitch.get();
     }
 
     @NT
     public BooleanSupplier getEitherSensorData() {
         return () -> (getRightSensorData() || getLeftSensorData());
     }
-    @NT
-    public BooleanSupplier getEither() {
-        return either;
+
+    public Command resetAngleCommand() {
+        return new RunCommand(() -> armMotor.setMotorPosition(Math.PI / 2 - 0.7072895)).ignoringDisable(true);
     }
-    @NT
-    public BooleanSupplier getBoth() {
-        return both;
-    }
+
 
 }
