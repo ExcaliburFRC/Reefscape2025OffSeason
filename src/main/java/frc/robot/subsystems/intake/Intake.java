@@ -1,6 +1,6 @@
 package frc.robot.subsystems.intake;
 
-import com.ctre.phoenix6.hardware.CANcoder;
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -13,7 +13,6 @@ import frc.excalib.control.motor.controllers.TalonFXMotor;
 import frc.excalib.control.motor.motor_specs.DirectionState;
 import frc.excalib.mechanisms.Arm.Arm;
 import frc.excalib.mechanisms.Mechanism;
-import monologue.Annotations;
 import monologue.Annotations.Log.NT;
 import monologue.Logged;
 
@@ -24,20 +23,21 @@ import static frc.robot.subsystems.intake.Constants.*;
 
 public class Intake extends SubsystemBase implements Logged {
     // === Motors ===
-    private final TalonFXMotor armMotor, centerlizerMotor;
+    public final TalonFXMotor armMotor, centerlizerMotor;
     private final TalonFXMotor rollersMotor;
     private final DigitalInput digitalInput;
 
     // === Inputs ===
     private final AnalogInput rightSensor, leftSensor; // . getVsl
     private final Trigger rightSensorTrigger, leftSensorTrigger, sensor;
+    private final Trigger either, both;
     private IntakeState currentState; //
     private IntakeState defaultState; //
     private final Mechanism centralizer, rollers;
-    private final Arm arm;
+    public final Arm arm;
     private final Trigger atPosition; //
 
-    private final DoubleSupplier m_angleSupplier; //
+    public final DoubleSupplier m_angleSupplier; //
     private final Trigger intakeOpen; //
     public final Trigger hasCoral;//
 
@@ -52,6 +52,12 @@ public class Intake extends SubsystemBase implements Logged {
         centerlizerMotor = new TalonFXMotor(CENTERLIZER_MOTOR_ID);
         armMotor.setPositionConversionFactor((Math.PI * 2 / 14.8));
         armMotor.setVelocityConversionFactor((Math.PI * 2 / 14.8));
+
+        CurrentLimitsConfigs limitsConfigs = new CurrentLimitsConfigs();
+        limitsConfigs.SupplyCurrentLimit = 50;
+        limitsConfigs.SupplyCurrentLimitEnable = true;
+        armMotor.getConfigurator().apply(limitsConfigs);
+
         armMotor.setNeutralMode(NeutralModeValue.Brake);
 
         digitalInput = new DigitalInput(8);
@@ -66,51 +72,50 @@ public class Intake extends SubsystemBase implements Logged {
         rightSensorTrigger = new Trigger(() -> leftSensor.getValue() < 4000);
         leftSensorTrigger = new Trigger(() -> rightSensor.getValue() < 4000);
 
-
         m_angleSupplier = armMotor::getMotorPosition;
         centralizer = new Mechanism(centerlizerMotor);
         rollers = new Mechanism(rollersMotor);
 
-        atPosition = new Trigger(
-                () -> Math.abs(m_angleSupplier.getAsDouble() - currentState.intakeAngle) < TOLERANCE);
+        atPosition = new Trigger(() -> Math.abs(currentState.intakeAngle - m_angleSupplier.getAsDouble()) < TOLERANCE);
 
         intakeOpen = new Trigger(() -> (atPosition.getAsBoolean() && (currentState == IntakeState.FLOOR_INTAKE))).debounce(0.1);
         arm = new Arm(
                 armMotor,
-                () -> armMotor.getMotorPosition(),
+                armMotor::getMotorPosition,
                 new SoftLimit(() -> ARM_VELOCITY_MIN, () -> ARM_VELOCITY_MAX),
-//                new Gains(0.1, 0, 0, 0, 0, 0, 1.07
-                new Gains(0, 0, 0, 0, 0, 0, 1.07
-                ),
-                new Mass((() -> Math.cos(m_angleSupplier.getAsDouble())),
-                        (() -> Math.sin(m_angleSupplier.getAsDouble())), 1)
-        );
+                new Gains(2.5, 0, 0, 0, 0, 0, 0.8),
+                new Mass((() -> Math.cos(m_angleSupplier.getAsDouble())), (() -> Math.sin(m_angleSupplier.getAsDouble())), 1));
+
         hasCoral = new Trigger(() -> (true)).debounce(0.1);
 
         positionLimit = new SoftLimit(() -> 0, () -> 0);
-//        setDefaultCommand(defaultCommand());
+        setDefaultCommand(goToStateCommand());
+        either = new Trigger(() -> (getRightSensorData() || getLeftSensorData()));
+        both = new Trigger(() -> (getRightSensorData() && getLeftSensorData()));
+
 
     }
+
 
     public Command manualCommand(DoubleSupplier db) {
         return arm.manualCommand(db::getAsDouble);
     }
 
-    public Command defaultCommand() {
+    public Command goToStateCommand() {
         Command command = new ParallelCommandGroup(
                 arm.anglePositionControlCommand(
                         () -> currentState.intakeAngle,
                         at -> at = false,
-                        TOLERANCE,
-                        this
-                )
-        );
+                        TOLERANCE).until(atPosition),
+                new InstantCommand(() -> rollersMotor.setVoltage(currentState.rollerVoltage)),
+                new InstantCommand(() -> centerlizerMotor.setVoltage(currentState.centraliserVoltage)));
         command.addRequirements(this);
         return command;
+
     }
 
-    public void setState(IntakeState state) {
-        this.currentState = state;
+    public Command setStateCommand(IntakeState state) {
+        return new InstantCommand(() -> this.currentState = state, this);
     }
 
     public void returnToDefaultState() {
@@ -124,7 +129,6 @@ public class Intake extends SubsystemBase implements Logged {
     public BooleanSupplier isAtPosition() {
         return atPosition;
     }
-
 
     @NT
     public boolean getLeftSensorData() {
@@ -142,26 +146,29 @@ public class Intake extends SubsystemBase implements Logged {
     }
 
     @NT
-    public boolean getBothSensorData() {
-        return (getRightSensorData() && getLeftSensorData());
+    public BooleanSupplier getBothSensorData() {
+        return () -> (getRightSensorData() && getLeftSensorData());
     }
 
-
-    public Command fullIntakeCommand() {
-        Command command =
-                new SequentialCommandGroup(
-                        new InstantCommand(() -> rollers.setVoltage(4)),
-                        new PrintCommand("1"),
-                        new InstantCommand(() -> centralizer.setVoltage(5)),
-                        new PrintCommand("2")
-//                        new WaitUntilCommand(() -> getBothSensorData()),
-//                        new PrintCommand("3"),
-//                        new WaitCommand(0.2),
-//                        new PrintCommand("4"),
-//                        new InstantCommand(() -> rollers.setVoltage(-5)).withTimeout(4)
-                );
+    public Command intakeCommand() {
+        Command command = new SequentialCommandGroup(
+                new PrintCommand("help"),
+                setStateCommand(IntakeState.FLOOR_INTAKE),
+                new PrintCommand("please work"),
+                new WaitUntilCommand(either),
+                new PrintCommand("it worked!"),
+                setStateCommand(IntakeState.CENTERLIZE),
+                new PrintCommand("2"),
+                new WaitUntilCommand(both),
+                new PrintCommand("3"),
+                setStateCommand(IntakeState.DEFAULT)
+        );
         command.addRequirements(this);
         return command;
+    }
+
+    public Command handoffCommand() {
+        return setStateCommand(IntakeState.EJECT_CORAL);
     }
 
     @NT
@@ -170,32 +177,41 @@ public class Intake extends SubsystemBase implements Logged {
     }
 
     @NT
-    public double getSetPoint() {
+    public double getSetpoint() {
         return currentState.intakeAngle;
     }
 
     @NT
-    public Trigger getAtPosition() {
-        return atPosition;
+    public double getRightSensor() {
+        return rightSensor.getValue();
     }
 
     @NT
-    public AnalogInput getRightSensor() {
-        return rightSensor;
+    public String getCurrentState() {
+        return currentState.name();
     }
 
     @NT
-    public IntakeState getCurrentState() {
-        return currentState;
-    }
-
-    @NT
-    public IntakeState getDefaultState() {
-        return defaultState;
+    public String getDefaultState() {
+        return defaultState.name();
     }
 
     @NT
     public boolean getDigitalInput() {
         return digitalInput.get();
     }
+
+    @NT
+    public BooleanSupplier getEitherSensorData() {
+        return () -> (getRightSensorData() || getLeftSensorData());
+    }
+    @NT
+    public BooleanSupplier getEither() {
+        return either;
+    }
+    @NT
+    public BooleanSupplier getBoth() {
+        return both;
+    }
+
 }

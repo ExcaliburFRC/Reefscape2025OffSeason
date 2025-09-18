@@ -1,15 +1,13 @@
 package frc.robot.subsystems.climber;
 
-import com.revrobotics.spark.SparkLowLevel;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.excalib.control.motor.controllers.MotorGroup;
-import frc.excalib.control.motor.controllers.SparkMaxMotor;
 import frc.excalib.control.motor.controllers.TalonFXMotor;
 import frc.excalib.mechanisms.Arm.Arm;
-import monologue.Annotations;
+import monologue.Annotations.Log;
 import monologue.Logged;
 
 import java.util.function.DoubleSupplier;
@@ -22,16 +20,6 @@ public class ClimberSubsystem extends SubsystemBase implements Logged {
     private final Arm climberMechanism;
     private final Trigger atPosition; //
     private DoubleSupplier setpoint; //
-
-    @Annotations.Log.NT
-    public DoubleSupplier getSetpoint() {
-        return setpoint;
-    }
-
-    @Annotations.Log.NT
-    public Trigger getAtPosition() {
-        return atPosition;
-    }
 
     public ClimberSubsystem() {
         firstMotor = new TalonFXMotor(MOTOR1_ID);
@@ -65,5 +53,15 @@ public class ClimberSubsystem extends SubsystemBase implements Logged {
 
     public Command retract() {
         return Commands.none();
+    }
+
+     @Log.NT
+    public DoubleSupplier getSetpoint() {
+        return setpoint;
+    }
+
+    @Log.NT
+    public Trigger getAtPosition() {
+        return atPosition;
     }
 }

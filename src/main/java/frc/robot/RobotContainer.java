@@ -8,6 +8,7 @@ import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import frc.excalib.control.math.Vector2D;
@@ -18,6 +19,7 @@ import frc.robot.subsystems.elevator.ElevatorStates;
 import frc.robot.subsystems.elevator.ElevatorSubsystem;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeState;
+import frc.robot.superstructure.Superstructure;
 import monologue.Logged;
 
 import static frc.robot.Constants.DRIVER_CONTROLLER_PORT;
@@ -28,11 +30,11 @@ import static frc.robot.Constants.SwerveConstants.MAX_VEL;
 public class RobotContainer implements Logged {
     CommandPS5Controller driver = new CommandPS5Controller(DRIVER_CONTROLLER_PORT);
     //    IntakeTest test = new IntakeTest();
-    ArmSubsystem arm = new ArmSubsystem();
+    Superstructure superstructure = new Superstructure();
     //    AuroraClient client = new AuroraClient(5000);
 //    Intake intake = new Intake(IntakeState.DEFAULT);
 
-        ElevatorSubsystem elevatorSubsystem = new ElevatorSubsystem();
+//    ElevatorSubsystem elevatorSubsystem = new ElevatorSubsystem();
 //    Swerve swerve = Constants.SwerveConstants.configureSwerve(new Pose2d());
 
 
@@ -42,6 +44,8 @@ public class RobotContainer implements Logged {
 
 
     private void configureBindings() {
+
+//        driver.square().toggleOnTrue(superstructure.handoffCommand());
 
 //        swerve.setDefaultCommand(
 //                swerve.driveCommand(
@@ -61,11 +65,15 @@ public class RobotContainer implements Logged {
 //        driver.povUp().toggleOnTrue(swerve.m_MODULES.m_frontLeft.m_driveWheel.setDynamicVelocityCommand(()-> Math.PI));
 //        driver.povDown().toggleOnTrue(swerve.m_MODULES.m_frontLeft.driveWheel.setDynamicVelocityCommand(()-> -Math.PI));
 
-        driver.square().toggleOnTrue(arm.setStateCommand(ArmPosition.CHECK1).andThen(arm.goToStateCommand()));
+//        driver.square().toggleOnTrue(arm.setStateCommand(ArmPosition.CHECK1).andThen(arm.goToStateCommand()));
 //        driver.triangle().toggleOnTrue(arm.setStateCommand(ArmPosition.CHECK2));
-       driver.povUp().toggleOnTrue(elevatorSubsystem.setStateCommand(ElevatorStates.L3));
+//        driver.povUp().toggleOnTrue(elevatorSubsystem.setStateCommand(ElevatorStates.L3));
 //       driver.povDown().toggleOnTrue(elevatorSubsystem.setStateCommand(ElevatorStates.DEFAULT_WITHOUT_GAME_PIECE));
 
+//        driver.square().toggleOnTrue(intake.setStateCommand(IntakeState.EJECT_CORAL));
+        driver.square().toggleOnTrue(superstructure.armSubsystem.setStateCommand(ArmPosition.L2));
+        driver.circle().toggleOnTrue(superstructure.gripperSubsystem.releaseCoral());
+        driver.triangle().toggleOnTrue(superstructure.armSubsystem.setStateCommand(ArmPosition.DEFAULT_WITHOUT_GAME_PIECE));
     }
 
     public double applyDeadband(double val) {

@@ -3,6 +3,7 @@ package frc.robot.subsystems.elevator;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.excalib.control.gains.Gains;
@@ -31,6 +32,7 @@ public class ElevatorSubsystem extends SubsystemBase implements Logged {
     private SoftLimit softLimit; //
     private DoubleSupplier armAngle; //
     public final Trigger atPositionTrigger; //
+    public Trigger intakeOpenTrigger = new Trigger(()-> true);
 
     public ElevatorSubsystem() {
         rightMotor = new TalonFXMotor(RIGHT_MOTOR_ID);
@@ -41,7 +43,7 @@ public class ElevatorSubsystem extends SubsystemBase implements Logged {
         leftMotor.setInverted(DirectionState.FORWARD);
         rightMotor.setInverted(DirectionState.REVERSE);
         motorGroup = new MotorGroup(rightMotor, leftMotor);
-        motorGroup.setIdleState(IdleState.BRAKE);
+        motorGroup.setIdleState(IdleState.COAST);
 
         motorGroup.setVelocityConversionFactor(VELOCITY_CONVERSION_FACTOR);
         motorGroup.setPositionConversionFactor(POSITION_CONVERSION_FACTOR);
@@ -61,14 +63,14 @@ public class ElevatorSubsystem extends SubsystemBase implements Logged {
         currentState = ElevatorStates.DEFAULT_WITH_GAME_PIECE;
         this.armAngle = () -> 0;
 
-        setDefaultCommand(linearExtension.extendCommand(() -> currentState.getHeight(), this));
+//        setDefaultCommand(linearExtension.extendCommand(() -> currentState.getHeight(), this));
 
         atPositionTrigger = new Trigger(
                 () -> (Math.abs(currentState.getHeight() - elevatorHeight.getAsDouble()) < TOLERANCE));
 
         softLimit = new SoftLimit(
-                () -> MIN_ELEVATOR_HIGHT,
-                () -> MAX_ELEVATOR_HIGHT
+                () -> {return 0;},
+                () -> {return 0;}
         );
     }
 
@@ -78,6 +80,10 @@ public class ElevatorSubsystem extends SubsystemBase implements Logged {
 
     public Command manualCommand(DoubleSupplier voltage) {
         return linearExtension.manualCommand(voltage, this);
+    }
+
+    public void setIntakeOpenTrigger(Trigger triggerToSet) {
+        intakeOpenTrigger = triggerToSet;
     }
 
     @NT
@@ -100,8 +106,8 @@ public class ElevatorSubsystem extends SubsystemBase implements Logged {
     }
 
     @NT
-    public DoubleSupplier getArmAngle() {
-        return armAngle;
+    public double getArmAngle() {
+        return armAngle.getAsDouble();
     }
 
     @NT
@@ -119,6 +125,10 @@ public class ElevatorSubsystem extends SubsystemBase implements Logged {
         return rightMotor.getMotorPosition();
     }
 
+    @NT
+    public boolean isIntakeOpen(){
+        return intakeOpenTrigger.getAsBoolean();
+    }
 
 }
 
