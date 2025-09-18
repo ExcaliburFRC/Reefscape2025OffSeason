@@ -2,26 +2,27 @@ package frc.robot.superstructure;
 
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.subsystems.arm.ArmPosition;
 import frc.robot.subsystems.arm.ArmSubsystem;
 import frc.robot.subsystems.elevator.ElevatorSubsystem;
 import frc.robot.subsystems.gripper.Gripper;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeState;
+import monologue.Logged;
 
 import java.util.HashMap;
 import java.util.function.BooleanSupplier;
 
 import static frc.robot.superstructure.automations.Constants.AT_POSITION_DEBOUNCE;
-import static frc.robot.superstructure.automations.Constants.L1_SCORE_VOLTAGE;
 
-public class Superstructure {
-    private final ArmSubsystem armSubsystem;
-    private final ElevatorSubsystem elevatorSubsystem;
-    private final Intake intakeSubsystem;
-    private final Gripper gripperSubsystem;
-    private final Trigger atPositionTrigger;
+public class Superstructure implements Logged {
+    public final ArmSubsystem armSubsystem;
+    public final ElevatorSubsystem elevatorSubsystem;
+    public final Intake intakeSubsystem;
+    public final Gripper gripperSubsystem;
+    public final Trigger atPositionTrigger;
     private final HashMap<RobotStates, RobotStates> followThroughMap;
-    private RobotStates currentState;
+    public RobotStates currentState;
 
     public Superstructure() {
         currentState = RobotStates.DEFAULT_WITHOUT_GAME_PIECE;
@@ -32,13 +33,14 @@ public class Superstructure {
         followThroughMap = new HashMap<RobotStates, RobotStates>();
         atPositionTrigger = new Trigger(
                 () -> elevatorSubsystem.atPositionTrigger.getAsBoolean()
-                        && armSubsystem.isAtPosition().getAsBoolean()
+                        && armSubsystem.isAtPosition()
                         && intakeSubsystem.isAtPosition().getAsBoolean()).debounce(AT_POSITION_DEBOUNCE);
         gripperSubsystem = new Gripper();
-        elevatorSubsystem.setArmAngle(armSubsystem.getAngleSupplier());
-        armSubsystem.setElevatorHeightSupplier(elevatorSubsystem.getElevatorHeight());
+        elevatorSubsystem.setArmAngle(armSubsystem::getAngleSupplier);
+        armSubsystem.setElevatorHeightSupplier(elevatorSubsystem::getElevatorHeight);
 
         armSubsystem.setIntakeOpen(intakeSubsystem.isIntakeOpen());
+        elevatorSubsystem.setIntakeOpenTrigger(new Trigger(intakeSubsystem.isIntakeOpen()));
         followThroughMap.put(RobotStates.L2, RobotStates.L2_FOLLOWTHROUGH);
         followThroughMap.put(RobotStates.L3, RobotStates.L3_FOLLOWTHROUGH);
         followThroughMap.put(RobotStates.L4, RobotStates.L4_FOLLOWTHROUGH);
@@ -48,7 +50,6 @@ public class Superstructure {
 
     public Command setCurrentStateCommand(RobotStates state) {
         return new InstantCommand(() -> this.currentState = state);
-//        new WaitUntilCommand(atPositionTrigger); // TODO: sequntinal command
     }
 
     public void returnToDefaultState() {
@@ -79,7 +80,7 @@ public class Superstructure {
                         new WaitUntilCommand(atPositionTrigger),
                         setCurrentStateCommand(RobotStates.DEFAULT_WITHOUT_GAME_PIECE)),
                 handoffCommand(),
-                gripperSubsystem.m_hasCoralTrigger);
+                gripperSubsystem.hasCoralTrigger);
     }
 
     public Command scoreCommand() {
@@ -93,7 +94,6 @@ public class Superstructure {
         return new ConditionalCommand(
                 new SequentialCommandGroup(
                         setCurrentStateCommand(RobotStates.L1).until(atPositionTrigger),
-                        intakeSubsystem.setRollerVoltage(L1_SCORE_VOLTAGE).until(intakeSubsystem.hasCoral.negate()),
                         setCurrentStateCommand(RobotStates.DEFAULT_WITHOUT_GAME_PIECE)
                 ),
                 new PrintCommand("There is no available coral to score."), //TODO after handoffComand is changed apply it here like applied at reefScoreCommand
@@ -107,19 +107,34 @@ public class Superstructure {
                         new WaitUntilCommand(intakeSubsystem.hasCoral),
                         setCurrentStateCommand(RobotStates.DEFAULT_WITHOUT_GAME_PIECE)),
                 new PrintCommand("There is already a coral in the system"),
-                (intakeSubsystem.hasCoral.or(gripperSubsystem.m_hasCoralTrigger)).negate()).withName("intake Command");
+                (intakeSubsystem.hasCoral.or(gripperSubsystem.hasCoralTrigger)).negate()).withName("intake Command");
     }
 
-    public Command handoffCommand() { //TODO (Yehuda please approve this) make the handoff double sided - from intake to gripper and from gripper to intake depending on the robot's state
+    public Command handoffCommand() {
         return new ConditionalCommand(
                 new SequentialCommandGroup(
-                        setCurrentStateCommand(RobotStates.PREHANDOFF),
-                        new WaitUntilCommand(atPositionTrigger),
-                        gripperSubsystem.intakeCoral().alongWith(
-                                setCurrentStateCommand(RobotStates.HANDOFF)
-                        )).until(gripperSubsystem.m_hasCoralTrigger),
+                        armSubsystem.setStateCommand(ArmPosition.CHECK1),
+                        new WaitCommand(0.1),
+                        new PrintCommand("6738"),
+                        intakeSubsystem.intakeCommand(),
+                        new PrintCommand("1"),
+                        intakeSubsystem.setStateCommand(IntakeState.PREHANDOFF),
+                        new PrintCommand("2"),
+                        new ParallelCommandGroup(
+                                new PrintCommand("3"),
+                                intakeSubsystem.goToStateCommand(),
+                                armSubsystem.setStateCommand(ArmPosition.HANDOFF),
+                                gripperSubsystem.intakeCoral()
+                        ),
+                        new PrintCommand("4"),
+                        new ParallelCommandGroup(
+                                intakeSubsystem.setStateCommand(IntakeState.HANDOFF).andThen(intakeSubsystem.goToStateCommand())
+                        ).until(gripperSubsystem.hasCoralTrigger),
+                        intakeSubsystem.setStateCommand(IntakeState.DEFAULT).andThen(intakeSubsystem.goToStateCommand()).withTimeout(0.1),
+                        armSubsystem.setStateCommand(ArmPosition.L3)
+                ),
                 new PrintCommand("There is no a coral in the system"),
-                intakeSubsystem.hasCoral.and(gripperSubsystem.m_hasAlgaeTrigger.negate()).and(gripperSubsystem.m_hasCoralTrigger.negate())).withName("handoff Command"); //TODO isn't it supposed to be or() instead of and()?
+                intakeSubsystem.hasCoral.and(gripperSubsystem.hasAlgaeTrigger.negate()).and(gripperSubsystem.hasCoralTrigger.negate())).withName("handoff Command");
     }
 
     public Command ejectCommand() { //TODO (needs Yehuda's approval) make the command supercycle friendly
@@ -130,11 +145,11 @@ public class Superstructure {
                 ),
                 new ConditionalCommand(
                         new SequentialCommandGroup(
-                                setCurrentStateCommand(RobotStates.EJECT_GAME_PIECE_FROM_GRIPPER).until(atPositionTrigger.and((gripperSubsystem.m_hasAlgaeTrigger.or(gripperSubsystem.m_hasCoralTrigger)).negate())),
+                                setCurrentStateCommand(RobotStates.EJECT_GAME_PIECE_FROM_GRIPPER).until(atPositionTrigger.and((gripperSubsystem.hasAlgaeTrigger.or(gripperSubsystem.hasCoralTrigger)).negate())),
                                 setCurrentStateCommand(RobotStates.DEFAULT_WITHOUT_GAME_PIECE)
                         ),
                         new PrintCommand("There is no a game piece in the system"),
-                        gripperSubsystem.m_hasCoralTrigger.or(gripperSubsystem.m_hasAlgaeTrigger)
+                        gripperSubsystem.hasCoralTrigger.or(gripperSubsystem.hasAlgaeTrigger)
                 ),
                 intakeSubsystem.hasCoral).withName("Eject Coral Command");
     }
@@ -143,24 +158,24 @@ public class Superstructure {
         return new ConditionalCommand(
                 new SequentialCommandGroup(
                         setCurrentStateCommand(RobotStates.NET).until(atPositionTrigger),
-                        new WaitUntilCommand(gripperSubsystem.m_hasAlgaeTrigger.negate()),
+                        new WaitUntilCommand(gripperSubsystem.hasAlgaeTrigger.negate()),
                         gripperSubsystem.releaseAlgae(),
                         setCurrentStateCommand(RobotStates.DEFAULT_WITHOUT_GAME_PIECE)
                 ),
                 new PrintCommand("There is no available algae to score."),
-                gripperSubsystem.m_hasAlgaeTrigger).withName("Net Score Command");
+                gripperSubsystem.hasAlgaeTrigger).withName("Net Score Command");
     }
 
     public Command processorScoreCommand() {
         return new ConditionalCommand(
                 new SequentialCommandGroup(
                         setCurrentStateCommand(RobotStates.PROCESSOR).until(atPositionTrigger),
-                        new WaitUntilCommand(gripperSubsystem.m_hasAlgaeTrigger.negate()),
+                        new WaitUntilCommand(gripperSubsystem.hasAlgaeTrigger.negate()),
                         gripperSubsystem.releaseAlgae(),
                         setCurrentStateCommand(RobotStates.DEFAULT_WITHOUT_GAME_PIECE)
                 ),
                 new PrintCommand("There is no available algae to score."),
-                gripperSubsystem.m_hasAlgaeTrigger).withName("Processor Score Command");
+                gripperSubsystem.hasAlgaeTrigger).withName("Processor Score Command");
     }
 
     public Command reverseHandoffCommand() {
@@ -168,37 +183,37 @@ public class Superstructure {
                 new SequentialCommandGroup(
                         setCurrentStateCommand(RobotStates.PREHANDOFF),
                         gripperSubsystem.releaseCoral(),
-                        new WaitUntilCommand(gripperSubsystem.m_hasCoralTrigger.negate().and(intakeSubsystem.hasCoral)),
+                        new WaitUntilCommand(gripperSubsystem.hasCoralTrigger.negate().and(intakeSubsystem.hasCoral)),
                         setCurrentStateCommand(RobotStates.DEFAULT_WITHOUT_GAME_PIECE)
                 ),
                 new PrintCommand("There is no available coral to reverse handoff"),
-                gripperSubsystem.m_hasAlgaeTrigger).withName("Reverse Handoff Command");
+                gripperSubsystem.hasAlgaeTrigger).withName("Reverse Handoff Command");
     }
 
     public Command algaeIntakeCommand(RobotStates algaeLevel) {
         return new ConditionalCommand(
                 new SequentialCommandGroup(
                         setCurrentStateCommand(algaeLevel).until(atPositionTrigger),
-                        gripperSubsystem.intakeAlgae().until(gripperSubsystem.m_hasAlgaeTrigger),
+                        gripperSubsystem.intakeAlgae().until(gripperSubsystem.hasAlgaeTrigger),
                         setCurrentStateCommand(RobotStates.DEFAULT_WITH_GAME_PIECE)
                 ),
                 new PrintCommand("There is no available place in gripper"),
 
-                (gripperSubsystem.m_hasAlgaeTrigger.or(gripperSubsystem.m_hasCoralTrigger)).negate()).withName("Algae Intake Command");
+                (gripperSubsystem.hasAlgaeTrigger.or(gripperSubsystem.hasCoralTrigger)).negate()).withName("Algae Intake Command");
 
     }
 
     public Command algaeReleaseCommand() {
         return new ConditionalCommand(
                 new SequentialCommandGroup(
-                        gripperSubsystem.releaseAlgae().until(gripperSubsystem.m_hasAlgaeTrigger.negate()),
+                        gripperSubsystem.releaseAlgae().until(gripperSubsystem.hasAlgaeTrigger.negate()),
                         setCurrentStateCommand(RobotStates.DEFAULT_WITHOUT_GAME_PIECE)
                 ),
                 new PrintCommand("There is no available algae to release"),
-                (gripperSubsystem.m_hasAlgaeTrigger)).withName("Algae Intake Command");
+                (gripperSubsystem.hasAlgaeTrigger)).withName("Algae Intake Command");
     }
 
-    public Command secureCommand(){
+    public Command secureCommand() {
         return Commands.none();
     }
 

@@ -51,20 +51,21 @@ public class Arm extends Mechanism {
         final double dutyCycle = 0.02;
         return new RunCommand(
                 () -> {
-            double error = setPointSupplier.getAsDouble() - ANGLE_SUPPLIER.getAsDouble();
-            double velocitySetpoint = error / dutyCycle;
-            velocitySetpoint = m_VELOCITY_LIMIT.limit(velocitySetpoint);
-            double phyOutput =
-                    m_ks * Math.signum(velocitySetpoint) +
-                            m_kg * m_mass.getCenterOfMass().getX();
-            double pid = m_PIDController.calculate(
-                    ANGLE_SUPPLIER.getAsDouble(),
-                    setPointSupplier.getAsDouble()
-            );
-            double output = phyOutput + pid;
-            super.setVoltage(m_VELOCITY_LIMIT.limit(output));
-            toleranceConsumer.accept(Math.abs(error) < maxOffSet);
-        }, requirements);
+                    double error = setPointSupplier.getAsDouble() - ANGLE_SUPPLIER.getAsDouble();
+                    double velocitySetpoint = error / dutyCycle;
+
+                    velocitySetpoint = m_VELOCITY_LIMIT.limit(velocitySetpoint);
+                    double phyOutput =
+                            m_ks * Math.signum(velocitySetpoint) +
+                                    m_kg * m_mass.getCenterOfMass().getX();
+                    double pid = m_PIDController.calculate(ANGLE_SUPPLIER.getAsDouble(),setPointSupplier.getAsDouble());
+                    double output = phyOutput + pid;
+//                    System.out.println("PID:  "+pid);
+//                    System.out.println("Angle:  " + ANGLE_SUPPLIER.getAsDouble());
+//                    System.out.println("Setpoint:  "+ setPointSupplier.getAsDouble());
+                    super.setVoltage(m_VELOCITY_LIMIT.limit(output));
+                    toleranceConsumer.accept(Math.abs(error) < maxOffSet);
+                }, requirements);
     }
 
     /**

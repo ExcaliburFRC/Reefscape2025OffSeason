@@ -97,8 +97,8 @@ public class TalonFXMotor extends TalonFX implements Motor {
     public void setCurrentLimit(int stallLimit, int freeLimit) {
         var talonFXConfigurator = super.getConfigurator();
         var limitConfigs = new CurrentLimitsConfigs();
-        limitConfigs.StatorCurrentLimit = freeLimit;
-        limitConfigs.StatorCurrentLimitEnable = true;
+        limitConfigs.SupplyCurrentLimit = freeLimit;
+        limitConfigs.SupplyCurrentLimitEnable = true;
 
         talonFXConfigurator.apply(limitConfigs);
     }

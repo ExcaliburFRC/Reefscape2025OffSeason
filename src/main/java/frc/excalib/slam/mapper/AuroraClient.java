@@ -1,15 +1,17 @@
 package frc.excalib.slam.mapper;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParser;
+
+import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.wpilibj.DriverStation;
 
-import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.List;
 
 public class AuroraClient {
     private ServerSocket serverSocket;
@@ -24,29 +26,61 @@ public class AuroraClient {
     private volatile float pitch = 0;
     private volatile float yaw = 0;
 
+    // Coral positions
+    private volatile List<Translation2d> corals = List.of();
+
+    // JSON POJOs
+    public static class Pose {
+        public float x;
+        public float y;
+        public float z;
+        public float roll;
+        public float pitch;
+        public float yaw;
+    }
+
+    public static class VisionMessage {
+        public Pose pose;
+        public List<Translation2d> corals;
+    }
+
     public AuroraClient(int port) {
         serverThread = new Thread(() -> {
             try {
                 serverSocket = new ServerSocket(port);
                 DriverStation.reportWarning("Localization server started on port " + port, false);
 
+                ObjectMapper mapper = new ObjectMapper();
+                JsonFactory factory = new JsonFactory();
+
                 while (running) {
                     try (Socket clientSocket = serverSocket.accept();
-                         DataInputStream in = new DataInputStream(clientSocket.getInputStream())) {
+                         InputStream in = clientSocket.getInputStream();
+                         JsonParser parser = factory.createParser(in)) {
 
                         DriverStation.reportWarning("Localization client connected!", false);
 
-                        while (running) {
+                        // Continuously parse incoming JSON objects
+                        while (running && !clientSocket.isClosed()) {
                             try {
-                                x = in.readFloat();
-                                y = in.readFloat();
-                                z = in.readFloat();
-                                roll = in.readFloat();
-                                pitch = in.readFloat();
-                                yaw = in.readFloat();
+                                VisionMessage msg = mapper.readValue(parser, VisionMessage.class);
+
+                                if (msg.pose != null) {
+                                    x = msg.pose.x;
+                                    y = msg.pose.y;
+                                    z = msg.pose.z;
+                                    roll = msg.pose.roll;
+                                    pitch = msg.pose.pitch;
+                                    yaw = msg.pose.yaw;
+                                }
+
+                                if (msg.corals != null) {
+                                    corals = msg.corals;
+                                }
+
                             } catch (IOException e) {
-                                DriverStation.reportError("Error reading localization data: " + e.getMessage(), false);
-                                break;
+                                DriverStation.reportError("Error parsing localization JSON: " + e.getMessage(), false);
+                                break; // Exit client loop on parse error
                             }
                         }
                     } catch (IOException e) {
@@ -63,29 +97,13 @@ public class AuroraClient {
     }
 
     // Getter methods for retrieving pose data
-    public float getX() {
-        return x;
-    }
-
-    public float getY() {
-        return y;
-    }
-
-    public float getZ() {
-        return z;
-    }
-
-    public float getRoll() {
-        return roll;
-    }
-
-    public float getPitch() {
-        return pitch;
-    }
-
-    public float getYaw() {
-        return yaw;
-    }
+    public float getX() { return x; }
+    public float getY() { return y; }
+    public float getZ() { return z; }
+    public float getRoll() { return roll; }
+    public float getPitch() { return pitch; }
+    public float getYaw() { return yaw; }
+    public List<Translation2d> getCorals() { return corals; }
 
     public Pose3d getPose3d() {
         return new Pose3d(x, y, z, new Rotation3d(roll, pitch, yaw));
@@ -107,4 +125,3 @@ public class AuroraClient {
         }
     }
 }
-

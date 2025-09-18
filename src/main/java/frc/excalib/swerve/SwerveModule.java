@@ -23,6 +23,7 @@ import java.util.function.Supplier;
 import static frc.excalib.control.motor.motor_specs.DirectionState.FORWARD;
 import static frc.excalib.control.motor.motor_specs.DirectionState.REVERSE;
 import static frc.excalib.control.motor.motor_specs.IdleState.BRAKE;
+import static frc.excalib.control.motor.motor_specs.IdleState.COAST;
 
 /**
  * A class representing a swerve module
@@ -30,8 +31,8 @@ import static frc.excalib.control.motor.motor_specs.IdleState.BRAKE;
  * @author Yoav Cohen & Itay Keller
  */
 public class SwerveModule implements Logged {
-    private final FlyWheel m_driveWheel;
-    private final Turret m_turret;
+    public final FlyWheel m_driveWheel;
+    public final Turret m_turret;
     public final Translation2d m_MODULE_LOCATION;
     private final double m_MAX_VEL;
     private final Rotation2d m_moduleAnglePlus90;
@@ -47,11 +48,11 @@ public class SwerveModule implements Logged {
                         double rotationVelocityConversionFactor) {
         driveMotor.setInverted(FORWARD);
         driveMotor.setVelocityConversionFactor(velocityConversionFactor);
-        driveMotor.setIdleState(BRAKE);
+        driveMotor.setIdleState(COAST);
         driveMotor.setPositionConversionFactor(positionConversionFactor);
         driveMotor.setCurrentLimit(0, 60);
 
-        rotationMotor.setIdleState(BRAKE);
+        rotationMotor.setIdleState(COAST);
         rotationMotor.setVelocityConversionFactor(rotationVelocityConversionFactor);
         rotationMotor.setInverted(REVERSE);
 

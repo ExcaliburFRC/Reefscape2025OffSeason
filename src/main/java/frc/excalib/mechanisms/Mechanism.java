@@ -110,7 +110,7 @@ public class Mechanism implements Logged {
                 config,
                 new SysIdRoutine.Mechanism(
                         (Voltage volts) -> m_motor.setVoltage(volts.in(Volts)),
-                        log -> log.motor("motor")
+                        log -> log.motor("MOTOR")
                                 .voltage(m_appliedVoltage.mut_replace(
                                         m_motor.getVoltage(), Volts))
                                 .angularPosition(m_radians.mut_replace(sensorInput.getAsDouble(), Radians))
