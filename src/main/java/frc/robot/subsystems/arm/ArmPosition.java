@@ -13,7 +13,7 @@ public enum ArmPosition {
     ALGAE3(0),
     NET(0),
     DEFAULT_WITHOUT_GAME_PIECE(-Math.PI/2),
-    DEFAULT_WITH_GAME_PIECE(Math.PI/2),
+    DEFAULT_WITH_GAME_PIECE(1.5),
     PROCESSOR(0),
     HANDOFF(-Math.PI/2),
     EJECT_GAME_PIECE(0),

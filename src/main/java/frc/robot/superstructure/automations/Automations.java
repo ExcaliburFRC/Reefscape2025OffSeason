@@ -120,15 +120,15 @@ public class Automations {
         );
     }
 
-    public Command climbOnSelected() {
-        return new SequentialCommandGroup(
-                swerve.driveToPoseCommand(climbOperator.getPrePose()),
-                climber.open(),
-                superstructure.secureCommand(),
-                swerve.pidToPoseCommand(() -> climbOperator.getPose()),
-                climber.retract()
-        );
-    }
+//    public Command climbOnSelected() {
+//        return new SequentialCommandGroup(
+//                swerve.driveToPoseCommand(climbOperator.getPrePose()),
+//                climber.open(),
+//                superstructure.secureCommand(),
+//                swerve.pidToPoseCommand(() -> climbOperator.getPose()),
+//                climber.retract()
+//        );
+//    }
 
 
 }

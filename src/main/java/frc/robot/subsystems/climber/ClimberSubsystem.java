@@ -1,10 +1,12 @@
 package frc.robot.subsystems.climber;
 
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.revrobotics.spark.SparkLowLevel;
+import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.excalib.control.limits.SoftLimit;
 import frc.excalib.control.motor.controllers.MotorGroup;
+import frc.excalib.control.motor.controllers.SparkMaxMotor;
 import frc.excalib.control.motor.controllers.TalonFXMotor;
 import frc.excalib.mechanisms.Arm.Arm;
 import monologue.Annotations.Log;
@@ -16,16 +18,27 @@ import static frc.robot.subsystems.climber.Constants.*;
 
 public class ClimberSubsystem extends SubsystemBase implements Logged {
     private final TalonFXMotor firstMotor, secondMotor;
+    private final SparkMaxMotor rollerMotor;
     private final MotorGroup motorGroup;
     private final Arm climberMechanism;
     private final Trigger atPosition; //
     private DoubleSupplier setpoint; //
+    private SoftLimit limit;
 
     public ClimberSubsystem() {
         firstMotor = new TalonFXMotor(MOTOR1_ID);
         secondMotor = new TalonFXMotor(MOTOR2_ID);
 
+        rollerMotor = new SparkMaxMotor(ROLLER_MOTOR_ID, SparkLowLevel.MotorType.kBrushless);
+
+        CurrentLimitsConfigs limitsConfigs = new CurrentLimitsConfigs();
+        limitsConfigs = new CurrentLimitsConfigs();
+        limitsConfigs.SupplyCurrentLimit = 35;
+        limitsConfigs.SupplyCurrentLimitEnable = true;
         motorGroup = new MotorGroup(firstMotor, secondMotor);
+        firstMotor.getConfigurator().apply(limitsConfigs);
+        secondMotor.getConfigurator().apply(limitsConfigs);
+        limit = new SoftLimit(() -> 0, () -> 2.6);
 
         motorGroup.setPositionConversionFactor(ARM_POSITION_CONVERSION_FACTOR);
         motorGroup.setVelocityConversionFactor(ARM_POSITION_CONVERSION_FACTOR);
@@ -40,22 +53,26 @@ public class ClimberSubsystem extends SubsystemBase implements Logged {
     }
 
     public Command manualCommand(DoubleSupplier voltageSupplier) {
-        return climberMechanism.manualCommand(voltageSupplier, this);
+        Command command = climberMechanism.manualCommand(voltageSupplier)
+                .alongWith(new RunCommand(()-> rollerMotor.setVoltage(9)));
+        command.addRequirements(this);
+        return command;
     }
 
-    public void setSetpoint(double setpoint) {
-        this.setpoint = () -> setpoint;
+    public Command goToState(double angle) {
+        Command command = new ParallelCommandGroup(
+                climberMechanism.anglePositionControlCommand(
+                        () -> limit.limit(angle),
+                        (atPosition) -> atPosition = false,
+                        Math.PI / 20
+                ).until(atPosition),
+                new RunCommand(() -> rollerMotor.setVoltage(3))
+        );
+        command.addRequirements(this);
+        return command;
     }
 
-    public Command open() {
-        return Commands.none();
-    }
-
-    public Command retract() {
-        return Commands.none();
-    }
-
-     @Log.NT
+    @Log.NT
     public DoubleSupplier getSetpoint() {
         return setpoint;
     }
@@ -64,4 +81,18 @@ public class ClimberSubsystem extends SubsystemBase implements Logged {
     public Trigger getAtPosition() {
         return atPosition;
     }
+
+    public enum States {
+        DEFAULT(Math.PI / 2),
+        RETRACT(2.1),
+        OPEN(0);
+
+        final double angle;
+
+        States(double angle) {
+            this.angle = angle;
+        }
+    }
+
+
 }

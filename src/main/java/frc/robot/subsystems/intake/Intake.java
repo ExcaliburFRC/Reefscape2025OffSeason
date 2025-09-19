@@ -27,16 +27,21 @@ public class Intake extends SubsystemBase implements Logged {
     private final TalonFXMotor rollersMotor;
     private final DigitalInput limitSwitch;
     private final Trigger limitSwitchTrigger;
+    private final CurrentLimitsConfigs limitsConfigs;
 
     // === Inputs ===
     private final AnalogInput rightSensor, leftSensor; // . getVsl
-    private final Trigger rightSensorTrigger, leftSensorTrigger, sensor;
+    private Trigger rightSensorTrigger;
+    private Trigger leftSensorTrigger;
+    private final Trigger sensorTrigger;
     private final Trigger either, both;
     private IntakeState currentState; //
     private IntakeState defaultState; //
     private final Mechanism centralizer, rollers;
     public final Arm arm;
     private final Trigger atPosition; //
+
+    private final SoftLimit armSoftLimit;
 
     public DoubleSupplier angleSupplier; //
     private final Trigger intakeOpen; //
@@ -49,51 +54,66 @@ public class Intake extends SubsystemBase implements Logged {
         armMotor = new TalonFXMotor(ARM_MOTOR_ID);
         rollersMotor = new TalonFXMotor(ROLLERS_MOTOR_ID);
         centerlizerMotor = new TalonFXMotor(CENTERLIZER_MOTOR_ID);
-        armMotor.setPositionConversionFactor((Math.PI * 2 / 14.8));
-        armMotor.setVelocityConversionFactor((Math.PI * 2 / 14.8));
+        armMotor.setPositionConversionFactor((Math.PI * 2 / 14.8));//move to a constant
+        armMotor.setVelocityConversionFactor((Math.PI * 2 / 14.8));//same
 
-        CurrentLimitsConfigs limitsConfigs = new CurrentLimitsConfigs();
-        limitsConfigs.SupplyCurrentLimit = 50;
+        limitsConfigs = new CurrentLimitsConfigs();
+        limitsConfigs.SupplyCurrentLimit = 40;
         limitsConfigs.SupplyCurrentLimitEnable = true;
         armMotor.getConfigurator().apply(limitsConfigs);
+        rollersMotor.getConfigurator().apply(limitsConfigs);
+        centerlizerMotor.getConfigurator().apply(limitsConfigs);
 
         armMotor.setNeutralMode(NeutralModeValue.Brake);
 
         limitSwitch = new DigitalInput(9);
         limitSwitchTrigger = new Trigger(() -> !limitSwitch.get());
 
-
         armMotor.setMotorPosition(Math.PI / 2 - 0.7072895200359199);
         armMotor.setInverted(DirectionState.FORWARD);
         rightSensor = new AnalogInput(RIGHT_SENSOR_CHANNEL);
         leftSensor = new AnalogInput(LEFT_SENSOR_CHANNEL);
 
-        sensor = new Trigger(() -> (getLeftSensorData() & !getRightSensorData() || !getLeftSensorData() && getRightSensorData()));
+        sensorTrigger = new Trigger(() -> (getLeftSensorData() & !getRightSensorData() || !getLeftSensorData() && getRightSensorData()));
 
-        rightSensorTrigger = new Trigger(() -> leftSensor.getValue() < 4000);
-        leftSensorTrigger = new Trigger(() -> rightSensor.getValue() < 4000);
+        rightSensorTrigger = new Trigger(() -> false);
+        leftSensorTrigger = new Trigger(() -> false);
 
         angleSupplier = armMotor::getMotorPosition;
         centralizer = new Mechanism(centerlizerMotor);
         rollers = new Mechanism(rollersMotor);
 
         atPosition = new Trigger(() -> Math.abs(currentState.intakeAngle - angleSupplier.getAsDouble()) < TOLERANCE);
+        sensorTrigger.onTrue(new PrintCommand("The Trigger Changed!"));
 
         intakeOpen = new Trigger(() -> (atPosition.getAsBoolean() && (currentState == IntakeState.FLOOR_INTAKE))).debounce(0.1);
         arm = new Arm(
                 armMotor,
                 armMotor::getMotorPosition,
                 new SoftLimit(() -> ARM_VELOCITY_MIN, () -> ARM_VELOCITY_MAX),
-                new Gains(2.5, 0, 0, 0, 0, 0, 0.8),
+                new Gains(3, 0, 0.25, 0, 0, 0, 0.9),
                 new Mass((() -> Math.cos(angleSupplier.getAsDouble())), (() -> Math.sin(angleSupplier.getAsDouble())), 1));
+
+        armSoftLimit = new SoftLimit(
+                () -> {
+                    return 0.8635;
+                },
+                () -> {
+                    return 3.18;
+                }
+        );
 
         hasCoral = new Trigger(() -> (true)).debounce(0.1);
 
         limitSwitchTrigger.whileTrue(resetAngleCommand());
 
         setDefaultCommand(goToStateCommand());
+
         either = new Trigger(() -> (getRightSensorData() || getLeftSensorData()));
         both = new Trigger(() -> (getRightSensorData() && getLeftSensorData()));
+
+        leftSensorTrigger = new Trigger(() -> rightSensor.getValue() < 4000);
+        rightSensorTrigger = new Trigger(() -> leftSensor.getValue() < 4000);
     }
 
 
@@ -102,20 +122,22 @@ public class Intake extends SubsystemBase implements Logged {
     }
 
     public Command goToStateCommand() {
-        Command command = new ParallelCommandGroup(
-                arm.anglePositionControlCommand(
-                        () -> currentState.intakeAngle,
-                        at -> at = false,
-                        TOLERANCE).until(atPosition),
+        Command command = new SequentialCommandGroup(
                 new InstantCommand(() -> rollersMotor.setVoltage(currentState.rollerVoltage)),
-                new InstantCommand(() -> centerlizerMotor.setVoltage(currentState.centraliserVoltage)));
+                new InstantCommand(() -> centerlizerMotor.setVoltage(currentState.centraliserVoltage)),
+                arm.anglePositionControlCommand(
+                        () -> armSoftLimit.limit(currentState.intakeAngle),
+                        at -> at = false,
+                        TOLERANCE
+                )
+        );
+
         command.addRequirements(this);
         return command;
-
     }
 
     public Command setStateCommand(IntakeState state) {
-        return new InstantCommand(() -> this.currentState = state, this);
+        return new InstantCommand(() -> this.currentState = state);
     }
 
     public void returnToDefaultState() {
@@ -142,7 +164,7 @@ public class Intake extends SubsystemBase implements Logged {
 
     @NT
     public boolean getTriggerData() {
-        return sensor.getAsBoolean();
+        return sensorTrigger.getAsBoolean();
     }
 
     @NT
@@ -182,6 +204,11 @@ public class Intake extends SubsystemBase implements Logged {
     }
 
     @NT
+    public double getLimitedSetpoint() {
+        return armSoftLimit.limit(currentState.intakeAngle);
+    }
+
+    @NT
     public String getCurrentState() {
         return currentState.name();
     }
@@ -202,7 +229,7 @@ public class Intake extends SubsystemBase implements Logged {
     }
 
     public Command resetAngleCommand() {
-        return new RunCommand(() -> armMotor.setMotorPosition(Math.PI / 2 - 0.7072895)).ignoringDisable(true);
+        return new RunCommand(() -> armMotor.setMotorPosition(Math.PI / 2 - 0.7072895)).ignoringDisable(true); //to a constant
     }
 
 

@@ -22,7 +22,7 @@ public enum RobotStates {
     // ------ INTAKE ------
     L1(ArmPosition.DEFAULT_WITH_GAME_PIECE, ElevatorStates.DEFAULT_WITH_GAME_PIECE, IntakeState.L1_SCORE),
     L2(ArmPosition.L2, ElevatorStates.L2, IntakeState.DEFAULT),
-    FLOOR_INTAKE(ArmPosition.DEFAULT_WITHOUT_GAME_PIECE, ElevatorStates.DEFAULT_WITHOUT_GAME_PIECE, IntakeState.FLOOR_INTAKE),
+    FLOOR_INTAKE(ArmPosition.DEFAULT_WITH_GAME_PIECE, ElevatorStates.DEFAULT_WITH_GAME_PIECE, IntakeState.FLOOR_INTAKE),
     EJECT_CORAL_FROM_INTAKE(ArmPosition.DEFAULT_WITH_GAME_PIECE, ElevatorStates.DEFAULT_WITH_GAME_PIECE, IntakeState.EJECT_CORAL),
     EJECT_GAME_PIECE_FROM_GRIPPER(ArmPosition.EJECT_GAME_PIECE, ElevatorStates.DEFAULT_WITH_GAME_PIECE, IntakeState.DEFAULT),
 
