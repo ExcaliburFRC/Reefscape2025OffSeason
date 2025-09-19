@@ -13,6 +13,7 @@ import frc.excalib.mechanisms.linear_extension.LinearExtension;
 import monologue.Annotations.Log.NT;
 import monologue.Logged;
 
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 import static frc.robot.subsystems.elevator.constants.*;
@@ -99,8 +100,8 @@ public class ElevatorSubsystem extends SubsystemBase implements Logged {
         );
     }
 
-    public void setIntakeOpenTrigger(Trigger triggerToSet) {
-        intakeOpenTrigger = triggerToSet;
+    public void setIntakeOpenTrigger(BooleanSupplier condition) {
+        intakeOpenTrigger = new Trigger(condition);
     }
 
     @NT
