@@ -20,8 +20,10 @@ import java.util.function.DoubleSupplier;
 public class Automations {
     public Map<RobotStates, Command> scoreMap = new HashMap<>();
     public RobotStates scoreState = RobotStates.DEFAULT_WITH_GAME_PIECE;
+
     public Swerve swerve;
     public Superstructure superstructure;
+
     public ClimberSubsystem climber;
     public ClimbOperator climbOperator;
 
