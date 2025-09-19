@@ -1,10 +1,7 @@
 package frc.robot.subsystems.elevator;
 
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.RunCommand;
-import edu.wpi.first.wpilibj2.command.Subsystem;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.excalib.control.gains.Gains;
 import frc.excalib.control.limits.ContinuousSoftLimit;
@@ -32,7 +29,7 @@ public class ElevatorSubsystem extends SubsystemBase implements Logged {
     private SoftLimit softLimit; //
     private DoubleSupplier armAngle; //
     public final Trigger atPositionTrigger; //
-    public Trigger intakeOpenTrigger = new Trigger(()-> true);
+    public Trigger intakeOpenTrigger = new Trigger(() -> true);
 
     public ElevatorSubsystem() {
         rightMotor = new TalonFXMotor(RIGHT_MOTOR_ID);
@@ -43,7 +40,7 @@ public class ElevatorSubsystem extends SubsystemBase implements Logged {
         leftMotor.setInverted(DirectionState.FORWARD);
         rightMotor.setInverted(DirectionState.REVERSE);
         motorGroup = new MotorGroup(rightMotor, leftMotor);
-        motorGroup.setIdleState(IdleState.COAST);
+        motorGroup.setIdleState(IdleState.BRAKE);
 
         motorGroup.setVelocityConversionFactor(VELOCITY_CONVERSION_FACTOR);
         motorGroup.setPositionConversionFactor(POSITION_CONVERSION_FACTOR);
@@ -63,19 +60,24 @@ public class ElevatorSubsystem extends SubsystemBase implements Logged {
         currentState = ElevatorStates.DEFAULT_WITH_GAME_PIECE;
         this.armAngle = () -> 0;
 
-//        setDefaultCommand(linearExtension.extendCommand(() -> currentState.getHeight(), this));
+        setDefaultCommand(linearExtension.extendCommand(() -> softLimit.limit((currentState.getHeight())), this));
 
         atPositionTrigger = new Trigger(
                 () -> (Math.abs(currentState.getHeight() - elevatorHeight.getAsDouble()) < TOLERANCE));
 
         softLimit = new SoftLimit(
-                () -> {return 0;},
-                () -> {return 0;}
+                () -> {
+                    if (isIntakeOpen()) {
+                        return 0.4;
+                    }
+                    return 0;
+                },
+                () -> MAX_ELEVATOR_HIGHT
         );
     }
 
     public Command setStateCommand(ElevatorStates elevatorStates) {
-        return new RunCommand(() -> currentState = elevatorStates, this).withTimeout(0.05);
+        return new InstantCommand(() -> currentState = elevatorStates, this).withTimeout(0.05);
     }
 
     public Command manualCommand(DoubleSupplier voltage) {
@@ -126,9 +128,13 @@ public class ElevatorSubsystem extends SubsystemBase implements Logged {
     }
 
     @NT
-    public boolean isIntakeOpen(){
+    public boolean isIntakeOpen() {
         return intakeOpenTrigger.getAsBoolean();
     }
+
+//    public void setElevatorHeight(double hight) {
+//
+//    }
 
 }
 

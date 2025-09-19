@@ -43,9 +43,10 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
     private BooleanSupplier isIntakeOpen; //
 
     public ArmSubsystem() {
-        currentState = ArmPosition.DEFAULT_WITHOUT_GAME_PIECE;
+        currentState = ArmPosition.DEFAULT_WITH_GAME_PIECE;
 
         firstMotor = new TalonFXMotor(FIRST_MOTOR_ID);
+
         canCoder = new CANcoder(CAN_CODER_ID);
 
         firstMotor.setInverted(REVERSE);
@@ -83,6 +84,13 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
 
                     } else if (elevatorHeightSupplier.getAsDouble() > 0.22) {
                         return 0.607;
+//                    } else if (elevatorHeightSupplier.getAsDouble() > 0.4 && isIntakeOpen.getAsBoolean() == true){
+//                        return 0.44;
+//                    } else if (elevatorHeightSupplier.getAsDouble() > 0.59 && isIntakeOpen.getAsBoolean() == true) {
+//                        return -0.77;
+                    }
+                    {
+
                     }
                     return 0.9;
                 },
@@ -95,6 +103,10 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
                         return 3;
                     } else if (elevatorHeightSupplier.getAsDouble() > 0.22) {
                         return 2.3;
+//                    } else if (elevatorHeightSupplier.getAsDouble()> 0.4 && isIntakeOpen.getAsBoolean()) {
+//                        return 3;
+//                    } else if (elevatorHeightSupplier.getAsDouble() > 0.59 && isIntakeOpen.getAsBoolean()) {
+//                        return 3.8;d
                     }
                     return 2;
                 }

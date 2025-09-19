@@ -4,6 +4,7 @@ import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.arm.ArmPosition;
 import frc.robot.subsystems.arm.ArmSubsystem;
+import frc.robot.subsystems.elevator.ElevatorStates;
 import frc.robot.subsystems.elevator.ElevatorSubsystem;
 import frc.robot.subsystems.gripper.Gripper;
 import frc.robot.subsystems.intake.Intake;
@@ -49,7 +50,13 @@ public class Superstructure implements Logged {
 
 
     public Command setCurrentStateCommand(RobotStates state) {
-        return new InstantCommand(() -> this.currentState = state);
+        return new RunCommand(
+                () -> new ParallelCommandGroup(
+                        intakeSubsystem.setStateCommand(state.intakeState),
+                        armSubsystem.setStateCommand(state.armPosition),
+                        elevatorSubsystem.setStateCommand(state.elevatorState)
+                )
+        );
     }
 
     public void returnToDefaultState() {
@@ -101,23 +108,19 @@ public class Superstructure implements Logged {
     }
 
     public Command intakeCommand() {
-        return new ConditionalCommand(
-                new SequentialCommandGroup(
-                        setCurrentStateCommand(RobotStates.FLOOR_INTAKE).until(atPositionTrigger),
-                        new WaitUntilCommand(intakeSubsystem.hasCoral),
-                        setCurrentStateCommand(RobotStates.DEFAULT_WITHOUT_GAME_PIECE)),
-                new PrintCommand("There is already a coral in the system"),
-                (intakeSubsystem.hasCoral.or(gripperSubsystem.hasCoralTrigger)).negate()).withName("intake Command");
+        return new SequentialCommandGroup(
+                new PrintCommand("1"),
+                setCurrentStateCommand(RobotStates.FLOOR_INTAKE).until(intakeSubsystem.isAtPosition()),
+                new PrintCommand("2"),
+                new WaitUntilCommand(intakeSubsystem::getTriggerData),
+                new PrintCommand("3"),
+                setCurrentStateCommand(RobotStates.DEFAULT_WITH_GAME_PIECE)
+        );
     }
 
     public Command handoffCommand() {
         return new ConditionalCommand(
                 new SequentialCommandGroup(
-                        armSubsystem.setStateCommand(ArmPosition.CHECK1),
-                        new WaitCommand(0.1),
-                        new PrintCommand("6738"),
-                        intakeSubsystem.intakeCommand(),
-                        new PrintCommand("1"),
                         intakeSubsystem.setStateCommand(IntakeState.PREHANDOFF),
                         new PrintCommand("2"),
                         new ParallelCommandGroup(
