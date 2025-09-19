@@ -219,5 +219,7 @@ public final class Constants {
     public static double MAX_AUTO_ALIGNMENT_DISTANCE = 0;
     public static final double DEADBAND_VALUE = 0;
 
+    public static final int AURORA_CLIENT_PORT = 5000;
+
 
 }

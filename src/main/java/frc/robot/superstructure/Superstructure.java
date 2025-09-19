@@ -48,7 +48,6 @@ public class Superstructure implements Logged {
 
     }
 
-
     public Command setCurrentStateCommand(RobotStates state) {
         return new RunCommand(
                 () -> new ParallelCommandGroup(
