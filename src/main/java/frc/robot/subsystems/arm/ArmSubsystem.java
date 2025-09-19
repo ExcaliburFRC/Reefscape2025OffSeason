@@ -4,18 +4,13 @@ import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.excalib.control.gains.Gains;
-import frc.excalib.control.gains.SysidConfig;
 import frc.excalib.control.limits.ContinuousSoftLimit;
-import frc.excalib.control.limits.SoftLimit;
 import frc.excalib.control.math.physics.Mass;
 import frc.excalib.control.motor.controllers.TalonFXMotor;
 import frc.excalib.mechanisms.Arm.Arm;
-import monologue.Annotations;
 import monologue.Annotations.Log.NT;
 import monologue.Logged;
-import org.opencv.core.Mat;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
@@ -24,23 +19,28 @@ import static frc.excalib.control.motor.motor_specs.DirectionState.*;
 import static frc.excalib.control.motor.motor_specs.IdleState.BRAKE;
 import static frc.excalib.control.motor.motor_specs.IdleState.COAST;
 import static frc.robot.subsystems.arm.Constants.*;
+import static frc.robot.subsystems.intake.Constants.POSITION_TOLERANCE_RAD;
 
 public class ArmSubsystem extends SubsystemBase implements Logged {
-    // == motors ==
+
+    // === Hardware ===
     private final TalonFXMotor firstMotor;
     private final CANcoder canCoder;
-
-    private final DoubleSupplier angleSupplier;
-    private DoubleSupplier elevatorHeightSupplier;
-    private Gains armGains;
-
-    private ArmPosition currentState; //
     private final Arm armMechanism;
 
-    private final Trigger toleranceTrigger; //
-    private final ContinuousSoftLimit softLimit; //
+    // === Suppliers ===
+    private final DoubleSupplier angleSupplier;
+    private DoubleSupplier elevatorHeightSupplier;
+    private BooleanSupplier isIntakeOpen;
 
-    private BooleanSupplier isIntakeOpen; //
+    // === Triggers and States ===
+    private final Trigger atPostionTrigger;
+    private ArmPosition currentState;
+
+    // === Other ===
+    private Gains armGains;
+    private final ContinuousSoftLimit softLimit;
+
 
     public ArmSubsystem() {
         currentState = ArmPosition.DEFAULT_WITH_GAME_PIECE;
@@ -51,82 +51,74 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
 
         firstMotor.setInverted(REVERSE);
         firstMotor.setNeutralMode(NeutralModeValue.Brake);
-
         firstMotor.setVelocityConversionFactor(RPS_TO_RAD_PER_SEC);
         firstMotor.setPositionConversionFactor((1 / 15.8611544) * Math.PI * 2);
 
         angleSupplier = () -> (canCoder.getPosition().getValueAsDouble() * Math.PI * 2);
+
         firstMotor.setMotorPosition(canCoder.getAbsolutePosition().getValueAsDouble() * 2 * Math.PI);
-
-        armGains = new Gains(1.8, 0, 0.2, 0, 0, 0, 0.68);
-        armMechanism = new Arm(
-                firstMotor,
-                angleSupplier,
-                VELOCITY_LIMIT,
-                armGains,
-                new Mass(() -> Math.cos(angleSupplier.getAsDouble()), () -> Math.sin(angleSupplier.getAsDouble()), 1)
-        );
-
-        toleranceTrigger = new Trigger(
-                () -> (Math.abs(currentState.getAngle() - angleSupplier.getAsDouble()) < Math.PI / 50));
 
         elevatorHeightSupplier = () -> 0;
         isIntakeOpen = () -> false;
 
+        armMechanism = new Arm(
+                firstMotor,
+                angleSupplier,
+                VELOCITY_LIMIT,
+                new Gains(1.8, 0, 0.2, 0, 0, 0, 0.68),
+                new Mass(
+                        () -> Math.cos(angleSupplier.getAsDouble()),
+                        () -> Math.sin(angleSupplier.getAsDouble()),
+                        1
+                )
+        );
+
+        atPostionTrigger = new Trigger(
+                () -> (Math.abs(currentState.getAngle() - angleSupplier.getAsDouble()) < POSITION_TOLERANCE_RAD)
+        );
+
         softLimit = new ContinuousSoftLimit(
                 () -> {
-                    if (elevatorHeightSupplier.getAsDouble() > 0.93) {
+                    double h = elevatorHeightSupplier.getAsDouble();
+                    if (h > 0.93) {
                         return -8.3;
-                    } else if (elevatorHeightSupplier.getAsDouble() > 0.67) {
+                    } else if (h > 0.67) {
                         return -0.82;
-                    } else if (elevatorHeightSupplier.getAsDouble() > 0.36) {
+                    } else if (h > 0.36) {
                         return 0;
-
-                    } else if (elevatorHeightSupplier.getAsDouble() > 0.22) {
+                    } else if (h > 0.22) {
                         return 0.607;
-//                    } else if (elevatorHeightSupplier.getAsDouble() > 0.4 && isIntakeOpen.getAsBoolean() == true){
-//                        return 0.44;
-//                    } else if (elevatorHeightSupplier.getAsDouble() > 0.59 && isIntakeOpen.getAsBoolean() == true) {
-//                        return -0.77;
-                    }
-                    {
-
                     }
                     return 0.9;
                 },
                 () -> {
-                    if (elevatorHeightSupplier.getAsDouble() > 0.93) {
+                    double h = elevatorHeightSupplier.getAsDouble();
+                    if (h > 0.93) {
                         return 6.7;
-                    } else if (elevatorHeightSupplier.getAsDouble() > 0.67) {
+                    } else if (h > 0.67) {
                         return 3.8;
-                    } else if (elevatorHeightSupplier.getAsDouble() > 0.36) {
+                    } else if (h > 0.36) {
                         return 3;
-                    } else if (elevatorHeightSupplier.getAsDouble() > 0.22) {
+                    } else if (h > 0.22) {
                         return 2.3;
-//                    } else if (elevatorHeightSupplier.getAsDouble()> 0.4 && isIntakeOpen.getAsBoolean()) {
-//                        return 3;
-//                    } else if (elevatorHeightSupplier.getAsDouble() > 0.59 && isIntakeOpen.getAsBoolean()) {
-//                        return 3.8;d
                     }
                     return 2;
                 }
         );
-
         setDefaultCommand((goToStateCommand()));
+    }
 
+    public Command manualCommand(DoubleSupplier voltageSupplier) {
+        return armMechanism.manualCommand(voltageSupplier, this);
     }
 
     public Command goToStateCommand() {
         return armMechanism.anglePositionControlCommand(
                 () -> softLimit.getSetpoint(angleSupplier.getAsDouble(), currentState.getAngle()),
                 (at) -> at = false,
-                Math.PI / 50,
+                POSITION_TOLERANCE_RAD,
                 this
         ).until(this::isAtPosition);
-    }
-
-    public Command manualCommand(DoubleSupplier voltageSupplier) {
-        return armMechanism.manualCommand(voltageSupplier, this);
     }
 
     public Command setStateCommand(ArmPosition state) {
@@ -158,12 +150,7 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
 
     @NT
     public boolean isAtPosition() {
-        return toleranceTrigger.getAsBoolean();
-    }
-
-    @NT
-    public boolean isInTolernace() {
-        return Math.abs(currentState.getAngle() - angleSupplier.getAsDouble()) < Math.PI / 50;
+        return atPostionTrigger.getAsBoolean();
     }
 
     @NT
@@ -172,7 +159,7 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
     }
 
     @NT
-    public double getMotorValue() {
+    public double getMotorPosition() {
         return firstMotor.getMotorPosition();
     }
 
@@ -182,23 +169,7 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
     }
 
     @NT
-    public double getCurrent() {
-        return armMechanism.logCurrent();
-    }
-
-    @NT
-    public double getVoltage() {
-        return armMechanism.logVoltage();
-    }
-
-    @NT
     public double getLimitedSetpoint() {
         return softLimit.getSetpoint(angleSupplier.getAsDouble(), softLimit.limit(currentState.getAngle()));
     }
-
-    @NT
-    public double getElevatorHeightSupplie(){
-        return elevatorHeightSupplier.getAsDouble();
-    }
-
 }
