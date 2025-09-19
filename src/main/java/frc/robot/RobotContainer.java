@@ -49,6 +49,8 @@ public class RobotContainer implements Logged {
                         () -> true
                 )
         );
+
+        driver.create().onTrue(superstructure.elevatorSubsystem.setElevatorHeightCommand(0));
     }
 
     public double applyDeadband(double val) {

@@ -4,7 +4,6 @@ import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.arm.ArmPosition;
 import frc.robot.subsystems.arm.ArmSubsystem;
-import frc.robot.subsystems.elevator.ElevatorStates;
 import frc.robot.subsystems.elevator.ElevatorSubsystem;
 import frc.robot.subsystems.gripper.Gripper;
 import frc.robot.subsystems.intake.Intake;
@@ -37,7 +36,7 @@ public class Superstructure implements Logged {
                         && armSubsystem.isAtPosition()
                         && intakeSubsystem.isAtPosition().getAsBoolean()).debounce(AT_POSITION_DEBOUNCE);
         gripperSubsystem = new Gripper();
-        elevatorSubsystem.setArmAngle(armSubsystem::getAngleSupplier);
+        elevatorSubsystem.setArmAngleSuppier(armSubsystem::getAngleSupplier);
         armSubsystem.setElevatorHeightSupplier(elevatorSubsystem::getElevatorHeight);
 
         armSubsystem.setIntakeOpen(intakeSubsystem.isIntakeOpen());
