@@ -29,7 +29,7 @@ public class Superstructure implements Logged {
 
         armSubsystem = new ArmSubsystem();
         elevatorSubsystem = new ElevatorSubsystem();
-        intakeSubsystem = new Intake(IntakeState.DEFAULT);
+        intakeSubsystem = new Intake();
         followThroughMap = new HashMap<RobotStates, RobotStates>();
         atPositionTrigger = new Trigger(
                 () -> elevatorSubsystem.atPositionTrigger.getAsBoolean()
