@@ -36,7 +36,6 @@ public class ElevatorSubsystem extends SubsystemBase implements Logged {
 
 
     public ElevatorSubsystem() {
-
         rightMotor = new TalonFXMotor(RIGHT_MOTOR_ID);
         leftMotor = new TalonFXMotor(LEFT_MOTOR_ID);
 
@@ -135,6 +134,16 @@ public class ElevatorSubsystem extends SubsystemBase implements Logged {
 
     public Command setElevatorHeightCommand(double hight) {
         return new InstantCommand(() -> motorGroup.setMotorPosition(0));
+    }
+
+    public Command zeroElevator(){
+        return new InstantCommand(()-> motorGroup.setMotorPosition(0));
+    }
+    public Command coastCommand(){
+        return new StartEndCommand(
+                ()-> motorGroup.setIdleState(IdleState.COAST),
+                ()-> motorGroup.setIdleState(IdleState.BRAKE)
+        ).ignoringDisable(true);
     }
 
 }

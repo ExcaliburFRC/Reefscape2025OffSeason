@@ -34,7 +34,7 @@ public class Intake extends SubsystemBase implements Logged {
     private Trigger rightSensorTrigger;
     private Trigger leftSensorTrigger;
     private final Trigger sensorTrigger;
-    private final Trigger either, both;
+    public final Trigger either, both;
     private final Trigger atPosition;
     private final Trigger intakeOpen;
     public final Trigger hasCoral;
@@ -144,7 +144,7 @@ public class Intake extends SubsystemBase implements Logged {
     }
 
     public Command goToStateCommand() {
-        Command command = new SequentialCommandGroup(
+        Command command = new ParallelCommandGroup(
                 rollers.manualCommand(() -> currentState.rollerVoltage),
                 centralizer.manualCommand(() -> currentState.centraliserVoltage),
                 arm.anglePositionControlCommand(
@@ -239,9 +239,13 @@ public class Intake extends SubsystemBase implements Logged {
         return !limitSwitch.get();
     }
 
+    @NT
+    public boolean getEither() {
+        return either.getAsBoolean();
+    }
+
     public Command resetAngleCommand() {
-        return new RunCommand(
-                () -> armMotor.setMotorPosition(ARM_DEFAULT_START_RAD)
+        return new RunCommand(() -> armMotor.setMotorPosition(ARM_DEFAULT_START_RAD)
         ).ignoringDisable(true);
     }
 

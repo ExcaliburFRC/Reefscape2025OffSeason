@@ -31,11 +31,11 @@ public class Automations {
         this.swerve = swerve;
         this.superstructure = superstructure;
 
-        scoreMap.put(RobotStates.L1, superstructure.L1ScoreCommand());
-        scoreMap.put(RobotStates.L2, superstructure.openToScoreCommand(RobotStates.L2));
-        scoreMap.put(RobotStates.L3, superstructure.openToScoreCommand(RobotStates.L3));
-        scoreMap.put(RobotStates.L4, superstructure.openToScoreCommand(RobotStates.L4));
-        scoreMap.put(RobotStates.NET, superstructure.netScoreCommand());
+//        scoreMap.put(RobotStates.SCORE_L1, superstructure.L1ScoreCommand());
+//        scoreMap.put(RobotStates.L2, superstructure.openToScoreCommand(RobotStates.L2));
+//        scoreMap.put(RobotStates.L3, superstructure.openToScoreCommand(RobotStates.L3));
+//        scoreMap.put(RobotStates.L4, superstructure.openToScoreCommand(RobotStates.L4));
+//        scoreMap.put(RobotStates.NET, superstructure.netScoreCommand());
 
         climbOperator = new ClimbOperator();
         climber = new ClimberSubsystem();
@@ -90,37 +90,37 @@ public class Automations {
         return () -> cuurentPose.getDistance(translationCenter) < tolerance.getAsDouble();
     }
 
-    public Command L4Command() {
-        return new ConditionalCommand(
-                superstructure.openToScoreCommand(RobotStates.L4),
-                superstructure.scoreCommand(),
-                superstructure.isAtPosition()
-        );
-    }
-
-    public Command L3Command() {
-        return new ConditionalCommand(
-                superstructure.openToScoreCommand(RobotStates.L3),
-                superstructure.scoreCommand(),
-                superstructure.isAtPosition()
-        );
-    }
-
-    public Command L2Command() {
-        return new ConditionalCommand(
-                superstructure.openToScoreCommand(RobotStates.L2),
-                superstructure.scoreCommand(),
-                superstructure.isAtPosition()
-        );
-    }
-
-    public Command L1Command() {
-        return new ConditionalCommand(
-                superstructure.openToScoreCommand(RobotStates.L1),
-                superstructure.scoreCommand(),
-                superstructure.isAtPosition()
-        );
-    }
+//    public Command L4Command() {
+//        return new ConditionalCommand(
+//                superstructure.openToScoreCommand(RobotStates.L4),
+//                superstructure.scoreCommand(),
+//                superstructure.isAtPosition()
+//        );
+//    }
+//
+//    public Command L3Command() {
+//        return new ConditionalCommand(
+//                superstructure.openToScoreCommand(RobotStates.L3),
+//                superstructure.scoreCommand(),
+//                superstructure.isAtPosition()
+//        );
+//    }
+//
+//    public Command L2Command() {
+//        return new ConditionalCommand(
+//                superstructure.openToScoreCommand(RobotStates.L2),
+//                superstructure.scoreCommand(),
+//                superstructure.isAtPosition()
+//        );
+//    }
+//
+//    public Command L1Command() {
+//        return new ConditionalCommand(
+//                superstructure.openToScoreCommand(RobotStates.SCORE_L1),
+//                superstructure.scoreCommand(),
+//                superstructure.isAtPosition()
+//        );
+//    }
 
 //    public Command climbOnSelected() {
 //        return new SequentialCommandGroup(

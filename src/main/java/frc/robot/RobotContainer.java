@@ -26,10 +26,9 @@ public class RobotContainer implements Logged {
 
     CommandPS5Controller driver = new CommandPS5Controller(DRIVER_CONTROLLER_PORT);
 
-    ClimberSubsystem climberSubsystem = new ClimberSubsystem();
     AuroraClient client = new AuroraClient(AURORA_CLIENT_PORT);
 
-    Superstructure superstructure = new Superstructure();
+    Superstructure superstructure = new Superstructure(driver.circle());
 
     Swerve swerve = Constants.SwerveConstants.configureSwerve(new Pose2d());
 
@@ -50,7 +49,14 @@ public class RobotContainer implements Logged {
                 )
         );
 
-        driver.create().onTrue(superstructure.elevatorSubsystem.setElevatorHeightCommand(0));
+        driver.L1().
+    (superstructure.intakeCommand());
+        driver.povUp().whileTrue(superstructure.goToDefualtCommand().ignoringDisable(true));
+        driver.square().whileTrue(superstructure.intakeSubsystem.resetAngleCommand());
+
+//        driver.options().whileTrue(superstructure.elevatorSubsystem.coastCommand().ignoringDisable(true));
+
+//        driver.create().onTrue(superstructure.elevatorSubsystem.setElevatorHeightCommand(0).ignoringDisable(true));
     }
 
     public double applyDeadband(double val) {
