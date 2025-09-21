@@ -12,6 +12,7 @@ import frc.excalib.control.math.Vector2D;
 import frc.excalib.slam.mapper.AuroraClient;
 import frc.excalib.swerve.Swerve;
 import frc.robot.subsystems.climber.ClimberSubsystem;
+import frc.robot.subsystems.elevator.ElevatorSubsystem;
 import frc.robot.superstructure.Superstructure;
 import monologue.Logged;
 
@@ -28,9 +29,10 @@ public class RobotContainer implements Logged {
 
     AuroraClient client = new AuroraClient(AURORA_CLIENT_PORT);
 
-    Superstructure superstructure = new Superstructure(driver.circle());
+    Superstructure superstructure = new Superstructure();
+//    ElevatorSubsystem elevatorSubsystem = new ElevatorSubsystem();
 
-    Swerve swerve = Constants.SwerveConstants.configureSwerve(new Pose2d());
+//    Swerve swerve = Constants.SwerveConstants.configureSwerve(new Pose2d());
 
     public RobotContainer() {
         configureBindings();
@@ -39,20 +41,22 @@ public class RobotContainer implements Logged {
 
     private void configureBindings() {
 
-        swerve.setDefaultCommand(
-                swerve.driveCommand(
-                        () -> new Vector2D(
-                                applyDeadband(-driver.getLeftY()) * MAX_VEL,
-                                applyDeadband(-driver.getLeftX()) * MAX_VEL),
-                        () -> applyDeadband(driver.getRightX()) * MAX_OMEGA_RAD_PER_SEC,
-                        () -> true
-                )
-        );
+//        swerve.setDefaultCommand(
+//                swerve.driveCommand(
+//                        () -> new Vector2D(
+//                                applyDeadband(-driver.getLeftY()) * MAX_VEL,
+//                                applyDeadband(-driver.getLeftX()) * MAX_VEL),
+//                        () -> applyDeadband(driver.getRightX()) * MAX_OMEGA_RAD_PER_SEC,
+//                        () -> true
+//                )
+//        );
 
-        driver.L1().
-    (superstructure.intakeCommand());
-        driver.povUp().whileTrue(superstructure.goToDefualtCommand().ignoringDisable(true));
-        driver.square().whileTrue(superstructure.intakeSubsystem.resetAngleCommand());
+        driver.L1().onTrue(superstructure.intakeCommand());
+        driver.R1().onTrue(superstructure.handoffCommand());
+        driver.create().whileTrue(superstructure.intakeSubsystem.resetAngleCommand().ignoringDisable(true));
+        driver.square().whileTrue(superstructure.elevatorSubsystem.coastCommand().ignoringDisable(true));
+        driver.options().whileTrue(superstructure.elevatorSubsystem.setElevatorHeightCommand(0).ignoringDisable(true));
+
 
 //        driver.options().whileTrue(superstructure.elevatorSubsystem.coastCommand().ignoringDisable(true));
 

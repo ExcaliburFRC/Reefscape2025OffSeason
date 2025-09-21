@@ -101,9 +101,7 @@ public class Intake extends SubsystemBase implements Logged {
 
         sensorTrigger.onTrue(new PrintCommand("The Trigger Changed!"));
 
-        intakeOpen = new Trigger(
-                () -> (atPosition.getAsBoolean() && (currentState == IntakeState.FLOOR_INTAKE))
-        );
+        intakeOpen = new Trigger(() -> angleSupplier.getAsDouble() < 1.2);
 
         arm = new Arm(
                 armMotor,
@@ -169,7 +167,7 @@ public class Intake extends SubsystemBase implements Logged {
         return intakeOpen;
     }
 
-    public BooleanSupplier isAtPosition() {
+    public Trigger isAtPosition() {
         return atPosition;
     }
 
@@ -235,8 +233,8 @@ public class Intake extends SubsystemBase implements Logged {
     }
 
     @NT
-    public boolean getLimitSwitch() {
-        return !limitSwitch.get();
+    public boolean getAtPosition() {
+        return atPosition.getAsBoolean();
     }
 
     @NT

@@ -20,47 +20,44 @@ import static monologue.Annotations.*;
 
 public class Superstructure implements Logged {
     // === Subsystems ==
-//    public final ArmSubsystem armSubsystem;
-//    public final ElevatorSubsystem elevatorSubsystem;
+    public final ArmSubsystem armSubsystem;
+    public final ElevatorSubsystem elevatorSubsystem;
     public final Intake intakeSubsystem;
-//    public final Gripper gripperSubsystem;
-//    public final ClimberSubsystem climberSubsystem;
-    Trigger trigger;
+    public final Gripper gripperSubsystem;
+    public final ClimberSubsystem climberSubsystem;
 
 
     private final HashMap<RobotStates, RobotStates> followThroughMap;
     public RobotStates currentState;
-//    public final Trigger atPositionTrigger;
+    public final Trigger atPositionTrigger;
 
 
-    public Superstructure(Trigger trigger) {
+    public Superstructure() {
         currentState = RobotStates.DEFAULT_WITHOUT_GAME_PIECE;
 
-//        armSubsystem = new ArmSubsystem();
-//        elevatorSubsystem = new ElevatorSubsystem();
+        armSubsystem = new ArmSubsystem();
+        elevatorSubsystem = new ElevatorSubsystem();
         intakeSubsystem = new Intake();
-//        gripperSubsystem = new Gripper();
-//        climberSubsystem = new ClimberSubsystem();
+        gripperSubsystem = new Gripper();
+        climberSubsystem = new ClimberSubsystem();
 
         followThroughMap = new HashMap<>();
 
-//        atPositionTrigger = new Trigger(
-//                () -> elevatorSubsystem.atPositionTrigger.getAsBoolean() &&
-//                        armSubsystem.isAtPosition() &&
-//                        intakeSubsystem.isAtPosition().getAsBoolean()
-//        ).debounce(AT_POSITION_DEBOUNCE);
-//
-//        elevatorSubsystem.setArmAngleSuppier(armSubsystem::getAngleSupplier);
-//        armSubsystem.setElevatorHeightSupplier(elevatorSubsystem::getElevatorHeight);
-//
-//        armSubsystem.setIntakeOpen(intakeSubsystem.isIntakeOpen());
-//        elevatorSubsystem.setIntakeOpenTrigger(intakeSubsystem.isIntakeOpen());
+        atPositionTrigger = new Trigger(
+                () -> elevatorSubsystem.atPositionTrigger.getAsBoolean() &&
+                        armSubsystem.isAtPosition() &&
+                        intakeSubsystem.isAtPosition().getAsBoolean()
+        );
+
+        elevatorSubsystem.setArmAngleSuppier(armSubsystem::getAngleSupplier);
+        armSubsystem.setElevatorHeightSupplier(elevatorSubsystem::getElevatorHeight);
+
+        armSubsystem.setIntakeOpen(new Trigger(intakeSubsystem.isIntakeOpen()));
+        elevatorSubsystem.setIntakeOpenTrigger(intakeSubsystem.isIntakeOpen());
 
 //        followThroughMap.put(RobotStates.L2, RobotStates.L2_FOLLOWTHROUGH);
 //        followThroughMap.put(RobotStates.L3, RobotStates.L3_FOLLOWTHROUGH);
 //        followThroughMap.put(RobotStates.L4, RobotStates.L4_FOLLOWTHROUGH);
-
-        this.trigger = intakeSubsystem.either;
 
     }
 
@@ -68,11 +65,11 @@ public class Superstructure implements Logged {
         return new ParallelCommandGroup(
                 new InstantCommand(() -> currentState = state),
                 new PrintCommand("324"),
-                intakeSubsystem.setStateCommand(state.intakeState)
-//                armSubsystem.setStateCommand(state.armPosition),
-//                elevatorSubsystem.setStateCommand(state.elevatorState),
-//                gripperSubsystem.setStateCommand(state.gripperState)
-        );
+                intakeSubsystem.setStateCommand(state.intakeState),
+                armSubsystem.setStateCommand(state.armPosition),
+                elevatorSubsystem.setStateCommand(state.elevatorState),
+                gripperSubsystem.setStateCommand(state.gripperState)
+        ).until(atPositionTrigger);
     }
 
     public void returnToDefaultState() {
@@ -126,41 +123,29 @@ public class Superstructure implements Logged {
     public Command intakeCommand() {
         return new SequentialCommandGroup(
                 setCurrentStateCommand(RobotStates.FLOOR_INTAKE),
-//                new RunCommand(() -> {}).until(intakeSubsystem.getBothSensorData()),
-                new RunCommand(() -> System.out.println("hi")).until(intakeSubsystem.either),
-                new PrintCommand("yoav cohen"),
+                new RunCommand(() -> {
+                }).until(intakeSubsystem.either),
                 setCurrentStateCommand(RobotStates.DEFAULT_WITH_GAME_PIECE));
     }
 
-//    public Command handoffCommand() {
-//        return new ConditionalCommand(
-//                new SequentialCommandGroup(
-//                        setCurrentStateCommand(RobotStates.PRE_HANDOFF),
-//                        new PrintCommand("2"),
-//                        new ParallelCommandGroup(
-//                                new PrintCommand("3"),
-//                                intakeSubsystem.goToStateCommand(),
-//                                armSubsystem.setStateCommand(ArmPosition.HANDOFF)
-////                                gripperSubsystem.intakeCoral()
-//                        ),
-//                        new PrintCommand("4"),
-//                        new ParallelCommandGroup(
-//                                intakeSubsystem.setStateCommand(IntakeState.HANDOFF).andThen(intakeSubsystem.goToStateCommand())
-//                        ).until(gripperSubsystem.hasCoralTrigger),
-//                        intakeSubsystem.setStateCommand(IntakeState.DEFAULT).andThen(intakeSubsystem.goToStateCommand()).withTimeout(0.1)
+    public Command handoffCommand() {
+        return new SequentialCommandGroup(
+                setCurrentStateCommand(RobotStates.PRE_HANDOFF),
+                new PrintCommand("1"),
+                new WaitUntilCommand(atPositionTrigger),
+                new PrintCommand("2"),
+                setCurrentStateCommand(RobotStates.HANDOFF),
+                new PrintCommand("3"),
+                new WaitUntilCommand(gripperSubsystem.hasCoralTrigger),
+                new PrintCommand("4"),
+                setCurrentStateCommand(RobotStates.DEFAULT_WITH_GAME_PIECE)
+        );
+    }
 
-    /// /                        armSubsystem.setStateCommand(ArmPosition.L3)
-//                ),
-//                new PrintCommand("There is no a coral in the system"),
-//                intakeSubsystem.hasCoral.and(gripperSubsystem.hasAlgaeTrigger.negate()).and(gripperSubsystem.hasCoralTrigger.negate())).withName("handoff Command");
-//    }
+
     public Command secureCommand() {
         return Commands.none();
     }
-
-//    public BooleanSupplier isAtPosition() {
-//        return atPositionTrigger;
-//    }
 
     public Command goToDefualtCommand() {
         return setCurrentStateCommand(RobotStates.DEFAULT_WITH_GAME_PIECE);
@@ -173,7 +158,12 @@ public class Superstructure implements Logged {
 
     @Log.NT
     public boolean getEither() {
-        return trigger.getAsBoolean();
+        return intakeSubsystem.either.getAsBoolean();
+    }
+
+    @Log.NT
+    public boolean getAtPostionTrigger() {
+        return atPositionTrigger.getAsBoolean();
     }
 
 }

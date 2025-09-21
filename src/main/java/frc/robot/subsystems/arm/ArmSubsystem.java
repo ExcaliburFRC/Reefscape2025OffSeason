@@ -12,6 +12,7 @@ import frc.excalib.mechanisms.Arm.Arm;
 import monologue.Annotations.Log.NT;
 import monologue.Logged;
 
+import javax.swing.plaf.PanelUI;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
@@ -31,7 +32,7 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
     // === Suppliers ===
     private final DoubleSupplier angleSupplier;
     private DoubleSupplier elevatorHeightSupplier;
-    private BooleanSupplier isIntakeOpen;
+    private Trigger isIntakeOpen;
 
     // === Triggers and States ===
     private final Trigger atPostionTrigger;
@@ -59,13 +60,13 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
         firstMotor.setMotorPosition(canCoder.getAbsolutePosition().getValueAsDouble() * 2 * Math.PI);
 
         elevatorHeightSupplier = () -> 0;
-        isIntakeOpen = () -> false;
+        isIntakeOpen = new Trigger(()-> false);
 
         armMechanism = new Arm(
                 firstMotor,
                 angleSupplier,
                 VELOCITY_LIMIT,
-                new Gains(1.8, 0, 0.2, 0, 0, 0, 0.68),
+                new Gains(1.8, 0, 0.2, 0, 0, 0, 1.2),
                 new Mass(
                         () -> Math.cos(angleSupplier.getAsDouble()),
                         () -> Math.sin(angleSupplier.getAsDouble()),
@@ -80,26 +81,32 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
         softLimit = new ContinuousSoftLimit(
                 () -> {
                     double h = elevatorHeightSupplier.getAsDouble();
+                    if(!isIntakeOpen.getAsBoolean() && h < 0.9){
+                        return 0.3;
+                    }
                     if (h > 0.93) {
                         return -8.3;
-                    } else if (h > 0.67) {
+                    } else if (h > 0.67+0.1) {
                         return -0.82;
-                    } else if (h > 0.36) {
+                    } else if (h > 0.36+0.1){
                         return 0;
-                    } else if (h > 0.22) {
+                    } else if (h > 0.22+0.1) {
                         return 0.607;
                     }
                     return 0.9;
                 },
                 () -> {
                     double h = elevatorHeightSupplier.getAsDouble();
-                    if (h > 0.93) {
+                    if(!isIntakeOpen.getAsBoolean() && h < 0.87){
+                        return 2.3;
+                    }
+                    if (h > 0.93+0.1) {
                         return 6.7;
-                    } else if (h > 0.67) {
+                    } else if (h > 0.67+0.3) {
                         return 3.8;
-                    } else if (h > 0.36) {
+                    } else if (h > 0.36+0.1) {
                         return 3;
-                    } else if (h > 0.22) {
+                    } else if (h > 0.22+0.1) {
                         return 2.3;
                     }
                     return 2;
@@ -114,7 +121,7 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
 
     public Command goToStateCommand() {
         return armMechanism.anglePositionControlCommand(
-                () -> softLimit.getSetpoint(angleSupplier.getAsDouble(), currentState.getAngle()),
+                () -> softLimit.getSetpoint(angleSupplier.getAsDouble(), softLimit.limit(currentState.getAngle())),
                 (at) -> at = false,
                 POSITION_TOLERANCE_RAD,
                 this
@@ -122,7 +129,7 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
     }
 
     public Command setStateCommand(ArmPosition state) {
-        return new InstantCommand(() -> currentState = state, this);
+        return new InstantCommand(() -> currentState = state);
     }
 
     public Command coastCommand() {
@@ -144,13 +151,18 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
         this.elevatorHeightSupplier = elevatorHeightSupplier;
     }
 
-    public void setIntakeOpen(BooleanSupplier intakeOpen) {
+    public void setIntakeOpen(Trigger intakeOpen) {
         isIntakeOpen = intakeOpen;
     }
 
     @NT
     public boolean isAtPosition() {
         return atPostionTrigger.getAsBoolean();
+    }
+
+    @NT
+    public boolean isIntakeOpen() {
+        return !isIntakeOpen.getAsBoolean();
     }
 
     @NT
@@ -167,6 +179,8 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
     public double getSetpoint() {
         return currentState.getAngle();
     }
+
+
 
     @NT
     public double getLimitedSetpoint() {

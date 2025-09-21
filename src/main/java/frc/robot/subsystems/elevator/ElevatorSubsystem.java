@@ -70,6 +70,8 @@ public class ElevatorSubsystem extends SubsystemBase implements Logged {
 
         armAngleSuppier = () -> 0;
 
+        intakeOpenTrigger = new Trigger(()-> true);
+
         softLimit = new SoftLimit(
                 () -> {
                     if (isIntakeOpen()) {
@@ -94,8 +96,7 @@ public class ElevatorSubsystem extends SubsystemBase implements Logged {
 
     public Command setStateCommand(ElevatorStates elevatorStates) {
         return new InstantCommand(
-                () -> currentState = elevatorStates,
-                this
+                () -> currentState = elevatorStates
         );
     }
 

@@ -42,7 +42,7 @@ public class Gripper extends SubsystemBase implements Logged {
                 MAX_JERK,
                 new Gains()
         );
-        hasCoralTrigger = new Trigger(() -> sensor.getValue() < 150);
+        hasCoralTrigger = new Trigger(() -> sensor.getValue() < 150).debounce(0.15);
         hasAlgaeTrigger = new Trigger(() -> HAS_CORAL_CURRENT < gripperWheels.logCurrent()).debounce(0.1);
 
         setDefaultCommand(gripperWheels.manualCommand(() -> currentState.output, this));
