@@ -101,7 +101,7 @@ public class Intake extends SubsystemBase implements Logged {
 
         sensorTrigger.onTrue(new PrintCommand("The Trigger Changed!"));
 
-        intakeOpen = new Trigger(() -> angleSupplier.getAsDouble() < 1.2);
+        intakeOpen = new Trigger(() -> angleSupplier.getAsDouble() > 1.2);
 
         arm = new Arm(
                 armMotor,
@@ -163,7 +163,7 @@ public class Intake extends SubsystemBase implements Logged {
         this.currentState = this.defaultState;
     }
 
-    public BooleanSupplier isIntakeOpen() {
+    public Trigger isIntakeOpen() {
         return intakeOpen;
     }
 

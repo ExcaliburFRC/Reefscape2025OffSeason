@@ -119,7 +119,6 @@ public class Automations {
 
     }
 
-
     public enum OpeningDirection {
         LEFT,
         RIGHT

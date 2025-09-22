@@ -4,14 +4,14 @@ import edu.wpi.first.math.util.Units;
 
 public enum ArmPosition {
     LEFT_PRE_L2(-5.3),
-    LEFT_L2(-5.3),
-    LEFT_L2_FOLLOWTHROUGH(0),
+    LEFT_L2(0.428),
+    LEFT_L2_FOLLOWTHROUGH(0.078),
     LEFT_PRE_L3(5),
-    LEFT_L3(5),
-    LEFT_L3_FOLLOWTHROUGH(0),
+    LEFT_L3(0.6304),
+    LEFT_L3_FOLLOWTHROUGH(0.1288),
     LEFT_PRE_L4(0),
-    LEFT_L4(0),
-    LEFT_L4_FOLLOWTHROUGH(0),
+    LEFT_L4(0.763),
+    LEFT_L4_FOLLOWTHROUGH(0.05),
 
     RIGHT_PRE_L2(-5.3),
     RIGHT_L2(-5.3),

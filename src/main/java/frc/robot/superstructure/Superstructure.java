@@ -2,20 +2,15 @@ package frc.robot.superstructure;
 
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.subsystems.arm.ArmPosition;
 import frc.robot.subsystems.arm.ArmSubsystem;
 import frc.robot.subsystems.climber.ClimberSubsystem;
 import frc.robot.subsystems.elevator.ElevatorSubsystem;
 import frc.robot.subsystems.gripper.Gripper;
 import frc.robot.subsystems.intake.Intake;
-import frc.robot.subsystems.intake.IntakeState;
-import monologue.Annotations;
 import monologue.Logged;
 
 import java.util.HashMap;
-import java.util.function.BooleanSupplier;
 
-import static frc.robot.superstructure.automations.Constants.AT_POSITION_DEBOUNCE;
 import static monologue.Annotations.*;
 
 public class Superstructure implements Logged {
@@ -76,22 +71,22 @@ public class Superstructure implements Logged {
         this.currentState = RobotStates.DEFAULT_WITHOUT_GAME_PIECE;
     }
 
-//    public RobotStates findFollowthroughState(RobotStates scoreState) throws IllegalArgumentException {
-//        switch (scoreState) {
-//            case L2 -> {
-//                return RobotStates.L2_FOLLOWTHROUGH;
-//            }
-//            case L3 -> {
-//                return RobotStates.L3_FOLLOWTHROUGH;
-//            }
-//            case L4 -> {
-//                return RobotStates.L4_FOLLOWTHROUGH;
-//            }
-//            default -> {
-//                throw new IllegalArgumentException("Please enter a valid Robot State");
-//            }
-//        }
-//    }
+    public RobotStates findFollowthroughState(RobotStates scoreState) throws IllegalArgumentException {
+        switch (scoreState) {
+            case LEFT_L2 -> {
+                return RobotStates.LEFT_L2_FOLLOWTHROUGH;
+            }
+            case LEFT_L3 -> {
+                return RobotStates.LEFT_L3_FOLLOWTHROUGH;
+            }
+            case LEFT_L4 -> {
+                return RobotStates.LEFT_L4_FOLLOWTHROUGH;
+            }
+            default -> {
+                throw new IllegalArgumentException("Please enter a valid Robot State");
+            }
+        }
+    }
 
 //    public Command openToScoreCommand(RobotStates scoreState) {
 //        return new ConditionalCommand(
@@ -103,22 +98,23 @@ public class Superstructure implements Logged {
 //                gripperSubsystem.hasCoralTrigger);
 //    }
 
-//    public Command scoreCommand() {
+    //    public Command scoreCommand() {
 //        return new ParallelCommandGroup(
 //                gripperSubsystem.releaseCoral(),
 //                setCurrentStateCommand(followThroughMap.get(currentState))
 //        );
 //    }
 //
-//    public Command L1ScoreCommand() {
-//        return new ConditionalCommand(
-//                new SequentialCommandGroup(
-//                        setCurrentStateCommand(RobotStates.SCORE_L1).until(atPositionTrigger),
-//                        setCurrentStateCommand(RobotStates.DEFAULT_WITHOUT_GAME_PIECE)
-//                ),
-//                new PrintCommand("There is no available coral to score."), //TODO after handoffComand is changed apply it here like applied at reefScoreCommand
-//                intakeSubsystem.hasCoral).withName("L1 Score Command");
-//    }
+    public Command L1ScoreCommand() {
+        return new SequentialCommandGroup(
+                setCurrentStateCommand(RobotStates.PRE_L1),
+                new WaitCommand(0.3),
+                setCurrentStateCommand(RobotStates.SCORE_L1),
+                new RunCommand(()-> {}).until(()->!intakeSubsystem.getBothSensorData().getAsBoolean()),
+                new WaitCommand(0.2),
+                setCurrentStateCommand(RobotStates.DEFAULT_WITH_GAME_PIECE)
+        );
+    }
 
     public Command intakeCommand() {
         return new SequentialCommandGroup(
@@ -136,7 +132,7 @@ public class Superstructure implements Logged {
                 new PrintCommand("2"),
                 setCurrentStateCommand(RobotStates.HANDOFF),
                 new PrintCommand("3"),
-                new WaitUntilCommand(gripperSubsystem.hasCoralTrigger),
+                new RunCommand(()->{}).until(gripperSubsystem.hasCoralTrigger),
                 new PrintCommand("4"),
                 setCurrentStateCommand(RobotStates.DEFAULT_WITH_GAME_PIECE)
         );

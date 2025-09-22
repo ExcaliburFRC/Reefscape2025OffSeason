@@ -11,6 +11,7 @@ import frc.excalib.control.motor.controllers.TalonFXMotor;
 import frc.excalib.mechanisms.Arm.Arm;
 import monologue.Annotations.Log.NT;
 import monologue.Logged;
+import org.ejml.dense.row.factory.LinearSolverFactory_MT_DDRM;
 
 import javax.swing.plaf.PanelUI;
 import java.util.function.BooleanSupplier;
@@ -60,7 +61,7 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
         firstMotor.setMotorPosition(canCoder.getAbsolutePosition().getValueAsDouble() * 2 * Math.PI);
 
         elevatorHeightSupplier = () -> 0;
-        isIntakeOpen = new Trigger(()-> false);
+        isIntakeOpen = new Trigger(() -> false);
 
         armMechanism = new Arm(
                 firstMotor,
@@ -75,41 +76,58 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
         );
 
         atPostionTrigger = new Trigger(
-                () -> (Math.abs(currentState.getAngle() - angleSupplier.getAsDouble()) < POSITION_TOLERANCE_RAD)
+                () -> (Math.abs(getLimitedSetpoint() - angleSupplier.getAsDouble()) < POSITION_TOLERANCE_RAD)
         );
 
         softLimit = new ContinuousSoftLimit(
                 () -> {
                     double h = elevatorHeightSupplier.getAsDouble();
-                    if(!isIntakeOpen.getAsBoolean() && h < 0.9){
-                        return 0.3;
+                    if (isIntakeOpen.getAsBoolean()) {
+                        if (h > 0.90) {
+                            return -8.3;
+                        } else if (h > 0.67) {
+                            return -0.82 + applyRotationSlack();
+                        } else if (h > 0.36) {
+                            return 0 + applyRotationSlack();
+                        } else if (h > 0.22) {
+                            return 0.607 + applyRotationSlack();
+                        }
+                        return 0.9 + applyRotationSlack();
+                    } else {
+                        if (h > 0.87) {
+                            return -8.3;
+                        } else if (h > 0.71 + 0.08) {
+                            return -0.81 + applyRotationSlack();
+                        } else if (h > 0.45+0.08) {
+                            return applyRotationSlack();
+                        }
+                        return 1.1 + applyRotationSlack();
                     }
-                    if (h > 0.93) {
-                        return -8.3;
-                    } else if (h > 0.67+0.1) {
-                        return -0.82;
-                    } else if (h > 0.36+0.1){
-                        return 0;
-                    } else if (h > 0.22+0.1) {
-                        return 0.607;
-                    }
-                    return 0.9;
                 },
                 () -> {
                     double h = elevatorHeightSupplier.getAsDouble();
-                    if(!isIntakeOpen.getAsBoolean() && h < 0.87){
-                        return 2.3;
+                    if (isIntakeOpen.getAsBoolean()) {
+                        if (h > 0.93) {
+                            return 6.7;
+                        } else if (h > 0.67) {
+                            return 3.8 + applyRotationSlack();
+                        } else if (h > 0.36) {
+                            return 3 + applyRotationSlack();
+                        } else if (h > 0.22) {
+                            return 2.3 + applyRotationSlack();
+                        }
+                        return 2 + applyRotationSlack();
+                    } else {
+                        if (h > 0.87) {
+                            return 6.7;
+                        } else if (h > 0.71+0.08) {
+                            return -2.84 + applyRotationSlack();
+                        } else if (h > 0.45+0.08) {
+                            return -0.283 + applyRotationSlack();
+                        } else {
+                            return 1.6 + applyRotationSlack();
+                        }
                     }
-                    if (h > 0.93+0.1) {
-                        return 6.7;
-                    } else if (h > 0.67+0.3) {
-                        return 3.8;
-                    } else if (h > 0.36+0.1) {
-                        return 3;
-                    } else if (h > 0.22+0.1) {
-                        return 2.3;
-                    }
-                    return 2;
                 }
         );
         setDefaultCommand((goToStateCommand()));
@@ -121,7 +139,7 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
 
     public Command goToStateCommand() {
         return armMechanism.anglePositionControlCommand(
-                () -> softLimit.getSetpoint(angleSupplier.getAsDouble(), softLimit.limit(currentState.getAngle())),
+                () -> softLimit.getSetpoint(angleSupplier.getAsDouble(), currentState.getAngle()),
                 (at) -> at = false,
                 POSITION_TOLERANCE_RAD,
                 this
@@ -162,7 +180,7 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
 
     @NT
     public boolean isIntakeOpen() {
-        return !isIntakeOpen.getAsBoolean();
+        return isIntakeOpen.getAsBoolean();
     }
 
     @NT
@@ -180,10 +198,20 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
         return currentState.getAngle();
     }
 
-
-
     @NT
     public double getLimitedSetpoint() {
         return softLimit.getSetpoint(angleSupplier.getAsDouble(), softLimit.limit(currentState.getAngle()));
     }
+
+    @NT
+    public double applyRotationSlack() {
+        if (angleSupplier.getAsDouble() < 0) {
+            DoubleSupplier tempSupplier = () -> angleSupplier.getAsDouble() + 20 * Math.PI;
+            double temp = (int) tempSupplier.getAsDouble() / (Math.PI * 2) * 2 * Math.PI;
+            temp -= 20 * Math.PI;
+        }
+        return (int) (angleSupplier.getAsDouble() / (Math.PI * 2)) * 2 * Math.PI;
+    }
+
+
 }

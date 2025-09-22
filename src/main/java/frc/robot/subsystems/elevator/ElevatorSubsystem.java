@@ -70,14 +70,15 @@ public class ElevatorSubsystem extends SubsystemBase implements Logged {
 
         armAngleSuppier = () -> 0;
 
-        intakeOpenTrigger = new Trigger(()-> true);
+        intakeOpenTrigger = new Trigger(() -> true);
 
         softLimit = new SoftLimit(
                 () -> {
-                    if (isIntakeOpen()) {
-                        return 0.4;
+                    if (!isIntakeOpen()) {
+                        return 0.32;
+                    } else {
+                        return 0;
                     }
-                    return MIN_ELEVATOR_HIGHT;
                 },
                 () -> MAX_ELEVATOR_HIGHT
         );
@@ -124,8 +125,8 @@ public class ElevatorSubsystem extends SubsystemBase implements Logged {
     }
 
     @NT
-    public Trigger getAtPositionTrigger() {
-        return atPositionTrigger;
+    public boolean getAtPositionTrigger() {
+        return atPositionTrigger.getAsBoolean();
     }
 
     @NT
@@ -137,15 +138,24 @@ public class ElevatorSubsystem extends SubsystemBase implements Logged {
         return new InstantCommand(() -> motorGroup.setMotorPosition(0));
     }
 
-    public Command zeroElevator(){
-        return new InstantCommand(()-> motorGroup.setMotorPosition(0));
+    public Command zeroElevator() {
+        return new InstantCommand(() -> motorGroup.setMotorPosition(0));
     }
-    public Command coastCommand(){
+
+    public Command coastCommand() {
         return new StartEndCommand(
-                ()-> motorGroup.setIdleState(IdleState.COAST),
-                ()-> motorGroup.setIdleState(IdleState.BRAKE)
+                () -> motorGroup.setIdleState(IdleState.COAST),
+                () -> motorGroup.setIdleState(IdleState.BRAKE)
         ).ignoringDisable(true);
     }
 
+    @NT
+    public double normilizeAngleSuppiler() {
+        double temp = armAngleSuppier.getAsDouble() % (Math.PI * 2);
+        if (temp < 0) {
+            return temp += 2 * Math.PI;
+        }
+        return temp;
+    }
 }
 
