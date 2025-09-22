@@ -18,10 +18,10 @@ import java.util.function.DoubleSupplier;
  */
 public class Arm extends Mechanism {
     private final Mass m_mass;
-    private final PIDController m_PIDController;
+    private final PIDController PIDController;
     public final DoubleSupplier ANGLE_SUPPLIER;
     public final double m_kv, m_ks, m_kg;
-    public final SoftLimit m_VELOCITY_LIMIT;
+    public final SoftLimit velocityLimit;
 
     public Arm(Motor motor,
                DoubleSupplier angleSupplier,
@@ -30,40 +30,40 @@ public class Arm extends Mechanism {
                Mass mass) {
         super(motor);
         ANGLE_SUPPLIER = angleSupplier;
-        m_VELOCITY_LIMIT = velocityLimit;
+        this.velocityLimit = velocityLimit;
         m_kg = gains.kg;
         m_kv = gains.kv;
         m_ks = gains.ks;
-        m_PIDController = new PIDController(gains.kp, gains.ki, gains.kd);
+        PIDController = new PIDController(gains.kp, gains.ki, gains.kd);
         m_mass = mass;
     }
 
     /**
-     * @param setPointSupplier  the dynamic angle setpoint to go to (radians)
+     * @param setpointSupplier  the dynamic angle setpoint to go to (radians)
      * @param toleranceConsumer gets updated if the measurement is at tolerance.
      * @return a command that moves the arm to the specified dynamic setpoint.
      */
     public Command anglePositionControlCommand(
-            DoubleSupplier setPointSupplier,
+            DoubleSupplier setpointSupplier,
             Consumer<Boolean> toleranceConsumer,
             double maxOffSet,
             SubsystemBase... requirements) {
         final double dutyCycle = 0.02;
         return new RunCommand(
                 () -> {
-                    double error = setPointSupplier.getAsDouble() - ANGLE_SUPPLIER.getAsDouble();
+                    double error = setpointSupplier.getAsDouble() - ANGLE_SUPPLIER.getAsDouble();
                     double velocitySetpoint = error / dutyCycle;
 
-                    velocitySetpoint = m_VELOCITY_LIMIT.limit(velocitySetpoint);
+                    velocitySetpoint = velocityLimit.limit(velocitySetpoint);
                     double phyOutput =
                             m_ks * Math.signum(velocitySetpoint) +
                                     m_kg * m_mass.getCenterOfMass().getX();
-                    double pid = m_PIDController.calculate(ANGLE_SUPPLIER.getAsDouble(),setPointSupplier.getAsDouble());
+                    double pid = PIDController.calculate(ANGLE_SUPPLIER.getAsDouble(), setpointSupplier.getAsDouble());
                     double output = phyOutput + pid;
 //                    System.out.println("PID:  "+pid);
 //                    System.out.println("Angle:  " + ANGLE_SUPPLIER.getAsDouble());
 //                    System.out.println("Setpoint:  "+ setPointSupplier.getAsDouble());
-                    super.setVoltage(m_VELOCITY_LIMIT.limit(output));
+                    super.setVoltage(velocityLimit.limit(output));
                     toleranceConsumer.accept(Math.abs(error) < maxOffSet);
                 }, requirements);
     }

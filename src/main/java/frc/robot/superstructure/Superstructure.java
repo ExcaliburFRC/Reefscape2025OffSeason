@@ -44,7 +44,7 @@ public class Superstructure implements Logged {
                         intakeSubsystem.isAtPosition().getAsBoolean()
         );
 
-        elevatorSubsystem.setArmAngleSuppier(armSubsystem::getAngleSupplier);
+        elevatorSubsystem.setArmAngleSuppier(() -> armSubsystem.getAngleSupplier());
         armSubsystem.setElevatorHeightSupplier(elevatorSubsystem::getElevatorHeight);
 
         armSubsystem.setIntakeOpen(new Trigger(intakeSubsystem.isIntakeOpen()));
@@ -110,7 +110,8 @@ public class Superstructure implements Logged {
                 setCurrentStateCommand(RobotStates.PRE_L1),
                 new WaitCommand(0.3),
                 setCurrentStateCommand(RobotStates.SCORE_L1),
-                new RunCommand(()-> {}).until(()->!intakeSubsystem.getBothSensorData().getAsBoolean()),
+                new RunCommand(() -> {
+                }).until(() -> !intakeSubsystem.getBothSensorData().getAsBoolean()),
                 new WaitCommand(0.2),
                 setCurrentStateCommand(RobotStates.DEFAULT_WITH_GAME_PIECE)
         );
@@ -132,7 +133,8 @@ public class Superstructure implements Logged {
                 new PrintCommand("2"),
                 setCurrentStateCommand(RobotStates.HANDOFF),
                 new PrintCommand("3"),
-                new RunCommand(()->{}).until(gripperSubsystem.hasCoralTrigger),
+                new RunCommand(() -> {
+                }).until(() -> gripperSubsystem.hasCoralTrigger.getAsBoolean() && atPositionTrigger.getAsBoolean()),
                 new PrintCommand("4"),
                 setCurrentStateCommand(RobotStates.DEFAULT_WITH_GAME_PIECE)
         );

@@ -11,10 +11,7 @@ import frc.excalib.control.motor.controllers.TalonFXMotor;
 import frc.excalib.mechanisms.Arm.Arm;
 import monologue.Annotations.Log.NT;
 import monologue.Logged;
-import org.ejml.dense.row.factory.LinearSolverFactory_MT_DDRM;
 
-import javax.swing.plaf.PanelUI;
-import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 import static frc.excalib.control.motor.motor_specs.DirectionState.*;
@@ -26,7 +23,7 @@ import static frc.robot.subsystems.intake.Constants.POSITION_TOLERANCE_RAD;
 public class ArmSubsystem extends SubsystemBase implements Logged {
 
     // === Hardware ===
-    private final TalonFXMotor firstMotor;
+    private final TalonFXMotor armMotor;
     private final CANcoder canCoder;
     private final Arm armMechanism;
 
@@ -47,24 +44,24 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
     public ArmSubsystem() {
         currentState = ArmPosition.DEFAULT_WITH_GAME_PIECE;
 
-        firstMotor = new TalonFXMotor(FIRST_MOTOR_ID);
+        armMotor = new TalonFXMotor(FIRST_MOTOR_ID);
 
         canCoder = new CANcoder(CAN_CODER_ID);
 
-        firstMotor.setInverted(REVERSE);
-        firstMotor.setNeutralMode(NeutralModeValue.Brake);
-        firstMotor.setVelocityConversionFactor(RPS_TO_RAD_PER_SEC);
-        firstMotor.setPositionConversionFactor((1 / 15.8611544) * Math.PI * 2);
+        armMotor.setInverted(REVERSE);
+        armMotor.setNeutralMode(NeutralModeValue.Brake);
+        armMotor.setVelocityConversionFactor(RPS_TO_RAD_PER_SEC);
+        armMotor.setPositionConversionFactor(((1 / 15.8611544) * Math.PI * 2) / 1.0755744*0.993157566);
 
         angleSupplier = () -> (canCoder.getPosition().getValueAsDouble() * Math.PI * 2);
 
-        firstMotor.setMotorPosition(canCoder.getAbsolutePosition().getValueAsDouble() * 2 * Math.PI);
+        armMotor.setMotorPosition(angleSupplier.getAsDouble());
 
         elevatorHeightSupplier = () -> 0;
         isIntakeOpen = new Trigger(() -> false);
 
         armMechanism = new Arm(
-                firstMotor,
+                armMotor,
                 angleSupplier,
                 VELOCITY_LIMIT,
                 new Gains(1.8, 0, 0.2, 0, 0, 0, 1.2),
@@ -94,11 +91,11 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
                         }
                         return 0.9 + applyRotationSlack();
                     } else {
-                        if (h > 0.87) {
+                        if (h > 0.87 + 0.15) {
                             return -8.3;
-                        } else if (h > 0.71 + 0.08) {
+                        } else if (h > 0.71 + 0.14) {
                             return -0.81 + applyRotationSlack();
-                        } else if (h > 0.45+0.08) {
+                        } else if (h > 0.45 + 0.14) {
                             return applyRotationSlack();
                         }
                         return 1.1 + applyRotationSlack();
@@ -118,11 +115,11 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
                         }
                         return 2 + applyRotationSlack();
                     } else {
-                        if (h > 0.87) {
+                        if (h > 0.87 + 0.15) {
                             return 6.7;
-                        } else if (h > 0.71+0.08) {
+                        } else if (h > 0.71 + 0.14) {
                             return -2.84 + applyRotationSlack();
-                        } else if (h > 0.45+0.08) {
+                        } else if (h > 0.45 + 0.14) {
                             return -0.283 + applyRotationSlack();
                         } else {
                             return 1.6 + applyRotationSlack();
@@ -152,8 +149,8 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
 
     public Command coastCommand() {
         return new StartEndCommand(
-                () -> firstMotor.setIdleState(COAST),
-                () -> firstMotor.setIdleState(BRAKE),
+                () -> armMotor.setIdleState(COAST),
+                () -> armMotor.setIdleState(BRAKE),
                 this
         ).ignoringDisable(true).withName("Arm Coast Command");
     }
@@ -190,7 +187,7 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
 
     @NT
     public double getMotorPosition() {
-        return firstMotor.getMotorPosition();
+        return armMotor.getMotorPosition();
     }
 
     @NT

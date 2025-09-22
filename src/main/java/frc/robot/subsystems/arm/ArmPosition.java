@@ -40,7 +40,7 @@ public enum ArmPosition {
     LEFT_PROCESSOR(0),
     RIGHT_PROCESSOR(0),
 
-    HANDOFF(-1.6),
+    HANDOFF(-1.63),
     EJECT_GAME_PIECE(0),
     INTAKE(0);
 

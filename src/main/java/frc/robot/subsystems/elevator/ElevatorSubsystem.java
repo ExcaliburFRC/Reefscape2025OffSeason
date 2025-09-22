@@ -74,11 +74,12 @@ public class ElevatorSubsystem extends SubsystemBase implements Logged {
 
         softLimit = new SoftLimit(
                 () -> {
-                    if (!isIntakeOpen()) {
-                        return 0.32;
-                    } else {
-                        return 0;
+                    if (normilizeAngleSuppiler() < 5.45 && normilizeAngleSuppiler() > 3.7) {
+                        return 0.8;
+
                     }
+                    return 0;
+
                 },
                 () -> MAX_ELEVATOR_HIGHT
         );
@@ -117,6 +118,11 @@ public class ElevatorSubsystem extends SubsystemBase implements Logged {
     @NT
     public double getSetpoint() {
         return currentState.getHeight();
+    }
+
+    @NT
+    public double getLimitedSetpoint() {
+        return softLimit.limit(currentState.getHeight());
     }
 
     @NT
