@@ -11,7 +11,9 @@ import frc.excalib.control.motor.controllers.TalonFXMotor;
 import frc.excalib.mechanisms.Arm.Arm;
 import monologue.Annotations.Log.NT;
 import monologue.Logged;
+import org.ejml.dense.row.factory.LinearSolverFactory_MT_DDRM;
 
+import javax.swing.plaf.PanelUI;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
@@ -31,7 +33,7 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
     // === Suppliers ===
     private final DoubleSupplier angleSupplier;
     private DoubleSupplier elevatorHeightSupplier;
-    private BooleanSupplier isIntakeOpen;
+    private Trigger isIntakeOpen;
 
     // === Triggers and States ===
     private final Trigger atPostionTrigger;
@@ -59,13 +61,13 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
         firstMotor.setMotorPosition(canCoder.getAbsolutePosition().getValueAsDouble() * 2 * Math.PI);
 
         elevatorHeightSupplier = () -> 0;
-        isIntakeOpen = () -> false;
+        isIntakeOpen = new Trigger(() -> false);
 
         armMechanism = new Arm(
                 firstMotor,
                 angleSupplier,
                 VELOCITY_LIMIT,
-                new Gains(1.8, 0, 0.2, 0, 0, 0, 0.68),
+                new Gains(1.8, 0, 0.2, 0, 0, 0, 1.2),
                 new Mass(
                         () -> Math.cos(angleSupplier.getAsDouble()),
                         () -> Math.sin(angleSupplier.getAsDouble()),
@@ -74,35 +76,58 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
         );
 
         atPostionTrigger = new Trigger(
-                () -> (Math.abs(currentState.getAngle() - angleSupplier.getAsDouble()) < POSITION_TOLERANCE_RAD)
+                () -> (Math.abs(getLimitedSetpoint() - angleSupplier.getAsDouble()) < POSITION_TOLERANCE_RAD)
         );
 
         softLimit = new ContinuousSoftLimit(
                 () -> {
                     double h = elevatorHeightSupplier.getAsDouble();
-                    if (h > 0.93) {
-                        return -8.3;
-                    } else if (h > 0.67) {
-                        return -0.82;
-                    } else if (h > 0.36) {
-                        return 0;
-                    } else if (h > 0.22) {
-                        return 0.607;
+                    if (isIntakeOpen.getAsBoolean()) {
+                        if (h > 0.90) {
+                            return -8.3;
+                        } else if (h > 0.67) {
+                            return -0.82 + applyRotationSlack();
+                        } else if (h > 0.36) {
+                            return 0 + applyRotationSlack();
+                        } else if (h > 0.22) {
+                            return 0.607 + applyRotationSlack();
+                        }
+                        return 0.9 + applyRotationSlack();
+                    } else {
+                        if (h > 0.87) {
+                            return -8.3;
+                        } else if (h > 0.71 + 0.08) {
+                            return -0.81 + applyRotationSlack();
+                        } else if (h > 0.45+0.08) {
+                            return applyRotationSlack();
+                        }
+                        return 1.1 + applyRotationSlack();
                     }
-                    return 0.9;
                 },
                 () -> {
                     double h = elevatorHeightSupplier.getAsDouble();
-                    if (h > 0.93) {
-                        return 6.7;
-                    } else if (h > 0.67) {
-                        return 3.8;
-                    } else if (h > 0.36) {
-                        return 3;
-                    } else if (h > 0.22) {
-                        return 2.3;
+                    if (isIntakeOpen.getAsBoolean()) {
+                        if (h > 0.93) {
+                            return 6.7;
+                        } else if (h > 0.67) {
+                            return 3.8 + applyRotationSlack();
+                        } else if (h > 0.36) {
+                            return 3 + applyRotationSlack();
+                        } else if (h > 0.22) {
+                            return 2.3 + applyRotationSlack();
+                        }
+                        return 2 + applyRotationSlack();
+                    } else {
+                        if (h > 0.87) {
+                            return 6.7;
+                        } else if (h > 0.71+0.08) {
+                            return -2.84 + applyRotationSlack();
+                        } else if (h > 0.45+0.08) {
+                            return -0.283 + applyRotationSlack();
+                        } else {
+                            return 1.6 + applyRotationSlack();
+                        }
                     }
-                    return 2;
                 }
         );
         setDefaultCommand((goToStateCommand()));
@@ -122,7 +147,7 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
     }
 
     public Command setStateCommand(ArmPosition state) {
-        return new InstantCommand(() -> currentState = state, this);
+        return new InstantCommand(() -> currentState = state);
     }
 
     public Command coastCommand() {
@@ -144,13 +169,18 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
         this.elevatorHeightSupplier = elevatorHeightSupplier;
     }
 
-    public void setIntakeOpen(BooleanSupplier intakeOpen) {
+    public void setIntakeOpen(Trigger intakeOpen) {
         isIntakeOpen = intakeOpen;
     }
 
     @NT
     public boolean isAtPosition() {
         return atPostionTrigger.getAsBoolean();
+    }
+
+    @NT
+    public boolean isIntakeOpen() {
+        return isIntakeOpen.getAsBoolean();
     }
 
     @NT
@@ -172,4 +202,16 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
     public double getLimitedSetpoint() {
         return softLimit.getSetpoint(angleSupplier.getAsDouble(), softLimit.limit(currentState.getAngle()));
     }
+
+    @NT
+    public double applyRotationSlack() {
+        if (angleSupplier.getAsDouble() < 0) {
+            DoubleSupplier tempSupplier = () -> angleSupplier.getAsDouble() + 20 * Math.PI;
+            double temp = (int) tempSupplier.getAsDouble() / (Math.PI * 2) * 2 * Math.PI;
+            temp -= 20 * Math.PI;
+        }
+        return (int) (angleSupplier.getAsDouble() / (Math.PI * 2)) * 2 * Math.PI;
+    }
+
+
 }

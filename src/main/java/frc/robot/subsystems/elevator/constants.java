@@ -15,7 +15,7 @@ public class constants {
 
     public static double TOLERANCE = 0.005;
 
-    public static final double MAX_ELEVATOR_HIGHT = 1.35;
+    public static final double MAX_ELEVATOR_HIGHT = 1.32;
     public static final double MIN_ELEVATOR_HIGHT = 0;
 
 

@@ -3,6 +3,7 @@ package frc.robot.superstructure.automations;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.*;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.excalib.additional_utilities.AllianceUtils;
 import frc.excalib.swerve.Swerve;
 import frc.robot.Constants;
@@ -31,11 +32,11 @@ public class Automations {
         this.swerve = swerve;
         this.superstructure = superstructure;
 
-        scoreMap.put(RobotStates.L1, superstructure.L1ScoreCommand());
-        scoreMap.put(RobotStates.L2, superstructure.openToScoreCommand(RobotStates.L2));
-        scoreMap.put(RobotStates.L3, superstructure.openToScoreCommand(RobotStates.L3));
-        scoreMap.put(RobotStates.L4, superstructure.openToScoreCommand(RobotStates.L4));
-        scoreMap.put(RobotStates.NET, superstructure.netScoreCommand());
+//        scoreMap.put(RobotStates.SCORE_L1, superstructure.L1ScoreCommand());
+//        scoreMap.put(RobotStates.L2, superstructure.openToScoreCommand(RobotStates.L2));
+//        scoreMap.put(RobotStates.L3, superstructure.openToScoreCommand(RobotStates.L3));
+//        scoreMap.put(RobotStates.L4, superstructure.openToScoreCommand(RobotStates.L4));
+//        scoreMap.put(RobotStates.NET, superstructure.netScoreCommand());
 
         climbOperator = new ClimbOperator();
         climber = new ClimberSubsystem();
@@ -57,7 +58,6 @@ public class Automations {
 
     private AllianceUtils.AlliancePose getAlignmentTargetPose(Pose2d currentPose, boolean rightBranch) {
         FieldConstants.Side currentSide = getClosestSide(currentPose);
-
         if (rightBranch)
             return currentSide.rightBrachPose;
         return currentSide.leftBranchPose;
@@ -90,48 +90,46 @@ public class Automations {
         return () -> cuurentPose.getDistance(translationCenter) < tolerance.getAsDouble();
     }
 
-    public Command L4Command() {
-        return new ConditionalCommand(
-                superstructure.openToScoreCommand(RobotStates.L4),
-                superstructure.scoreCommand(),
-                superstructure.isAtPosition()
+    public OpeningDirection getOpeningDirection() {
+        double leftBeanXFactor = swerve.getPose2D().getX() * Math.cos(swerve.getPose2D().getRotation().getRadians());
+        double leftBeanYFactor = swerve.getPose2D().getY() * Math.sin(swerve.getPose2D().getRotation().getRadians());
+        AllianceUtils.AlliancePose leftBeamFromRobot = new AllianceUtils.AlliancePose(
+                new Translation2d(
+                        swerve.getPose2D().getX() + leftBeanXFactor,
+                        swerve.getPose2D().getY() + leftBeanYFactor),
+                swerve.getPose2D().getRotation()
         );
+
+        double rightBeanXFactor = swerve.getPose2D().getX() * Math.cos(swerve.getPose2D().getRotation().getRadians());
+        double rightBeanYFactor = swerve.getPose2D().getY() * Math.sin(swerve.getPose2D().getRotation().getRadians());
+        AllianceUtils.AlliancePose rightBeamFromRobot = new AllianceUtils.AlliancePose(
+                new Translation2d(
+                        swerve.getPose2D().getX() + leftBeanXFactor - Math.PI,
+                        swerve.getPose2D().getY() + leftBeanYFactor - Math.PI),
+                swerve.getPose2D().getRotation()
+        );
+
+        if (
+                getDeltaPostions(rightBeamFromRobot.get().getTranslation(), AllianceUtils.getReefCenter())>
+                getDeltaPostions(leftBeamFromRobot.get().getTranslation(), AllianceUtils.getReefCenter())) {
+            return OpeningDirection.LEFT;
+        }
+
+        return OpeningDirection.RIGHT;
+
     }
 
-    public Command L3Command() {
-        return new ConditionalCommand(
-                superstructure.openToScoreCommand(RobotStates.L3),
-                superstructure.scoreCommand(),
-                superstructure.isAtPosition()
-        );
+    public enum OpeningDirection {
+        LEFT,
+        RIGHT
     }
 
-    public Command L2Command() {
-        return new ConditionalCommand(
-                superstructure.openToScoreCommand(RobotStates.L2),
-                superstructure.scoreCommand(),
-                superstructure.isAtPosition()
+    public double getDeltaPostions(Translation2d poseA, Translation2d poseB) {
+        return Math.sqrt(
+                Math.pow(poseA.getX() - poseB.getX(), 2)
+                        + Math.pow(poseA.getY() - poseB.getY(), 2)
         );
     }
-
-    public Command L1Command() {
-        return new ConditionalCommand(
-                superstructure.openToScoreCommand(RobotStates.L1),
-                superstructure.scoreCommand(),
-                superstructure.isAtPosition()
-        );
-    }
-
-//    public Command climbOnSelected() {
-//        return new SequentialCommandGroup(
-//                swerve.driveToPoseCommand(climbOperator.getPrePose()),
-//                climber.open(),
-//                superstructure.secureCommand(),
-//                swerve.pidToPoseCommand(() -> climbOperator.getPose()),
-//                climber.retract()
-//        );
-//    }
-
 
 }
 
