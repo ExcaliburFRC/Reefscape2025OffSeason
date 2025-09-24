@@ -71,22 +71,28 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
         softLimit = new ContinuousSoftLimit(
                 () -> {
                     double heightDiff = elevatorHeightSupplier.getAsDouble() - INTAKE_HEIGHT;
+                    if (heightDiff < 0) {
+                        return limitHelper.getSetpoint(
+                                angleSupplier.getAsDouble(), Math.PI / 2) + 1.1 - Math.PI / 2;
+                    }
                     if (heightDiff > ARM_LENGTH) {
                         return -8.3;
                     }
-
-
                     return limitHelper.getSetpoint(
-                            angleSupplier.getAsDouble(), Math.PI / 2) + getMin() - Math.PI / 2;
+                            angleSupplier.getAsDouble(), Math.PI / 2) + getMin() - Math.PI / 2 + (Math.PI / 36);
                 },
                 () -> {
                     double heightDiff = elevatorHeightSupplier.getAsDouble() - INTAKE_HEIGHT;
+                    if (heightDiff < 0) {
+                        return limitHelper.getSetpoint(
+                                angleSupplier.getAsDouble(), Math.PI / 2) + 1.8 - Math.PI / 2;
+                    }
                     if (heightDiff > ARM_LENGTH) {
                         return 6.7;
                     }
 
                     return limitHelper.getSetpoint(
-                            angleSupplier.getAsDouble(), Math.PI / 2) + getMax() - Math.PI / 2;
+                            angleSupplier.getAsDouble(), Math.PI / 2) + getMax() - Math.PI / 2 - (Math.PI / 36);
                 }
         );
 
@@ -98,7 +104,16 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
     }
 
     public Command goToStateCommand() {
-        return armMechanism.anglePositionControlCommand(() -> softLimit.getSetpoint(angleSupplier.getAsDouble(), currentState.getAngle()), (at) -> at = false, POSITION_TOLERANCE_RAD, this).until(this::isAtPosition);
+        return armMechanism.anglePositionControlCommand(
+                () -> softLimit.limit(
+                        softLimit.getSetpoint(
+                                angleSupplier.getAsDouble(),
+                                currentState.getAngle()
+                        )),
+                (at) -> at = false,
+                POSITION_TOLERANCE_RAD,
+                this
+        ).until(this::isAtPosition);
     }
 
     public Command setStateCommand(ArmPosition state) {
@@ -151,17 +166,7 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
 
     @NT
     public double getLimitedSetpoint() {
-        return softLimit.getSetpoint(angleSupplier.getAsDouble(), softLimit.limit(currentState.getAngle()));
-    }
-
-    @NT
-    public double applyRotationSlack() {
-        if (angleSupplier.getAsDouble() < 0) {
-            DoubleSupplier tempSupplier = () -> angleSupplier.getAsDouble() + 20 * Math.PI;
-            double temp = (int) tempSupplier.getAsDouble() / (Math.PI * 2) * 2 * Math.PI;
-            temp -= 20 * Math.PI;
-        }
-        return (int) (angleSupplier.getAsDouble() / (Math.PI * 2)) * 2 * Math.PI;
+        return softLimit.limit(softLimit.getSetpoint(angleSupplier.getAsDouble(), currentState.getAngle()));
     }
 
     @NT
@@ -172,6 +177,11 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
     @NT
     public double getError() {
         return currentState.getAngle() - angleSupplier.getAsDouble();
+    }
+
+    @NT
+    public double getHeightDiff() {
+        return elevatorHeightSupplier.getAsDouble() - INTAKE_HEIGHT;
     }
 
     public double getMin() {

@@ -10,7 +10,7 @@ public enum ElevatorStates {
     ALGAE2(0),
     ALGAE3(0),
     HANDOFF(0.92),
-    PRE_HANDOFF(1),
+    PRE_HANDOFF(1.03),
     NET(0),
     PROCESSOR(0),
     DEFAULT_WITH_GAME_PIECE(0.4),
