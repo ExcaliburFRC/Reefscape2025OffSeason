@@ -39,6 +39,7 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
     // === Other ===
     private Gains armGains;
     private final ContinuousSoftLimit softLimit;
+    private ContinuousSoftLimit limitHelper;
 
 
     public ArmSubsystem() {
@@ -51,7 +52,7 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
         armMotor.setInverted(REVERSE);
         armMotor.setNeutralMode(NeutralModeValue.Brake);
         armMotor.setVelocityConversionFactor(RPS_TO_RAD_PER_SEC);
-        armMotor.setPositionConversionFactor(((1 / 15.8611544) * Math.PI * 2) / 1.0755744*0.993157566);
+        armMotor.setPositionConversionFactor(((1 / 15.8611544) * Math.PI * 2) / 1.0755744 * 0.993157566);
 
         angleSupplier = () -> (canCoder.getPosition().getValueAsDouble() * Math.PI * 2);
 
@@ -60,73 +61,35 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
         elevatorHeightSupplier = () -> 0;
         isIntakeOpen = new Trigger(() -> false);
 
-        armMechanism = new Arm(
-                armMotor,
-                angleSupplier,
-                VELOCITY_LIMIT,
-                new Gains(1.8, 0, 0.2, 0, 0, 0, 1.2),
-                new Mass(
-                        () -> Math.cos(angleSupplier.getAsDouble()),
-                        () -> Math.sin(angleSupplier.getAsDouble()),
-                        1
-                )
-        );
+        armMechanism = new Arm(armMotor, angleSupplier, VELOCITY_LIMIT, new Gains(1.8, 0, 0.2, 0, 0, 0, 1.2), new Mass(() -> Math.cos(angleSupplier.getAsDouble()), () -> Math.sin(angleSupplier.getAsDouble()), 1));
 
-        atPostionTrigger = new Trigger(
-                () -> (Math.abs(getLimitedSetpoint() - angleSupplier.getAsDouble()) < POSITION_TOLERANCE_RAD)
-        );
+        atPostionTrigger = new Trigger(() -> (Math.abs(getLimitedSetpoint() - angleSupplier.getAsDouble()) < POSITION_TOLERANCE_RAD));
+
+        limitHelper = new ContinuousSoftLimit(() -> -8.3, () -> 6.7);
+
 
         softLimit = new ContinuousSoftLimit(
                 () -> {
-                    double h = elevatorHeightSupplier.getAsDouble();
-                    if (isIntakeOpen.getAsBoolean()) {
-                        if (h > 0.90) {
-                            return -8.3;
-                        } else if (h > 0.67) {
-                            return -0.82 + applyRotationSlack();
-                        } else if (h > 0.36) {
-                            return 0 + applyRotationSlack();
-                        } else if (h > 0.22) {
-                            return 0.607 + applyRotationSlack();
-                        }
-                        return 0.9 + applyRotationSlack();
-                    } else {
-                        if (h > 0.87 + 0.15) {
-                            return -8.3;
-                        } else if (h > 0.71 + 0.14) {
-                            return -0.81 + applyRotationSlack();
-                        } else if (h > 0.45 + 0.14) {
-                            return applyRotationSlack();
-                        }
-                        return 1.1 + applyRotationSlack();
+                    double heightDiff = elevatorHeightSupplier.getAsDouble() - INTAKE_HEIGHT;
+                    if (heightDiff > ARM_LENGTH) {
+                        return -8.3;
                     }
+
+
+                    return limitHelper.getSetpoint(
+                            angleSupplier.getAsDouble(), Math.PI / 2) + getMin() - Math.PI / 2;
                 },
                 () -> {
-                    double h = elevatorHeightSupplier.getAsDouble();
-                    if (isIntakeOpen.getAsBoolean()) {
-                        if (h > 0.93) {
-                            return 6.7;
-                        } else if (h > 0.67) {
-                            return 3.8 + applyRotationSlack();
-                        } else if (h > 0.36) {
-                            return 3 + applyRotationSlack();
-                        } else if (h > 0.22) {
-                            return 2.3 + applyRotationSlack();
-                        }
-                        return 2 + applyRotationSlack();
-                    } else {
-                        if (h > 0.87 + 0.15) {
-                            return 6.7;
-                        } else if (h > 0.71 + 0.14) {
-                            return -2.84 + applyRotationSlack();
-                        } else if (h > 0.45 + 0.14) {
-                            return -0.283 + applyRotationSlack();
-                        } else {
-                            return 1.6 + applyRotationSlack();
-                        }
+                    double heightDiff = elevatorHeightSupplier.getAsDouble() - INTAKE_HEIGHT;
+                    if (heightDiff > ARM_LENGTH) {
+                        return 6.7;
                     }
+
+                    return limitHelper.getSetpoint(
+                            angleSupplier.getAsDouble(), Math.PI / 2) + getMax() - Math.PI / 2;
                 }
         );
+
         setDefaultCommand((goToStateCommand()));
     }
 
@@ -135,12 +98,7 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
     }
 
     public Command goToStateCommand() {
-        return armMechanism.anglePositionControlCommand(
-                () -> softLimit.getSetpoint(angleSupplier.getAsDouble(), currentState.getAngle()),
-                (at) -> at = false,
-                POSITION_TOLERANCE_RAD,
-                this
-        ).until(this::isAtPosition);
+        return armMechanism.anglePositionControlCommand(() -> softLimit.getSetpoint(angleSupplier.getAsDouble(), currentState.getAngle()), (at) -> at = false, POSITION_TOLERANCE_RAD, this).until(this::isAtPosition);
     }
 
     public Command setStateCommand(ArmPosition state) {
@@ -148,11 +106,7 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
     }
 
     public Command coastCommand() {
-        return new StartEndCommand(
-                () -> armMotor.setIdleState(COAST),
-                () -> armMotor.setIdleState(BRAKE),
-                this
-        ).ignoringDisable(true).withName("Arm Coast Command");
+        return new StartEndCommand(() -> armMotor.setIdleState(COAST), () -> armMotor.setIdleState(BRAKE), this).ignoringDisable(true).withName("Arm Coast Command");
     }
 
 
@@ -210,5 +164,25 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
         return (int) (angleSupplier.getAsDouble() / (Math.PI * 2)) * 2 * Math.PI;
     }
 
+    @NT
+    public boolean isInLimit() {
+        return softLimit.within(currentState.getAngle());
+    }
 
+    @NT
+    public double getError() {
+        return currentState.getAngle() - angleSupplier.getAsDouble();
+    }
+
+    public double getMin() {
+        double heightDiff = elevatorHeightSupplier.getAsDouble() - INTAKE_HEIGHT;
+        double minLimit = Math.asin(-heightDiff / ARM_LENGTH);
+        return minLimit;
+    }
+
+    public double getMax() {
+        double heightDiff = elevatorHeightSupplier.getAsDouble() - INTAKE_HEIGHT;
+        double maxLimit = Math.asin(-heightDiff / ARM_LENGTH);
+        return Math.PI - maxLimit;
+    }
 }

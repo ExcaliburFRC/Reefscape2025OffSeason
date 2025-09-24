@@ -12,5 +12,8 @@ public class Constants {
 
     public static final double ROTATIONS_TO_RAD = 2 * Math.PI;
 
+    public static final double INTAKE_HEIGHT = 0.35;
+    public static final double ARM_LENGTH = 0.65;
+
 
 }
