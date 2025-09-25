@@ -9,6 +9,7 @@ import frc.robot.subsystems.gripper.Gripper;
 import frc.robot.subsystems.intake.Intake;
 import monologue.Logged;
 
+import javax.naming.event.ObjectChangeListener;
 import java.util.HashMap;
 
 import static monologue.Annotations.*;
@@ -45,6 +46,7 @@ public class Superstructure implements Logged {
                         intakeSubsystem.isAtPosition().getAsBoolean()
         );
 
+
         elevatorSubsystem.setArmAngleSuppier(() -> armSubsystem.getAngleSupplier());
         armSubsystem.setElevatorHeightSupplier(elevatorSubsystem::getElevatorHeight);
 
@@ -72,23 +74,6 @@ public class Superstructure implements Logged {
 
     public void returnToDefaultState() {
         this.currentState = RobotStates.DEFAULT_WITHOUT_GAME_PIECE;
-    }
-
-    public RobotStates findFollowthroughState(RobotStates scoreState) throws IllegalArgumentException {
-        switch (scoreState) {
-            case LEFT_L2 -> {
-                return RobotStates.LEFT_L2_FOLLOWTHROUGH;
-            }
-            case LEFT_L3 -> {
-                return RobotStates.LEFT_L3_FOLLOWTHROUGH;
-            }
-            case LEFT_L4 -> {
-                return RobotStates.LEFT_L4_FOLLOWTHROUGH;
-            }
-            default -> {
-                throw new IllegalArgumentException("Please enter a valid Robot State");
-            }
-        }
     }
 
 //    public Command openToScoreCommand(RobotStates scoreState) {
@@ -142,6 +127,106 @@ public class Superstructure implements Logged {
         );
     }
 
+    public Command returnToDefaultCommand() {
+        return new RunCommand(() -> setCurrentStateCommand(RobotStates.DEFAULT_WITH_GAME_PIECE));
+    }
+
+    public Command L2ScoreCommand() {
+        return new ConditionalCommand(
+                new SequentialCommandGroup(
+                        new ConditionalCommand(
+                                new SequentialCommandGroup(
+                                        setCurrentStateCommand(RobotStates.LEFT_STAGE1_L2),
+                                        new PrintCommand("1"),
+                                        new WaitUntilCommand(atPositionTrigger),
+                                        new PrintCommand("2")),
+                                Commands.none(),
+                                () -> (
+                                        armSubsystem.getAngleSupplier() > RobotStates.LEFT_STAGE1_L2.armPosition.getAngle() &&
+                                                armSubsystem.getAngleSupplier() < RobotStates.LEFT_STAGE2_L2.armPosition.getAngle())
+                        ),
+                        setCurrentStateCommand(RobotStates.LEFT_STAGE2_L2),
+                        new PrintCommand("3"),
+                        new WaitUntilCommand(atPositionTrigger),
+                        new PrintCommand("4"),
+                        setCurrentStateCommand(RobotStates.LEFT_STAGE3_L2),
+                        new PrintCommand("5"),
+                        setCurrentStateCommand(RobotStates.LEFT_STAGE4_L2),
+                        new PrintCommand("6"),
+                        new WaitCommand(0.2),
+                        new WaitUntilCommand(gripperSubsystem.hasCoralTrigger.negate()),
+                        setCurrentStateCommand(RobotStates.DEFAULT_WITH_GAME_PIECE)
+                ),
+                new PrintCommand("there is no coral in the system"),
+                gripperSubsystem.hasCoralTrigger
+        );
+    }
+
+    public Command L3ScoreCommand() {
+        return new ConditionalCommand(
+                new SequentialCommandGroup(
+                        new ConditionalCommand(
+                                new SequentialCommandGroup(
+                                        setCurrentStateCommand(RobotStates.LEFT_STAGE1_L3),
+                                        new PrintCommand("1"),
+                                        new WaitUntilCommand(atPositionTrigger),
+                                        new PrintCommand("2")),
+                                Commands.none(),
+                                () -> (
+                                        armSubsystem.getAngleSupplier() > RobotStates.LEFT_STAGE1_L3.armPosition.getAngle() &&
+                                                armSubsystem.getAngleSupplier() < RobotStates.LEFT_STAGE3_L3.armPosition.getAngle())
+                        ),
+                        setCurrentStateCommand(RobotStates.LEFT_STAGE2_L3),
+                        new PrintCommand("3"),
+                        new WaitUntilCommand(atPositionTrigger),
+                        new PrintCommand("4"),
+                        new WaitCommand(0.2),
+                        setCurrentStateCommand(RobotStates.LEFT_STAGE3_L3),
+                        new PrintCommand("5"),
+                        new WaitCommand(0.5),
+                        setCurrentStateCommand(RobotStates.LEFT_STAGE4_L3),
+                        new PrintCommand("6"),
+                        new WaitCommand(0.5),
+                        new WaitUntilCommand(gripperSubsystem.hasCoralTrigger.negate()),
+                        setCurrentStateCommand(RobotStates.DEFAULT_WITH_GAME_PIECE)
+                ),
+                new PrintCommand("there is no coral in the system"),
+                gripperSubsystem.hasCoralTrigger
+        );
+    }
+
+    public Command L4ScoreCommand() {
+        return new ConditionalCommand(
+                new SequentialCommandGroup(
+                        new ConditionalCommand(
+                                new SequentialCommandGroup(
+                                        setCurrentStateCommand(RobotStates.LEFT_STAGE1_L4),
+                                        new PrintCommand("1"),
+                                        new WaitUntilCommand(atPositionTrigger),
+                                        new PrintCommand("2")),
+                                Commands.none(),
+                                () -> (
+                                        armSubsystem.getAngleSupplier() > RobotStates.LEFT_STAGE1_L4.armPosition.getAngle() &&
+                                                armSubsystem.getAngleSupplier() < RobotStates.LEFT_STAGE3_L4.armPosition.getAngle())
+                        ),
+                        setCurrentStateCommand(RobotStates.LEFT_STAGE2_L4),
+                        new PrintCommand("3"),
+                        new WaitUntilCommand(atPositionTrigger),
+                        new PrintCommand("4"),
+                        new WaitCommand(0.2),
+                        setCurrentStateCommand(RobotStates.LEFT_STAGE3_L4),
+                        new PrintCommand("5"),
+                        new WaitCommand(0.5),
+                        setCurrentStateCommand(RobotStates.LEFT_STAGE4_L4),
+                        new PrintCommand("6"),
+                        new WaitCommand(0.5),
+                        new WaitUntilCommand(gripperSubsystem.hasCoralTrigger.negate()),
+                        setCurrentStateCommand(RobotStates.DEFAULT_WITH_GAME_PIECE)
+                ),
+                new PrintCommand("there is no coral in the system"),
+                gripperSubsystem.hasCoralTrigger
+        );
+    }
 
     public Command secureCommand() {
         return Commands.none();
@@ -164,6 +249,11 @@ public class Superstructure implements Logged {
     @Log.NT
     public boolean getAtPostionTrigger() {
         return atPositionTrigger.getAsBoolean();
+    }
+
+    @Log.NT
+    public boolean getStagePosition() {
+        return armSubsystem.getAngleSupplier() < RobotStates.LEFT_STAGE1_L2.armPosition.getAngle();
     }
 
 }

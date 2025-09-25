@@ -1,5 +1,6 @@
 package frc.robot.subsystems.arm;
 
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.wpilibj2.command.*;
@@ -35,6 +36,8 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
     // === Triggers and States ===
     private final Trigger atPostionTrigger;
     private ArmPosition currentState;
+    private final CurrentLimitsConfigs limitsConfigs;
+
 
     // === Other ===
     private Gains armGains;
@@ -58,6 +61,13 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
 
         armMotor.setMotorPosition(angleSupplier.getAsDouble());
 
+        limitsConfigs = new CurrentLimitsConfigs();
+        limitsConfigs.SupplyCurrentLimit = 40;
+        limitsConfigs.SupplyCurrentLimitEnable = true;
+
+        armMotor.getConfigurator().apply(limitsConfigs);
+
+
         elevatorHeightSupplier = () -> 0;
         isIntakeOpen = new Trigger(() -> false);
 
@@ -65,7 +75,7 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
                 armMotor,
                 angleSupplier,
                 VELOCITY_LIMIT,
-                new Gains(1.9, 0, 0.2, 0, 0, 0, 1.2),
+                new Gains(2.5, 0, 0.25, 0, 0, 0, 1.2),
                 new Mass(
                         () -> Math.cos(angleSupplier.getAsDouble()),
                         () -> Math.sin(angleSupplier.getAsDouble()),
@@ -91,7 +101,7 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
                         return -8.3;
                     }
                     return limitHelper.getSetpoint(
-                            angleSupplier.getAsDouble(), Math.PI / 2) + getMin() - Math.PI / 2 + (Math.PI / 36);
+                            angleSupplier.getAsDouble(), Math.PI / 2) + getMin() - Math.PI / 2 ;
                 },
                 () -> {
                     double heightDiff = elevatorHeightSupplier.getAsDouble() - INTAKE_HEIGHT;
@@ -104,7 +114,7 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
                     }
 
                     return limitHelper.getSetpoint(
-                            angleSupplier.getAsDouble(), Math.PI / 2) + getMax() - Math.PI / 2 - (Math.PI / 36);
+                            angleSupplier.getAsDouble(), Math.PI / 2) + getMax() - Math.PI / 2 ;
                 }
         );
 
