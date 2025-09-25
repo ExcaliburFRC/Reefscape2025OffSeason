@@ -8,18 +8,18 @@ import frc.robot.subsystems.intake.IntakeState;
 public enum RobotStates {
     // ------ HIGH REEF CORAL SCORE ------
     RIGHT_PRE_L2(ArmPosition.RIGHT_PRE_L2, ElevatorStates.L2, IntakeState.DEFAULT, GripperStates.VACENT),
-    RIGHT_L2(ArmPosition.RIGHT_L2, ElevatorStates.L2, IntakeState.DEFAULT, GripperStates.RELEASE_CORAL),
-    RIGHT_L2_FOLLOWTHROUGH(ArmPosition.RIGHT_L2_FOLLOWTHROUGH, ElevatorStates.L2_FOLLOWTHROUGH, IntakeState.DEFAULT, GripperStates.INTAKE_CORAL),
+    RIGHT_L2_SCORE(ArmPosition.RIGHT_L2, ElevatorStates.L2, IntakeState.DEFAULT, GripperStates.RELEASE_CORAL),
+    RIGHT_L2_POST(ArmPosition.RIGHT_L2_FOLLOWTHROUGH, ElevatorStates.L2_FOLLOWTHROUGH, IntakeState.DEFAULT, GripperStates.RELEASE_CORAL),
     RIGHT_PRE_L3(ArmPosition.RIGHT_PRE_L3, ElevatorStates.L3, IntakeState.DEFAULT, GripperStates.INTAKE_CORAL),
     RIGHT_L3(ArmPosition.RIGHT_L3, ElevatorStates.L3, IntakeState.DEFAULT, GripperStates.INTAKE_CORAL),
-    RIGHT_L3_FOLLOWTHROUGH(ArmPosition.RIGHT_L3_FOLLOWTHROUGH, ElevatorStates.L3_FOLLOWTHROUGH, IntakeState.DEFAULT, GripperStates.INTAKE_CORAL),
+    RIGHT_L3_POST(ArmPosition.RIGHT_L3_FOLLOWTHROUGH, ElevatorStates.L3_FOLLOWTHROUGH, IntakeState.DEFAULT, GripperStates.INTAKE_CORAL),
     RIGHT_PRE_L4(ArmPosition.RIGHT_PRE_L4, ElevatorStates.L4, IntakeState.DEFAULT, GripperStates.INTAKE_CORAL),
     RIGHT_L4(ArmPosition.RIGHT_L4, ElevatorStates.L4, IntakeState.DEFAULT, GripperStates.INTAKE_CORAL),
     RIGHT_L4_FOLLOWTHROUGH(ArmPosition.RIGHT_L4_FOLLOWTHROUGH, ElevatorStates.L4_FOLLOWTHROUGH, IntakeState.DEFAULT, GripperStates.INTAKE_CORAL),
 
     LEFT_PRE_L2(ArmPosition.LEFT_PRE_L2, ElevatorStates.L2, IntakeState.DEFAULT, GripperStates.INTAKE_CORAL),
     LEFT_L2(ArmPosition.LEFT_L2, ElevatorStates.L2, IntakeState.DEFAULT, GripperStates.INTAKE_CORAL),
-    LEFT_L2_FOLLOWTHROUGH(ArmPosition.LEFT_L2_FOLLOWTHROUGH, ElevatorStates.L2_FOLLOWTHROUGH, IntakeState.DEFAULT, GripperStates.INTAKE_CORAL),
+    LEFT_L2_POST(ArmPosition.LEFT_L2_FOLLOWTHROUGH, ElevatorStates.L2_FOLLOWTHROUGH, IntakeState.DEFAULT, GripperStates.INTAKE_CORAL),
     LEFT_PRE_L3(ArmPosition.LEFT_PRE_L3, ElevatorStates.L3, IntakeState.DEFAULT, GripperStates.INTAKE_CORAL),
     LEFT_L3(ArmPosition.LEFT_L3, ElevatorStates.L3, IntakeState.DEFAULT, GripperStates.INTAKE_CORAL),
     LEFT_L3_FOLLOWTHROUGH(ArmPosition.LEFT_L3_FOLLOWTHROUGH, ElevatorStates.L3_FOLLOWTHROUGH, IntakeState.DEFAULT, GripperStates.INTAKE_CORAL),

@@ -77,7 +77,7 @@ public class Superstructure implements Logged {
     public RobotStates findFollowthroughState(RobotStates scoreState) throws IllegalArgumentException {
         switch (scoreState) {
             case LEFT_L2 -> {
-                return RobotStates.LEFT_L2_FOLLOWTHROUGH;
+                return RobotStates.LEFT_L2_POST;
             }
             case LEFT_L3 -> {
                 return RobotStates.LEFT_L3_FOLLOWTHROUGH;
@@ -142,6 +142,33 @@ public class Superstructure implements Logged {
         );
     }
 
+    public Command L2ScoreCommand() {
+        return new ConditionalCommand(
+                new SequentialCommandGroup(
+                        setCurrentStateCommand(RobotStates.LEFT_PRE_L2),
+                        new WaitUntilCommand(elevatorSubsystem.atPositionTrigger),
+                        setCurrentStateCommand(RobotStates.LEFT_L2),
+                        new WaitUntilCommand(atPositionTrigger.and(gripperSubsystem.hasCoralTrigger.negate())),
+                        setCurrentStateCommand(RobotStates.LEFT_L2_POST)
+                ),
+                new PrintCommand("there is no coral in the system"),
+                gripperSubsystem.hasCoralTrigger
+        );
+    }
+
+    public Command L3ScoreCommand() {
+        return new ConditionalCommand(
+                new SequentialCommandGroup(
+                        setCurrentStateCommand(RobotStates.LEFT_PRE_L3),
+                        new WaitUntilCommand(elevatorSubsystem.atPositionTrigger),
+                        setCurrentStateCommand(RobotStates.LEFT_L3),
+                        new WaitUntilCommand(atPositionTrigger.and(gripperSubsystem.hasCoralTrigger.negate())),
+                        setCurrentStateCommand(RobotStates.LEFT_L3_FOLLOWTHROUGH)
+                ),
+                new PrintCommand("there is no coral in the system"),
+                gripperSubsystem.hasCoralTrigger
+        );
+    }
 
     public Command secureCommand() {
         return Commands.none();

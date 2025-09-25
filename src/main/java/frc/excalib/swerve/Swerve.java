@@ -9,6 +9,7 @@ import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -41,7 +42,7 @@ import static monologue.Annotations.Log;
  * A class representing a swerve subsystem.
  */
 public class Swerve extends SubsystemBase implements Logged {
-    public final ModulesHolder m_MODULES;
+    public final ModulesHolder modules;
     private final IMU m_imu;
     private final Odometry m_odometry;
     private ChassisSpeeds m_desiredChassisSpeeds = new ChassisSpeeds();
@@ -54,15 +55,16 @@ public class Swerve extends SubsystemBase implements Logged {
     private final PIDController m_angleController = new PIDController(ANGLE_PID_GAINS.kp, ANGLE_PID_GAINS.ki, ANGLE_PID_GAINS.kd);
     private final PIDController m_xController = new PIDController(
             TRANSLATION_PID_GAINS.kp, TRANSLATION_PID_GAINS.ki, TRANSLATION_PID_GAINS.kd
-//            new TrapezoidProfile.Constraints(MAX_VEL, 6)
     );
     private final PIDController m_yController = new PIDController(
             TRANSLATION_PID_GAINS.kp, TRANSLATION_PID_GAINS.ki, TRANSLATION_PID_GAINS.kd
-//            new TrapezoidProfile.Constraints(MAX_VEL, 6)
     );
-    public final Field2d m_field = new Field2d();
+    public final Field2d field = new Field2d();
     private Supplier<Rotation2d> m_angleSetpoint = Rotation2d::new;
     private Supplier<Translation2d> m_translationSetpoint = Translation2d::new;
+
+    private TrapezoidProfile xtProfile;
+    private TrapezoidProfile ytProfile;
 
     /**
      * A constructor that initialize the Swerve Subsystem
@@ -74,7 +76,7 @@ public class Swerve extends SubsystemBase implements Logged {
     public Swerve(ModulesHolder modules,
                   IMU imu,
                   Pose2d initialPosition) {
-        this.m_MODULES = modules;
+        this.modules = modules;
         this.m_imu = imu;
         m_imu.resetIMU();
 
@@ -92,10 +94,13 @@ public class Swerve extends SubsystemBase implements Logged {
                 initialPosition
         );
 
-        m_swerveDriveKinematics = m_MODULES.getSwerveDriveKinematics();
+        m_swerveDriveKinematics = this.modules.getSwerveDriveKinematics();
         velocityLimit.put(0.1, 0.4);
         velocityLimit.put(0.7, 2.0);
         velocityLimit.put(1.5, MAX_VEL);
+
+        xtProfile = new TrapezoidProfile(new TrapezoidProfile.Constraints(0.5, 1));
+        ytProfile = new TrapezoidProfile(new TrapezoidProfile.Constraints(0.5, 1));
 
         initAutoBuilder();
         initElastic();
@@ -126,7 +131,7 @@ public class Swerve extends SubsystemBase implements Logged {
             return velocity;
         };
 
-        Command driveCommand = new ParallelCommandGroup(m_MODULES.setVelocitiesCommand(
+        Command driveCommand = new ParallelCommandGroup(modules.setVelocitiesCommand(
                 adjustedVelocitySupplier,
                 omegaRadPerSec
         ),
@@ -150,7 +155,7 @@ public class Swerve extends SubsystemBase implements Logged {
      * @param speeds A ChassisSpeeds object represents ROBOT RELATIVE speeds desired speeds.
      */
     public void driveRobotRelativeChassisSpeeds(ChassisSpeeds speeds) {
-        m_MODULES.setModulesStates(m_swerveDriveKinematics.toSwerveModuleStates(speeds));
+        modules.setModulesStates(m_swerveDriveKinematics.toSwerveModuleStates(speeds));
     }
 
     /**
@@ -189,10 +194,6 @@ public class Swerve extends SubsystemBase implements Logged {
                             );
                             double distance = getPose2D().getTranslation().getDistance(poseSetpoint.get().getTranslation());
                             vel.setMagnitude(Math.min(vel.getDistance(), velocityLimit.get(distance)));
-//                            vel = vel.rotate(poseSetpoint.get().getRotation());
-//                            vel.setX(Math.signum(vel.getX()) * Math.min(Math.abs(vel.getX()), 1.2));
-//                            vel.setY(Math.signum(vel.getY()) * Math.min(Math.abs(vel.getY()), 0.4));
-//                            vel = vel.rotate(poseSetpoint.get().getRotation().unaryMinus());
                             if (!AllianceUtils.isBlueAlliance()) return vel.rotate(pi);
                             return vel;
                         },
@@ -261,7 +262,7 @@ public class Swerve extends SubsystemBase implements Logged {
     }
 
     public Command coastCommand() {
-        Command coastCommand = m_MODULES.coastCommand().ignoringDisable(true).withName("Coast Command");
+        Command coastCommand = modules.coastCommand().ignoringDisable(true).withName("Coast Command");
         coastCommand.addRequirements(this);
         return coastCommand;
     }
@@ -270,7 +271,7 @@ public class Swerve extends SubsystemBase implements Logged {
      * Updates the robot's odometry.
      */
     public void updateOdometry() {
-        m_odometry.updateOdometry(m_MODULES.getModulesPositions());
+        m_odometry.updateOdometry(modules.getModulesPositions());
 
 //        Optional<EstimatedRobotPose> backPose = m_backCamera.getEstimatedGlobalPose(m_odometry.getEstimatedPosition());
 //        if (backPose.isPresent()) {
@@ -289,7 +290,7 @@ public class Swerve extends SubsystemBase implements Logged {
      * @param newPose the wanted new Pose2d of the robot.
      */
     public void resetOdometry(Pose2d newPose) {
-        m_odometry.resetOdometry(m_MODULES.getModulesPositions(), newPose);
+        m_odometry.resetOdometry(modules.getModulesPositions(), newPose);
     }
 
     /**
@@ -328,7 +329,7 @@ public class Swerve extends SubsystemBase implements Logged {
      * @return The robot's velocity as a Vector2D.
      */
     public Vector2D getVelocity() {
-        return m_MODULES.getVelocity();
+        return modules.getVelocity();
     }
 
     /**
@@ -348,7 +349,7 @@ public class Swerve extends SubsystemBase implements Logged {
      */
     @Log.NT(key = "Measured Chassis Speeds")
     public ChassisSpeeds getRobotRelativeSpeeds() {
-        return m_swerveDriveKinematics.toChassisSpeeds(m_MODULES.logStates());
+        return m_swerveDriveKinematics.toChassisSpeeds(modules.logStates());
     }
 
     @Log.NT
@@ -357,11 +358,12 @@ public class Swerve extends SubsystemBase implements Logged {
     }
 
 //    @Log.NT
-    ////    public double distanceFromReefCenter() {
-    ////        return AllianceUtils.isBlueAlliance() ?
-    ////                BLUE_REEF_CENTER.getDistance(getPose2D().getTranslation()) :
-    ////                RED_REEF_CENTER.getDistance(getPose2D().getTranslation());
-    ////    }
+
+    /// /    public double distanceFromReefCenter() {
+    /// /        return AllianceUtils.isBlueAlliance() ?
+    /// /                BLUE_REEF_CENTER.getDistance(getPose2D().getTranslation()) :
+    /// /                RED_REEF_CENTER.getDistance(getPose2D().getTranslation());
+    /// /    }
 
     public Command stopCommand() {
         return driveCommand(() -> new Vector2D(0, 0), () -> 0, () -> true);
@@ -391,12 +393,8 @@ public class Swerve extends SubsystemBase implements Logged {
                         TRANSLATION_PID_PP_CONSTANTS, // Translation PID constants
                         ANGLE_PID_PP_CONSTANTS // Rotation PID constants
                 ),
-                config, // The robot configuration
+                config,
                 () -> {
-                    // Boolean supplier that controls when the path will be mirrored for the red alliance
-                    // This will flip the path being followed to the red side of the field.
-                    // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
-
                     var alliance = DriverStation.getAlliance();
                     return alliance.filter(value -> value == DriverStation.Alliance.Red).isPresent();
                 },
@@ -411,22 +409,22 @@ public class Swerve extends SubsystemBase implements Logged {
         SmartDashboard.putData("Swerve Drive", builder -> {
             builder.setSmartDashboardType("SwerveDrive");
 
-            builder.addDoubleProperty("Front Left Angle", () -> m_MODULES.m_frontLeft.getPosition().getRadians(), null);
-            builder.addDoubleProperty("Front Left Velocity", () -> m_MODULES.m_frontLeft.getVelocity().getDistance(), null);
+            builder.addDoubleProperty("Front Left Angle", () -> modules.m_frontLeft.getPosition().getRadians(), null);
+            builder.addDoubleProperty("Front Left Velocity", () -> modules.m_frontLeft.getVelocity().getDistance(), null);
 
-            builder.addDoubleProperty("Front Right Angle", () -> m_MODULES.m_frontRight.getPosition().getRadians(), null);
-            builder.addDoubleProperty("Front Right Velocity", () -> m_MODULES.m_frontLeft.getVelocity().getDistance(), null);
+            builder.addDoubleProperty("Front Right Angle", () -> modules.m_frontRight.getPosition().getRadians(), null);
+            builder.addDoubleProperty("Front Right Velocity", () -> modules.m_frontLeft.getVelocity().getDistance(), null);
 
-            builder.addDoubleProperty("Back Left Angle", () -> m_MODULES.m_backLeft.getPosition().getRadians(), null);
-            builder.addDoubleProperty("Back Left Velocity", () -> m_MODULES.m_frontLeft.getVelocity().getDistance(), null);
+            builder.addDoubleProperty("Back Left Angle", () -> modules.m_backLeft.getPosition().getRadians(), null);
+            builder.addDoubleProperty("Back Left Velocity", () -> modules.m_frontLeft.getVelocity().getDistance(), null);
 
-            builder.addDoubleProperty("Back Right Angle", () -> m_MODULES.m_backRight.getPosition().getRadians(), null);
-            builder.addDoubleProperty("Back Right Velocity", () -> m_MODULES.m_frontLeft.getVelocity().getDistance(), null);
+            builder.addDoubleProperty("Back Right Angle", () -> modules.m_backRight.getPosition().getRadians(), null);
+            builder.addDoubleProperty("Back Right Velocity", () -> modules.m_frontLeft.getVelocity().getDistance(), null);
 
             builder.addDoubleProperty("Robot Angle", () -> getRotation2D().getRadians(), null);
         });
 
-        SmartDashboard.putData("Field", m_field);
+        SmartDashboard.putData("Field", field);
 
         SmartDashboard.putData("swerve info", this);
 
@@ -472,10 +470,10 @@ public class Swerve extends SubsystemBase implements Logged {
         SwerveModule selectedModule;
 
         switch (module) {
-            case 0 -> selectedModule = m_MODULES.m_frontLeft;
-            case 1 -> selectedModule = m_MODULES.m_frontRight;
-            case 2 -> selectedModule = m_MODULES.m_backLeft;
-            case 3 -> selectedModule = m_MODULES.m_backRight;
+            case 0 -> selectedModule = modules.m_frontLeft;
+            case 1 -> selectedModule = modules.m_frontRight;
+            case 2 -> selectedModule = modules.m_backLeft;
+            case 3 -> selectedModule = modules.m_backRight;
             default -> {
                 throw new IllegalArgumentException("Invalid module index: " + module);
             }
@@ -494,14 +492,14 @@ public class Swerve extends SubsystemBase implements Logged {
      * @param dynamic Whether to perform a dynamic or quasistatic test.
      * @return The command to perform the sysid routine.
      */
-    public  Command angleSysId(int module, Direction dir, SysidConfig sysidConfig, boolean dynamic) {
+    public Command angleSysId(int module, Direction dir, SysidConfig sysidConfig, boolean dynamic) {
         SwerveModule selectedModule;
 
         switch (module) {
-            case 0 -> selectedModule = m_MODULES.m_frontLeft;
-            case 1 -> selectedModule = m_MODULES.m_frontRight;
-            case 2 -> selectedModule = m_MODULES.m_backLeft;
-            case 3 -> selectedModule = m_MODULES.m_backRight;
+            case 0 -> selectedModule = modules.m_frontLeft;
+            case 1 -> selectedModule = modules.m_frontRight;
+            case 2 -> selectedModule = modules.m_backLeft;
+            case 3 -> selectedModule = modules.m_backRight;
             default -> {
                 throw new IllegalArgumentException("Invalid module index: " + module);
             }
@@ -514,8 +512,40 @@ public class Swerve extends SubsystemBase implements Logged {
 
     @Override
     public void periodic() {
-        m_MODULES.periodic();
-        m_field.setRobotPose(getPose2D());
+        modules.periodic();
+        field.setRobotPose(getPose2D());
+    }
+
+    public Command trapezoidToPoseCommand(Supplier<Pose2d> poseSetpoint) {
+        return new SequentialCommandGroup(
+                new InstantCommand(
+                        () -> {
+                            m_angleController.calculate(getRotation2D().getRadians(), poseSetpoint.get().getRotation().getRadians());
+                            m_translationSetpoint = () -> poseSetpoint.get().getTranslation();
+                            m_angleSetpoint = () -> poseSetpoint.get().getRotation();
+                        }
+                ),
+                driveCommand(
+                        () -> {
+                            Vector2D vel = new Vector2D(
+                                    xtProfile.calculate(
+                                            0.02,
+                                            new TrapezoidProfile.State(getPose2D().getX(), getVelocity().getX()),
+                                            new TrapezoidProfile.State(poseSetpoint.get().getX(), 0)).velocity,
+                                    ytProfile.calculate(
+                                            0.02,
+                                            new TrapezoidProfile.State(getPose2D().getY(), getVelocity().getY()),
+                                            new TrapezoidProfile.State(poseSetpoint.get().getY(), 0)).velocity
+                            );
+                            double distance = getPose2D().getTranslation().getDistance(poseSetpoint.get().getTranslation());
+                            vel.setMagnitude(Math.min(vel.getDistance(), velocityLimit.get(distance)));
+                            if (!AllianceUtils.isBlueAlliance()) return vel.rotate(pi);
+                            return vel;
+                        },
+                        () -> m_angleController.calculate(getRotation2D().getRadians(), poseSetpoint.get().getRotation().getRadians()),
+                        () -> true
+                )
+        ).until(finishTrigger);
     }
 
 }

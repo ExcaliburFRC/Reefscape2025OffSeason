@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import frc.excalib.control.math.Vector2D;
+import frc.excalib.mechanisms.Arm.Arm;
 import frc.excalib.slam.mapper.AuroraClient;
 import frc.excalib.swerve.Swerve;
 import frc.robot.subsystems.climber.ClimberSubsystem;
@@ -54,7 +55,8 @@ public class RobotContainer implements Logged {
         driver.L1().onTrue(superstructure.intakeCommand());
         driver.R1().onTrue(superstructure.handoffCommand());
 
-
+        driver.cross().onTrue(superstructure.L2ScoreCommand());
+        driver.circle().onTrue(superstructure.L3ScoreCommand());
         driver.create().whileTrue(superstructure.intakeSubsystem.resetAngleCommand().ignoringDisable(true));
         driver.square().whileTrue(superstructure.elevatorSubsystem.coastCommand().ignoringDisable(true));
         driver.options().whileTrue(superstructure.elevatorSubsystem.setElevatorHeightCommand(0).ignoringDisable(true));
