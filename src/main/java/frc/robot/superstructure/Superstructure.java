@@ -195,6 +195,39 @@ public class Superstructure implements Logged {
         );
     }
 
+    public Command L4ScoreCommand() {
+        return new ConditionalCommand(
+                new SequentialCommandGroup(
+                        new ConditionalCommand(
+                                new SequentialCommandGroup(
+                                        setCurrentStateCommand(RobotStates.LEFT_STAGE1_L4),
+                                        new PrintCommand("1"),
+                                        new WaitUntilCommand(atPositionTrigger),
+                                        new PrintCommand("2")),
+                                Commands.none(),
+                                () -> (
+                                        armSubsystem.getAngleSupplier() > RobotStates.LEFT_STAGE1_L4.armPosition.getAngle() &&
+                                                armSubsystem.getAngleSupplier() < RobotStates.LEFT_STAGE3_L4.armPosition.getAngle())
+                        ),
+                        setCurrentStateCommand(RobotStates.LEFT_STAGE2_L4),
+                        new PrintCommand("3"),
+                        new WaitUntilCommand(atPositionTrigger),
+                        new PrintCommand("4"),
+                        new WaitCommand(0.2),
+                        setCurrentStateCommand(RobotStates.LEFT_STAGE3_L4),
+                        new PrintCommand("5"),
+                        new WaitCommand(0.5),
+                        setCurrentStateCommand(RobotStates.LEFT_STAGE4_L4),
+                        new PrintCommand("6"),
+                        new WaitCommand(0.5),
+                        new WaitUntilCommand(gripperSubsystem.hasCoralTrigger.negate()),
+                        setCurrentStateCommand(RobotStates.DEFAULT_WITH_GAME_PIECE)
+                ),
+                new PrintCommand("there is no coral in the system"),
+                gripperSubsystem.hasCoralTrigger
+        );
+    }
+
     public Command secureCommand() {
         return Commands.none();
     }

@@ -9,9 +9,9 @@ public enum ArmPosition {
     LEFT_L3(0.4171),
     LEFT_L3_FOLLOWTHROUGH(-0.216),
 
-    LEFT_PRE_L4(0),
-    LEFT_L4(0.763),
-    LEFT_L4_FOLLOWTHROUGH(0.05),
+    LEFT_PRE_L4(0.9826738),
+    LEFT_L4(-0.05),
+    LEFT_L4_FOLLOWTHROUGH(0),
 
     RIGHT_PRE_L2(-5.3),
     RIGHT_L2(-5.3),

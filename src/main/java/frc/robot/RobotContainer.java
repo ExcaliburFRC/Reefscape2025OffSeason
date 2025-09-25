@@ -57,6 +57,7 @@ public class RobotContainer implements Logged {
 
         driver.cross().onTrue(superstructure.L2ScoreCommand());
         driver.circle().onTrue(superstructure.L3ScoreCommand());
+        driver.triangle().onTrue(superstructure.L4ScoreCommand());
 
         driver.povDown().onTrue(superstructure.returnToDefaultCommand().ignoringDisable(true));
         driver.create().whileTrue(superstructure.intakeSubsystem.resetAngleCommand().ignoringDisable(true));

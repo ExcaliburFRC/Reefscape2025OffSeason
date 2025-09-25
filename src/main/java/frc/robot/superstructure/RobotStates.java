@@ -34,7 +34,7 @@ public enum RobotStates {
 
     LEFT_STAGE1_L4(ArmPosition.GO_THROUGH_FOR_LEFT, ElevatorStates.L4, IntakeState.DEFAULT, GripperStates.VACENT),
     LEFT_STAGE2_L4(ArmPosition.LEFT_PRE_L4, ElevatorStates.L4, IntakeState.DEFAULT, GripperStates.VACENT),
-    LEFT_STAGE3_L4(ArmPosition.LEFT_L4, ElevatorStates.L4, IntakeState.DEFAULT, GripperStates.RELEASE_CORAL),
+    LEFT_STAGE3_L4(ArmPosition.LEFT_L4, ElevatorStates.L4, IntakeState.DEFAULT, GripperStates.VACENT),
     LEFT_STAGE4_L4(ArmPosition.LEFT_L4_FOLLOWTHROUGH, ElevatorStates.L4_FOLLOWTHROUGH, IntakeState.DEFAULT, GripperStates.RELEASE_CORAL),
 
 
