@@ -25,6 +25,7 @@ public class Superstructure implements Logged {
     private final HashMap<RobotStates, RobotStates> followThroughMap;
     public RobotStates currentState;
     public final Trigger atPositionTrigger;
+    public final Trigger readyToCloseTrigger;
 
 
     public Superstructure() {
@@ -54,12 +55,14 @@ public class Superstructure implements Logged {
 //        followThroughMap.put(RobotStates.L3, RobotStates.L3_FOLLOWTHROUGH);
 //        followThroughMap.put(RobotStates.L4, RobotStates.L4_FOLLOWTHROUGH);
 
+        readyToCloseTrigger = new Trigger(atPositionTrigger.and(intakeSubsystem.hasCoral));
+
     }
 
     public Command setCurrentStateCommand(RobotStates state) {
         return new ParallelCommandGroup(
                 new InstantCommand(() -> currentState = state),
-                new PrintCommand("324"),
+                new PrintCommand("changed state"),
                 intakeSubsystem.setStateCommand(state.intakeState),
                 armSubsystem.setStateCommand(state.armPosition),
                 elevatorSubsystem.setStateCommand(state.elevatorState),
@@ -133,8 +136,7 @@ public class Superstructure implements Logged {
                 new PrintCommand("2"),
                 setCurrentStateCommand(RobotStates.HANDOFF),
                 new PrintCommand("3"),
-                new RunCommand(() -> {
-                }).until(() -> gripperSubsystem.hasCoralTrigger.getAsBoolean() && atPositionTrigger.getAsBoolean()),
+                new WaitUntilCommand(readyToCloseTrigger),
                 new PrintCommand("4"),
                 setCurrentStateCommand(RobotStates.DEFAULT_WITH_GAME_PIECE)
         );

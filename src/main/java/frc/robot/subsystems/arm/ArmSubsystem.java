@@ -61,9 +61,21 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
         elevatorHeightSupplier = () -> 0;
         isIntakeOpen = new Trigger(() -> false);
 
-        armMechanism = new Arm(armMotor, angleSupplier, VELOCITY_LIMIT, new Gains(1.8, 0, 0.2, 0, 0, 0, 1.2), new Mass(() -> Math.cos(angleSupplier.getAsDouble()), () -> Math.sin(angleSupplier.getAsDouble()), 1));
+        armMechanism = new Arm(
+                armMotor,
+                angleSupplier,
+                VELOCITY_LIMIT,
+                new Gains(1.9, 0, 0.2, 0, 0, 0, 1.2),
+                new Mass(
+                        () -> Math.cos(angleSupplier.getAsDouble()),
+                        () -> Math.sin(angleSupplier.getAsDouble()),
+                        1
+                )
+        );
 
-        atPostionTrigger = new Trigger(() -> (Math.abs(getLimitedSetpoint() - angleSupplier.getAsDouble()) < POSITION_TOLERANCE_RAD));
+        atPostionTrigger = new Trigger(
+                () -> (
+                        Math.abs(getLimitedSetpoint() - angleSupplier.getAsDouble()) < POSITION_TOLERANCE_RAD));
 
         limitHelper = new ContinuousSoftLimit(() -> -8.3, () -> 6.7);
 
@@ -176,7 +188,7 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
 
     @NT
     public double getError() {
-        return currentState.getAngle() - angleSupplier.getAsDouble();
+        return Math.abs(getLimitedSetpoint() - angleSupplier.getAsDouble());
     }
 
     @NT

@@ -7,7 +7,7 @@ public class Constants {
     public static final double ARM_VELOCITY_MIN = -2;
     public static final double ARM_VELOCITY_MAX = 2;
     public static final double TOLERANCE = 0.1;
-    public static final double POSITION_TOLERANCE_RAD = Math.PI / 45.0;
+    public static final double POSITION_TOLERANCE_RAD = Math.PI / 40.0;
     public static final double ARM_DEFAULT_START_RAD = Math.PI / 2 - 0.7072895200359199;
     public static final double ARM_POSITION_CONVERSION_FACTOR = Math.PI * 2 / 14.8;
 
