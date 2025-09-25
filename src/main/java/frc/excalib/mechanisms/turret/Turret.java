@@ -25,10 +25,10 @@ public final class Turret extends Mechanism {
     private final DoubleSupplier m_POSITION_SUPPLIER;
 
     /**
-     * @param motor the turrets motor
-     * @param rotationLimit the rotational boundary for the turret (radians)
-     * @param angleGains pid gains for the turret
-     * @param PIDtolerance pid tolerance for the turret (radians)
+     * @param motor            the turrets motor
+     * @param rotationLimit    the rotational boundary for the turret (radians)
+     * @param angleGains       pid gains for the turret
+     * @param PIDtolerance     pid tolerance for the turret (radians)
      * @param positionSupplier the position measurement
      */
     public Turret(Motor motor, ContinuousSoftLimit rotationLimit, Gains angleGains, double PIDtolerance, DoubleSupplier positionSupplier) {
@@ -48,18 +48,19 @@ public final class Turret extends Mechanism {
      * @param wantedPosition a Rotation2d dynamic setpoint
      * @return a Command that moves the turret tho the given setpoint
      */
-    public Command setPositionCommand(Supplier<Rotation2d> wantedPosition, SubsystemBase... requirements){
-        return new RunCommand(()-> setPosition(wantedPosition.get()), requirements);
+    public Command setPositionCommand(Supplier<Rotation2d> wantedPosition, SubsystemBase... requirements) {
+        return new RunCommand(() -> setPosition(wantedPosition.get()), requirements);
     }
 
     /**
      * moves the turret to the desired position
+     *
      * @param wantedPosition the wanted position of the turret.
      */
     public void setPosition(Rotation2d wantedPosition) {
-        double smartSetPoint = m_rotationLimit.getSetpoint(getPosition().getRadians(), wantedPosition.getRadians());
-        double pid = m_anglePIDcontroller.calculate(m_POSITION_SUPPLIER.getAsDouble(), smartSetPoint);
-//        double ff =m_angleFFcontroller.getKs() * Math.signum(pid);
+        double smartSetpoint = m_rotationLimit.getSetpoint(getPosition().getRadians(), wantedPosition.getRadians());
+        double pid = m_anglePIDcontroller.calculate(m_POSITION_SUPPLIER.getAsDouble(), smartSetpoint);
+        double ff = m_angleFFcontroller.getKs() * Math.signum(pid);
         super.setVoltage(pid);
     }
 

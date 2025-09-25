@@ -357,8 +357,6 @@ public class Swerve extends SubsystemBase implements Logged {
         return m_desiredChassisSpeeds;
     }
 
-//    @Log.NT
-
     /// /    public double distanceFromReefCenter() {
     /// /        return AllianceUtils.isBlueAlliance() ?
     /// /                BLUE_REEF_CENTER.getDistance(getPose2D().getTranslation()) :
@@ -514,6 +512,8 @@ public class Swerve extends SubsystemBase implements Logged {
     public void periodic() {
         modules.periodic();
         field.setRobotPose(getPose2D());
+        updateOdometry();
+
     }
 
     public Command trapezoidToPoseCommand(Supplier<Pose2d> poseSetpoint) {

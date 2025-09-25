@@ -2,8 +2,8 @@ package frc.robot.subsystems.intake;
 
 public enum IntakeState {
     FLOOR_INTAKE(3.08,-0.5,0),
-    CENTERLIZE(2,0,0),
-    DEFAULT(0.8635,-0.1,0),
+    CENTERLIZE(2,0,0.4),
+    DEFAULT(0.8635,-0.1,0.4),
 //    DEFAULT(0.8635,-0.1,0.1),
     PRE_HANDOFF(0.8635,0,0),
 //    PRE_HANDOFF(0.8635,0,0.3),

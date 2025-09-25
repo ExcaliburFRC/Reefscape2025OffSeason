@@ -118,10 +118,12 @@ public class Superstructure implements Logged {
                 setCurrentStateCommand(RobotStates.PRE_HANDOFF),
                 new PrintCommand("1"),
                 new WaitUntilCommand(atPositionTrigger),
+                new WaitCommand(0.2),
                 new PrintCommand("2"),
                 setCurrentStateCommand(RobotStates.HANDOFF),
                 new PrintCommand("3"),
                 new WaitUntilCommand(readyToCloseTrigger),
+                new WaitCommand(0.2),
                 new PrintCommand("4"),
                 setCurrentStateCommand(RobotStates.DEFAULT_WITH_GAME_PIECE)
         );

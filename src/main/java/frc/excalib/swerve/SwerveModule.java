@@ -15,6 +15,8 @@ import frc.excalib.control.math.Vector2D;
 import frc.excalib.control.motor.controllers.Motor;
 import frc.excalib.mechanisms.fly_wheel.FlyWheel;
 import frc.excalib.mechanisms.turret.Turret;
+import monologue.Annotations;
+import monologue.Annotations.Log.NT;
 import monologue.Logged;
 
 import java.util.function.DoubleSupplier;
@@ -228,5 +230,10 @@ public class SwerveModule implements Logged {
     public void periodic() {
         m_swerveModulePosition.distanceMeters = m_driveWheel.logPosition();
         m_swerveModulePosition.angle = m_turret.getPosition();
+    }
+
+    @NT
+    public double getKv(){
+        return m_driveWheel.logVoltage() / m_driveWheel.getVelocity();
     }
 }
