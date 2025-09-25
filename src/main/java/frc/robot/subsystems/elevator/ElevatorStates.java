@@ -4,8 +4,8 @@ public enum ElevatorStates {
     L2(0.447),
     L2_FOLLOWTHROUGH(0.43),
 
-    L3(0.699),
-    L3_FOLLOWTHROUGH(0.65)
+    L3(0.76),
+    L3_FOLLOWTHROUGH(0.7)
     ,
     L4(1.331),
     L4_FOLLOWTHROUGH(1.4),
