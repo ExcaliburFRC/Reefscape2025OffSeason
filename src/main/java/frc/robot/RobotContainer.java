@@ -49,7 +49,7 @@ public class RobotContainer implements Logged {
                         () -> new Vector2D(
                                 applyDeadband(-driver.getLeftY()) * MAX_VEL,
                                 applyDeadband(-driver.getLeftX()) * MAX_VEL),
-                        () -> applyDeadband(-driver.getRightX()) * MAX_OMEGA_RAD_PER_SEC,
+                        () -> applyDeadband(driver.getRightX()) * MAX_OMEGA_RAD_PER_SEC,
                         () -> true
                 )
         );
@@ -58,6 +58,7 @@ public class RobotContainer implements Logged {
         driver.options().onTrue(new RunCommand(() -> swerve.resetOdometry(new Pose2d())));
 
 
+        driver.povUp().onTrue(swerve.pidToPoseCommand(()-> new Pose2d(0,0, new Rotation2d(Math.PI/2))));
 //        driver.L1().onTrue(superstructure.intakeCommand());
 //        driver.R1().onTrue(superstructure.handoffCommand());
 

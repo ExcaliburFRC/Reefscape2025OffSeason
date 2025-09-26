@@ -39,7 +39,7 @@ public final class Constants {
         public static final int GYRO_ID = 3;
         public static final String SWERVE_CANBUS = "CTRESwerve";
 
-        private static final double PID_TOLERANCE = 0.2; //TODO
+        private static final double PID_TOLERANCE = 0.2;
 
         public static final double TRACK_WIDTH = 0.726; // m
         public static final Translation2d FRONT_LEFT_TRANSLATION =
@@ -64,7 +64,7 @@ public final class Constants {
         public static final double MAX_SIDE_ACC = 6;
         public static final double MAX_SKID_ACC = 9;
         public static final double MAX_FORWARD_ACC = 9;
-        public static final double MAX_VEL = 2;
+        public static final double MAX_VEL = 4;
         public static final double MAX_OMEGA_RAD_PER_SEC = 4;
         public static final double MAX_OMEGA_RAD_PER_SEC_SQUARE = 1;
 
@@ -88,12 +88,10 @@ public final class Constants {
 
         public static final PIDConstants TRANSLATION_PID_PP_CONSTANTS = new PIDConstants(10.0, 0.0, 0.0); //TODO
         public static final PIDConstants ANGLE_PID_PP_CONSTANTS = new PIDConstants(5.0, 0.0, 0.0);
-        public static final Gains ANGLE_PID_GAINS = new Gains();
-        public static final Gains TRANSLATION_PID_GAINS = new Gains();
+        public static final Gains ANGLE_PID_GAINS = new Gains(0.4,0,0);
+        public static final Gains TRANSLATION_PID_GAINS = new Gains(2,0,0);
 
         private static final IMU GYRO = new Pigeon(GYRO_ID, SWERVE_CANBUS, new Rotation3d());
-
-        public static final double DEADBAND_VALUE = 0.06;
 
         public static Swerve configureSwerve(Pose2d initialPose) {
             return new Swerve(

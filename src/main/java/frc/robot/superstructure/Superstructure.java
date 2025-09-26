@@ -9,7 +9,6 @@ import frc.robot.subsystems.gripper.Gripper;
 import frc.robot.subsystems.intake.Intake;
 import monologue.Logged;
 
-import javax.naming.event.ObjectChangeListener;
 import java.util.HashMap;
 
 import static monologue.Annotations.*;
@@ -83,7 +82,7 @@ public class Superstructure implements Logged {
 //                        new WaitUntilCommand(atPositionTrigger),
 //                        setCurrentStateCommand(RobotStates.DEFAULT_WITHOUT_GAME_PIECE)),
 //                handoffCommand(),
-//                gripperSubsystem.hasCoralTrigger);
+//                gripperSubsystem.hasGamePieceTrigger);
 //    }
 
     //    public Command scoreCommand() {
@@ -156,11 +155,11 @@ public class Superstructure implements Logged {
                         setCurrentStateCommand(RobotStates.LEFT_STAGE4_L2),
                         new PrintCommand("6"),
                         new WaitCommand(0.2),
-                        new WaitUntilCommand(gripperSubsystem.hasCoralTrigger.negate()),
+                        new WaitUntilCommand(gripperSubsystem.hasGamePieceTrigger.negate()),
                         setCurrentStateCommand(RobotStates.DEFAULT_WITH_GAME_PIECE)
                 ),
                 new PrintCommand("there is no coral in the system"),
-                gripperSubsystem.hasCoralTrigger
+                gripperSubsystem.hasGamePieceTrigger
         );
     }
 
@@ -189,11 +188,11 @@ public class Superstructure implements Logged {
                         setCurrentStateCommand(RobotStates.LEFT_STAGE4_L3),
                         new PrintCommand("6"),
                         new WaitCommand(0.5),
-                        new WaitUntilCommand(gripperSubsystem.hasCoralTrigger.negate()),
+                        new WaitUntilCommand(gripperSubsystem.hasGamePieceTrigger.negate()),
                         setCurrentStateCommand(RobotStates.DEFAULT_WITH_GAME_PIECE)
                 ),
                 new PrintCommand("there is no coral in the system"),
-                gripperSubsystem.hasCoralTrigger
+                gripperSubsystem.hasGamePieceTrigger
         );
     }
 
@@ -222,11 +221,11 @@ public class Superstructure implements Logged {
                         setCurrentStateCommand(RobotStates.LEFT_STAGE4_L4),
                         new PrintCommand("6"),
                         new WaitCommand(0.5),
-                        new WaitUntilCommand(gripperSubsystem.hasCoralTrigger.negate()),
+                        new WaitUntilCommand(gripperSubsystem.hasGamePieceTrigger.negate()),
                         setCurrentStateCommand(RobotStates.DEFAULT_WITH_GAME_PIECE)
                 ),
                 new PrintCommand("there is no coral in the system"),
-                gripperSubsystem.hasCoralTrigger
+                gripperSubsystem.hasGamePieceTrigger
         );
     }
 

@@ -50,11 +50,11 @@ public class SwerveModule implements Logged {
                         double rotationVelocityConversionFactor) {
         driveMotor.setInverted(FORWARD);
         driveMotor.setVelocityConversionFactor(velocityConversionFactor);
-        driveMotor.setIdleState(COAST);
+        driveMotor.setIdleState(BRAKE);
         driveMotor.setPositionConversionFactor(positionConversionFactor);
         driveMotor.setCurrentLimit(0, 60);
 
-        rotationMotor.setIdleState(COAST);
+        rotationMotor.setIdleState(BRAKE);
         rotationMotor.setVelocityConversionFactor(rotationVelocityConversionFactor);
         rotationMotor.setInverted(REVERSE);
 
