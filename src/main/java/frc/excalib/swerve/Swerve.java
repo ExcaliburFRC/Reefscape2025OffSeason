@@ -48,7 +48,6 @@ public class Swerve extends SubsystemBase implements Logged {
     private ChassisSpeeds m_desiredChassisSpeeds = new ChassisSpeeds();
     private Trigger finishTrigger;
     private Rotation2d pi = new Rotation2d(Math.PI);
-    private InterpolatingDoubleTreeMap velocityLimit = new InterpolatingDoubleTreeMap();
 
     private final SwerveDriveKinematics m_swerveDriveKinematics;
 
@@ -62,6 +61,9 @@ public class Swerve extends SubsystemBase implements Logged {
     public final Field2d field = new Field2d();
     private Supplier<Rotation2d> m_angleSetpoint = Rotation2d::new;
     private Supplier<Translation2d> m_translationSetpoint = Translation2d::new;
+
+    private TrapezoidProfile.State xGoalState = new TrapezoidProfile.State(0, 0);
+    private TrapezoidProfile.State yGoalState = new TrapezoidProfile.State(0, 0);
 
     private TrapezoidProfile xtProfile;
     private TrapezoidProfile ytProfile;
@@ -95,9 +97,6 @@ public class Swerve extends SubsystemBase implements Logged {
         );
 
         m_swerveDriveKinematics = this.modules.getSwerveDriveKinematics();
-        velocityLimit.put(0.1, 0.4);
-        velocityLimit.put(0.7, 2.0);
-        velocityLimit.put(1.5, MAX_VEL);
 
         xtProfile = new TrapezoidProfile(new TrapezoidProfile.Constraints(0.5, 1));
         ytProfile = new TrapezoidProfile(new TrapezoidProfile.Constraints(0.5, 1));
@@ -192,8 +191,6 @@ public class Swerve extends SubsystemBase implements Logged {
                                     m_xController.calculate(getPose2D().getX(), poseSetpoint.get().getX()),
                                     m_yController.calculate(getPose2D().getY(), poseSetpoint.get().getY())
                             );
-                            double distance = getPose2D().getTranslation().getDistance(poseSetpoint.get().getTranslation());
-                            vel.setMagnitude(Math.min(vel.getDistance(), velocityLimit.get(distance)));
                             if (!AllianceUtils.isBlueAlliance()) return vel.rotate(pi);
                             return vel;
                         },
@@ -516,36 +513,5 @@ public class Swerve extends SubsystemBase implements Logged {
 
     }
 
-    public Command trapezoidToPoseCommand(Supplier<Pose2d> poseSetpoint) {
-        return new SequentialCommandGroup(
-                new InstantCommand(
-                        () -> {
-                            m_angleController.calculate(getRotation2D().getRadians(), poseSetpoint.get().getRotation().getRadians());
-                            m_translationSetpoint = () -> poseSetpoint.get().getTranslation();
-                            m_angleSetpoint = () -> poseSetpoint.get().getRotation();
-                        }
-                ),
-                driveCommand(
-                        () -> {
-                            Vector2D vel = new Vector2D(
-                                    xtProfile.calculate(
-                                            0.02,
-                                            new TrapezoidProfile.State(getPose2D().getX(), getVelocity().getX()),
-                                            new TrapezoidProfile.State(poseSetpoint.get().getX(), 0)).velocity,
-                                    ytProfile.calculate(
-                                            0.02,
-                                            new TrapezoidProfile.State(getPose2D().getY(), getVelocity().getY()),
-                                            new TrapezoidProfile.State(poseSetpoint.get().getY(), 0)).velocity
-                            );
-                            double distance = getPose2D().getTranslation().getDistance(poseSetpoint.get().getTranslation());
-                            vel.setMagnitude(Math.min(vel.getDistance(), velocityLimit.get(distance)));
-                            if (!AllianceUtils.isBlueAlliance()) return vel.rotate(pi);
-                            return vel;
-                        },
-                        () -> m_angleController.calculate(getRotation2D().getRadians(), poseSetpoint.get().getRotation().getRadians()),
-                        () -> true
-                )
-        ).until(finishTrigger);
-    }
 
 }
