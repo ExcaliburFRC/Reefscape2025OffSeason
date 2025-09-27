@@ -2,11 +2,18 @@ package frc.robot.superstructure;
 
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.excalib.additional_utilities.DoubleKeyMap;
+import frc.excalib.commands.CommandMutex;
+import frc.robot.Constants;
 import frc.robot.subsystems.arm.ArmSubsystem;
 import frc.robot.subsystems.climber.ClimberSubsystem;
 import frc.robot.subsystems.elevator.ElevatorSubsystem;
 import frc.robot.subsystems.gripper.Gripper;
 import frc.robot.subsystems.intake.Intake;
+import frc.robot.util.AlgaeScoreState;
+import frc.robot.util.CoralScoreState;
+import frc.robot.util.LevelChangeTrigger;
+import frc.robot.util.ProcessChangeTrigger;
 import monologue.Logged;
 
 import java.util.HashMap;
@@ -21,15 +28,32 @@ public class Superstructure implements Logged {
     public final Gripper gripperSubsystem;
     public final ClimberSubsystem climberSubsystem;
 
+    private CoralScoreState coralScoreState;
+    private AlgaeScoreState algaeScoreState;
 
-    private final HashMap<RobotStates, RobotStates> followThroughMap;
+    private final DoubleKeyMap<CoralScoreState, ScoreSide, RobotStates> scoreStage1CoralSideMap;
+    private final DoubleKeyMap<CoralScoreState, ScoreSide, RobotStates> scoreStage2CoralSideMap;
+    private final DoubleKeyMap<CoralScoreState, ScoreSide, RobotStates> scoreStage3CoralSideMap;
+    private final DoubleKeyMap<CoralScoreState, ScoreSide, RobotStates> scoreStage4CoralSideMap;
+
+    private Superstructure.Process currentProcess;
+
+    private final HashMap<Superstructure.Process, Command> processCommandHashMap;
     public RobotStates currentState;
     public final Trigger atPositionTrigger;
     public final Trigger readyToCloseTrigger;
 
+    private final ProcessChangeTrigger processChangeTrigger;
+    private final LevelChangeTrigger levelChangeTrigger;
 
-    public Superstructure() {
+    private CommandMutex commandMutex;
+
+    private Trigger isSwerveAtPlace;
+
+
+    public Superstructure(Trigger isSwerveAtPlace) {
         currentState = RobotStates.DEFAULT_WITHOUT_GAME_PIECE;
+        coralScoreState = CoralScoreState.L2;
 
         armSubsystem = new ArmSubsystem();
         elevatorSubsystem = new ElevatorSubsystem();
@@ -37,7 +61,71 @@ public class Superstructure implements Logged {
         gripperSubsystem = new Gripper();
         climberSubsystem = new ClimberSubsystem();
 
-        followThroughMap = new HashMap<>();
+
+        currentProcess = Process.DEFAULT;
+
+        levelChangeTrigger = new LevelChangeTrigger(() -> this.coralScoreState);
+
+        processChangeTrigger = new ProcessChangeTrigger(() -> currentProcess);
+
+        scoreStage1CoralSideMap = new DoubleKeyMap<>();
+        scoreStage2CoralSideMap = new DoubleKeyMap<>();
+        scoreStage3CoralSideMap = new DoubleKeyMap<>();
+        scoreStage4CoralSideMap = new DoubleKeyMap<>();
+
+        scoreStage1CoralSideMap.put(CoralScoreState.L2, ScoreSide.LEFT, RobotStates.LEFT_STAGE1_L2);
+        scoreStage1CoralSideMap.put(CoralScoreState.L3, ScoreSide.LEFT, RobotStates.LEFT_STAGE1_L3);
+        scoreStage1CoralSideMap.put(CoralScoreState.L4, ScoreSide.LEFT, RobotStates.LEFT_STAGE1_L4);
+
+        scoreStage1CoralSideMap.put(CoralScoreState.L2, ScoreSide.RIGHT, RobotStates.RIGHT_STAGE1_L2);
+        scoreStage1CoralSideMap.put(CoralScoreState.L3, ScoreSide.RIGHT, RobotStates.RIGHT_STAGE1_L3);
+        scoreStage1CoralSideMap.put(CoralScoreState.L4, ScoreSide.RIGHT, RobotStates.RIGHT_STAGE1_L4);
+
+
+        scoreStage2CoralSideMap.put(CoralScoreState.L2, ScoreSide.LEFT, RobotStates.LEFT_STAGE2_L2);
+        scoreStage2CoralSideMap.put(CoralScoreState.L3, ScoreSide.LEFT, RobotStates.LEFT_STAGE2_L3);
+        scoreStage2CoralSideMap.put(CoralScoreState.L4, ScoreSide.LEFT, RobotStates.LEFT_STAGE2_L4);
+
+        scoreStage2CoralSideMap.put(CoralScoreState.L2, ScoreSide.RIGHT, RobotStates.RIGHT_STAGE2_L2);
+        scoreStage2CoralSideMap.put(CoralScoreState.L3, ScoreSide.RIGHT, RobotStates.RIGHT_STAGE2_L3);
+        scoreStage2CoralSideMap.put(CoralScoreState.L4, ScoreSide.RIGHT, RobotStates.RIGHT_STAGE2_L4);
+
+
+        scoreStage3CoralSideMap.put(CoralScoreState.L2, ScoreSide.LEFT, RobotStates.LEFT_STAGE3_L2);
+        scoreStage3CoralSideMap.put(CoralScoreState.L3, ScoreSide.LEFT, RobotStates.LEFT_STAGE3_L3);
+        scoreStage3CoralSideMap.put(CoralScoreState.L4, ScoreSide.LEFT, RobotStates.LEFT_STAGE3_L4);
+
+        scoreStage3CoralSideMap.put(CoralScoreState.L2, ScoreSide.RIGHT, RobotStates.RIGHT_STAGE3_L2);
+        scoreStage3CoralSideMap.put(CoralScoreState.L3, ScoreSide.RIGHT, RobotStates.RIGHT_STAGE3_L3);
+        scoreStage3CoralSideMap.put(CoralScoreState.L4, ScoreSide.RIGHT, RobotStates.RIGHT_STAGE3_L4);
+
+
+        scoreStage4CoralSideMap.put(CoralScoreState.L2, ScoreSide.LEFT, RobotStates.LEFT_STAGE4_L2);
+        scoreStage4CoralSideMap.put(CoralScoreState.L3, ScoreSide.LEFT, RobotStates.LEFT_STAGE4_L3);
+        scoreStage4CoralSideMap.put(CoralScoreState.L4, ScoreSide.LEFT, RobotStates.LEFT_STAGE4_L4);
+
+        scoreStage4CoralSideMap.put(CoralScoreState.L2, ScoreSide.RIGHT, RobotStates.RIGHT_STAGE4_L2);
+        scoreStage4CoralSideMap.put(CoralScoreState.L3, ScoreSide.RIGHT, RobotStates.RIGHT_STAGE4_L3);
+        scoreStage4CoralSideMap.put(CoralScoreState.L4, ScoreSide.RIGHT, RobotStates.RIGHT_STAGE4_L4);
+
+
+        processCommandHashMap = new HashMap<>();
+        processCommandHashMap.put(Process.DEFAULT, defaultProcessCommand());
+//        processCommandHashMap.put(Process.SCORE_ALGAE, scoreAlgaeProcessCommand());
+        processCommandHashMap.put(Process.SCORE_CORAL, scoreCoralProcessCommand());
+//        processCommandHashMap.put(Process.INTAKE_ALGAE, intakeAlgaeProcessCommand());
+//        processCommandHashMap.put(Process.INTAKE_CORAL, intakeCoralProcessCommand());
+
+        commandMutex = new CommandMutex();
+
+        processChangeTrigger.onTrue(
+                commandMutex.scheduleCommand(
+                        new SelectCommand<Process>(
+                                processCommandHashMap,
+                                () -> currentProcess
+                        )
+                )
+        );
 
         atPositionTrigger = new Trigger(
                 () -> elevatorSubsystem.atPositionTrigger.getAsBoolean() &&
@@ -46,52 +134,133 @@ public class Superstructure implements Logged {
         );
 
 
-        elevatorSubsystem.setArmAngleSuppier(() -> armSubsystem.getAngleSupplier());
+        elevatorSubsystem.setArmAngleSuppier(armSubsystem::getAngleSupplier);
         armSubsystem.setElevatorHeightSupplier(elevatorSubsystem::getElevatorHeight);
 
         armSubsystem.setIntakeOpen(new Trigger(intakeSubsystem.isIntakeOpen()));
         elevatorSubsystem.setIntakeOpenTrigger(intakeSubsystem.isIntakeOpen());
 
-//        followThroughMap.put(RobotStates.L2, RobotStates.L2_FOLLOWTHROUGH);
-//        followThroughMap.put(RobotStates.L3, RobotStates.L3_FOLLOWTHROUGH);
-//        followThroughMap.put(RobotStates.L4, RobotStates.L4_FOLLOWTHROUGH);
-
         readyToCloseTrigger = new Trigger(atPositionTrigger.and(intakeSubsystem.hasCoral));
 
+        this.isSwerveAtPlace = isSwerveAtPlace;
     }
 
     public Command setCurrentStateCommand(RobotStates state) {
         return new ParallelCommandGroup(
                 new InstantCommand(() -> currentState = state),
-                new PrintCommand("changed state"),
-                intakeSubsystem.setStateCommand(state.intakeState),
-                armSubsystem.setStateCommand(state.armPosition),
-                elevatorSubsystem.setStateCommand(state.elevatorState),
-                gripperSubsystem.setStateCommand(state.gripperState)
-        ).until(atPositionTrigger);
+                new PrintCommand("changed state"));
+//                intakeSubsystem.setStateCommand(state.intakeState),
+//                armSubsystem.setStateCommand(state.armPosition),
+//                elevatorSubsystem.setStateCommand(state.elevatorState),
+//                gripperSubsystem.setStateCommand(state.gripperState)
+//        ).until(atPositionTrigger);
     }
 
     public void returnToDefaultState() {
         this.currentState = RobotStates.DEFAULT_WITHOUT_GAME_PIECE;
     }
 
-//    public Command openToScoreCommand(RobotStates scoreState) {
+    public Command setCurrentProcessCommand(Process process) {
+        return new InstantCommand(() -> this.currentProcess = process);
+    }
+
+    public Command scoreCoralProcessCommand() {
+        Command alignment = new InstantCommand();
+
+        Command score = new SequentialCommandGroup(
+                setCurrentStateCommand(scoreStage3CoralSideMap.get(coralScoreState, getScoringSide())),
+                setCurrentStateCommand(scoreStage4CoralSideMap.get(coralScoreState, getScoringSide()))
+        );
+        Command part1 = new SequentialCommandGroup(
+                setCurrentStateCommand(scoreStage1CoralSideMap.get(coralScoreState, getScoringSide())),
+                setCurrentStateCommand(scoreStage2CoralSideMap.get(coralScoreState, getScoringSide())),
+                new WaitUntilCommand(isSwerveAtPlace)
+        );
+        Command part2 = new SequentialCommandGroup(
+                setCurrentStateCommand(scoreStage1CoralSideMap.get(coralScoreState, getScoringSide()))
+        );
+        Command part3 = new SequentialCommandGroup(
+                setCurrentStateCommand(scoreStage3CoralSideMap.get(coralScoreState, getScoringSide())),
+                setCurrentStateCommand(scoreStage4CoralSideMap.get(coralScoreState, getScoringSide())),
+                this.setCurrentProcessCommand(Process.DEFAULT)
+        );
+        return new SequentialCommandGroup(
+                alignment.until(() -> true),
+                new ConditionalCommand(
+                        score,
+                        setCurrentStateCommand(scoreStage2CoralSideMap.get(coralScoreState, getScoringSide())), () -> true
+                ),
+                this.setCurrentProcessCommand(Process.DEFAULT)
+        );
+    }
+
+//    public Command scoreAlgaeProcessCommand() {
 //        return new ConditionalCommand(
 //                new SequentialCommandGroup(
-//                        setCurrentStateCommand(scoreState),
-//                        new WaitUntilCommand(atPositionTrigger),
-//                        setCurrentStateCommand(RobotStates.DEFAULT_WITHOUT_GAME_PIECE)),
-//                handoffCommand(),
-//                gripperSubsystem.hasGamePieceTrigger);
+//                        new WaitUntilCommand(null),//positioned
+//                        setCurrentStateCommand(null),//stage 1
+//                        setCurrentStateCommand(null),//stage 2
+//                        setCurrentStateCommand(null),//stage 3
+//                        new WaitUntilCommand(null),//gripper empty
+//                        setCurrentStateCommand(null)//stage 4
+//                ),
+//                new SequentialCommandGroup(
+//                        new WaitUntilCommand(null),//positioned
+//                        setCurrentStateCommand(null),//stage 1
+//                        setCurrentStateCommand(null),//stage 2
+//                        new WaitUntilCommand(null)//empty gripper
+//                ),
+//                () -> algaeScoreState.equals(AlgaeScoreState.NET)
+//        ).andThen(setCurrentProcessCommand(Process.DEFAULT));
 //    }
 
-    //    public Command scoreCommand() {
-//        return new ParallelCommandGroup(
-//                gripperSubsystem.releaseCoral(),
-//                setCurrentStateCommand(followThroughMap.get(currentState))
+//    public Command intakeCoralProcessCommand() {
+//        return new ConditionalCommand(
+//                new SequentialCommandGroup(
+//                        setCurrentStateCommand(RobotStates.FLOOR_INTAKE_WITH_ALGAE),
+//                        new WaitUntilCommand(intakeSubsystem.either),
+//                        setCurrentStateCommand(null),// closed intake
+//                        setCurrentProcessCommand(Process.DEFAULT)
+//                ),
+//                new SequentialCommandGroup(
+//                        setCurrentStateCommand(RobotStates.FLOOR_INTAKE),
+//                        new WaitUntilCommand(intakeSubsystem.either),
+//                        setCurrentStateCommand(null),// closed intake
+//                        setCurrentProcessCommand(Process.SCORE_CORAL)
+//                ),
+//                () -> true //algae present
+//
 //        );
 //    }
+
+//    public Command intakeAlgaeProcessCommand() {
+//        Command emptyGripper = new SequentialCommandGroup(
+//                setCurrentStateCommand(null),//gripper above intake, intake rotating inwards
+//                setCurrentStateCommand(null),//passing the coral
+//                new WaitUntilCommand(intakeSubsystem.either)
+//        );
+//        return new SequentialCommandGroup(
+//                new ConditionalCommand(
+//                        emptyGripper,
+//                        new InstantCommand(),
+//                        () -> true//coral in gripper
+//                ),
+//                setCurrentStateCommand(null),// algae intake state
+//                new WaitUntilCommand(() -> true),//algae present and robot is at safe distance from rif
+//                setCurrentProcessCommand(Process.DEFAULT)
 //
+//        );
+//    }
+
+    public Command defaultProcessCommand() {
+        return new ConditionalCommand(
+                setCurrentStateCommand(RobotStates.DEFAULT_WITHOUT_GAME_PIECE),
+                setCurrentStateCommand(RobotStates.DEFAULT_WITHOUT_GAME_PIECE),
+                () -> true
+        );
+    }
+
+
     public Command L1ScoreCommand() {
         return new SequentialCommandGroup(
                 setCurrentStateCommand(RobotStates.PRE_L1),
@@ -256,6 +425,32 @@ public class Superstructure implements Logged {
     public boolean getStagePosition() {
         return armSubsystem.getAngleSupplier() < RobotStates.LEFT_STAGE1_L2.armPosition.getAngle();
     }
+
+    public Command setCoralScoreStateCommand(CoralScoreState coralScoreState) {
+        return new InstantCommand(() -> this.coralScoreState = coralScoreState);
+    }
+
+    public void setAlgaeScoreState(AlgaeScoreState algaeScoreState) {
+        this.algaeScoreState = algaeScoreState;
+    }
+
+    public enum Process {
+        DEFAULT,
+        SCORE_CORAL,
+        SCORE_ALGAE,
+        INTAKE_CORAL,
+        INTAKE_ALGAE;
+    }
+
+    public enum ScoreSide {
+        LEFT,
+        RIGHT;
+    }
+
+    public ScoreSide getScoringSide() {
+        return ScoreSide.LEFT;
+    }
+
 
 }
 
