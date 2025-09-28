@@ -3,13 +3,12 @@ package frc.robot.superstructure.automations;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.*;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.excalib.additional_utilities.AllianceUtils;
 import frc.excalib.swerve.Swerve;
 import frc.robot.Constants;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.subsystems.climber.ClimberSubsystem;
-import frc.robot.superstructure.RobotStates;
+import frc.robot.superstructure.RobotState;
 import frc.robot.superstructure.Superstructure;
 import frc.robot.superstructure.automations.climbMode.ClimbOperator;
 
@@ -19,8 +18,8 @@ import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 public class Automations {
-    public Map<RobotStates, Command> scoreMap = new HashMap<>();
-    public RobotStates scoreState = RobotStates.DEFAULT_WITH_GAME_PIECE;
+    public Map<RobotState, Command> scoreMap = new HashMap<>();
+    public RobotState scoreState = RobotState.DEFAULT_WITH_GAME_PIECE;
 
     public Swerve swerve;
     public Superstructure superstructure;

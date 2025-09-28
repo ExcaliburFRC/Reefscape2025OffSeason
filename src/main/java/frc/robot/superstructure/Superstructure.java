@@ -2,9 +2,7 @@ package frc.robot.superstructure;
 
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.excalib.additional_utilities.DoubleKeyMap;
 import frc.excalib.commands.CommandMutex;
-import frc.robot.Constants;
 import frc.robot.subsystems.arm.ArmSubsystem;
 import frc.robot.subsystems.climber.ClimberSubsystem;
 import frc.robot.subsystems.elevator.ElevatorSubsystem;
@@ -18,6 +16,8 @@ import monologue.Logged;
 
 import java.util.HashMap;
 
+import static frc.robot.superstructure.RobotState.*;
+import static frc.robot.superstructure.RobotState.LEFT_STAGE3_L2;
 import static monologue.Annotations.*;
 
 public class Superstructure implements Logged {
@@ -31,15 +31,15 @@ public class Superstructure implements Logged {
     private CoralScoreState coralScoreState;
     private AlgaeScoreState algaeScoreState;
 
-    private final DoubleKeyMap<CoralScoreState, ScoreSide, RobotStates> scoreStage1CoralSideMap;
-    private final DoubleKeyMap<CoralScoreState, ScoreSide, RobotStates> scoreStage2CoralSideMap;
-    private final DoubleKeyMap<CoralScoreState, ScoreSide, RobotStates> scoreStage3CoralSideMap;
-    private final DoubleKeyMap<CoralScoreState, ScoreSide, RobotStates> scoreStage4CoralSideMap;
+    private final HashMap<CoralScoreState, Command> scoreStage1CoralSideMap;
+    private final HashMap<CoralScoreState, Command> scoreStage2CoralSideMap;
+    private final HashMap<CoralScoreState, Command> scoreStage3CoralSideMap;
+    private final HashMap<CoralScoreState, Command> scoreStage4CoralSideMap;
 
     private Superstructure.Process currentProcess;
 
     private final HashMap<Superstructure.Process, Command> processCommandHashMap;
-    public RobotStates currentState;
+    public RobotState currentState;
     public final Trigger atPositionTrigger;
 
     private final ProcessChangeTrigger processChangeTrigger;
@@ -51,8 +51,7 @@ public class Superstructure implements Logged {
 
 
     public Superstructure(Trigger isSwerveAtPlace) {
-        currentState = RobotStates.DEFAULT_WITHOUT_GAME_PIECE;
-        coralScoreState = CoralScoreState.L2;
+        currentState = DEFAULT_WITHOUT_GAME_PIECE;
 
         armSubsystem = new ArmSubsystem();
         elevatorSubsystem = new ElevatorSubsystem();
@@ -62,6 +61,7 @@ public class Superstructure implements Logged {
 
         currentProcess = Process.DEFAULT;
         algaeScoreState = AlgaeScoreState.NET;
+        coralScoreState = CoralScoreState.L2;
 
         atPositionTrigger = new Trigger(
                 () -> elevatorSubsystem.atPositionTrigger.getAsBoolean() &&
@@ -73,46 +73,26 @@ public class Superstructure implements Logged {
 
         processChangeTrigger = new ProcessChangeTrigger(() -> currentProcess);
 
-        scoreStage1CoralSideMap = new DoubleKeyMap<>();
-        scoreStage2CoralSideMap = new DoubleKeyMap<>();
-        scoreStage3CoralSideMap = new DoubleKeyMap<>();
-        scoreStage4CoralSideMap = new DoubleKeyMap<>();
+        scoreStage1CoralSideMap = new HashMap<>();
+        scoreStage2CoralSideMap = new HashMap<>();
+        scoreStage3CoralSideMap = new HashMap<>();
+        scoreStage4CoralSideMap = new HashMap<>();
 
-        scoreStage1CoralSideMap.put(CoralScoreState.L2, ScoreSide.LEFT, RobotStates.LEFT_STAGE1_L2);
-        scoreStage1CoralSideMap.put(CoralScoreState.L3, ScoreSide.LEFT, RobotStates.LEFT_STAGE1_L3);
-        scoreStage1CoralSideMap.put(CoralScoreState.L4, ScoreSide.LEFT, RobotStates.LEFT_STAGE1_L4);
+        scoreStage1CoralSideMap.put(CoralScoreState.L2, getCoralStateProcessCommand(LEFT_STAGE1_L2));
+        scoreStage1CoralSideMap.put(CoralScoreState.L3, getCoralStateProcessCommand(LEFT_STAGE1_L3));
+        scoreStage1CoralSideMap.put(CoralScoreState.L4, getCoralStateProcessCommand(LEFT_STAGE1_L4));
 
-        scoreStage1CoralSideMap.put(CoralScoreState.L2, ScoreSide.RIGHT, RobotStates.RIGHT_STAGE1_L2);
-        scoreStage1CoralSideMap.put(CoralScoreState.L3, ScoreSide.RIGHT, RobotStates.RIGHT_STAGE1_L3);
-        scoreStage1CoralSideMap.put(CoralScoreState.L4, ScoreSide.RIGHT, RobotStates.RIGHT_STAGE1_L4);
+        scoreStage2CoralSideMap.put(CoralScoreState.L2, getCoralStateProcessCommand(LEFT_STAGE2_L2));
+        scoreStage2CoralSideMap.put(CoralScoreState.L3, getCoralStateProcessCommand(LEFT_STAGE2_L3));
+        scoreStage2CoralSideMap.put(CoralScoreState.L4, getCoralStateProcessCommand(LEFT_STAGE2_L4));
 
+        scoreStage3CoralSideMap.put(CoralScoreState.L2, getCoralStateProcessCommand(LEFT_STAGE3_L2));
+        scoreStage3CoralSideMap.put(CoralScoreState.L3, getCoralStateProcessCommand(LEFT_STAGE3_L3));
+        scoreStage3CoralSideMap.put(CoralScoreState.L4, getCoralStateProcessCommand(LEFT_STAGE3_L4));
 
-        scoreStage2CoralSideMap.put(CoralScoreState.L2, ScoreSide.LEFT, RobotStates.LEFT_STAGE2_L2);
-        scoreStage2CoralSideMap.put(CoralScoreState.L3, ScoreSide.LEFT, RobotStates.LEFT_STAGE2_L3);
-        scoreStage2CoralSideMap.put(CoralScoreState.L4, ScoreSide.LEFT, RobotStates.LEFT_STAGE2_L4);
-
-        scoreStage2CoralSideMap.put(CoralScoreState.L2, ScoreSide.RIGHT, RobotStates.RIGHT_STAGE2_L2);
-        scoreStage2CoralSideMap.put(CoralScoreState.L3, ScoreSide.RIGHT, RobotStates.RIGHT_STAGE2_L3);
-        scoreStage2CoralSideMap.put(CoralScoreState.L4, ScoreSide.RIGHT, RobotStates.RIGHT_STAGE2_L4);
-
-
-        scoreStage3CoralSideMap.put(CoralScoreState.L2, ScoreSide.LEFT, RobotStates.LEFT_STAGE3_L2);
-        scoreStage3CoralSideMap.put(CoralScoreState.L3, ScoreSide.LEFT, RobotStates.LEFT_STAGE3_L3);
-        scoreStage3CoralSideMap.put(CoralScoreState.L4, ScoreSide.LEFT, RobotStates.LEFT_STAGE3_L4);
-
-        scoreStage3CoralSideMap.put(CoralScoreState.L2, ScoreSide.RIGHT, RobotStates.RIGHT_STAGE3_L2);
-        scoreStage3CoralSideMap.put(CoralScoreState.L3, ScoreSide.RIGHT, RobotStates.RIGHT_STAGE3_L3);
-        scoreStage3CoralSideMap.put(CoralScoreState.L4, ScoreSide.RIGHT, RobotStates.RIGHT_STAGE3_L4);
-
-
-        scoreStage4CoralSideMap.put(CoralScoreState.L2, ScoreSide.LEFT, RobotStates.LEFT_STAGE4_L2);
-        scoreStage4CoralSideMap.put(CoralScoreState.L3, ScoreSide.LEFT, RobotStates.LEFT_STAGE4_L3);
-        scoreStage4CoralSideMap.put(CoralScoreState.L4, ScoreSide.LEFT, RobotStates.LEFT_STAGE4_L4);
-
-        scoreStage4CoralSideMap.put(CoralScoreState.L2, ScoreSide.RIGHT, RobotStates.RIGHT_STAGE4_L2);
-        scoreStage4CoralSideMap.put(CoralScoreState.L3, ScoreSide.RIGHT, RobotStates.RIGHT_STAGE4_L3);
-        scoreStage4CoralSideMap.put(CoralScoreState.L4, ScoreSide.RIGHT, RobotStates.RIGHT_STAGE4_L4);
-
+        scoreStage4CoralSideMap.put(CoralScoreState.L2, getCoralStateProcessCommand(LEFT_STAGE4_L2));
+        scoreStage4CoralSideMap.put(CoralScoreState.L3, getCoralStateProcessCommand(LEFT_STAGE4_L3));
+        scoreStage4CoralSideMap.put(CoralScoreState.L4, getCoralStateProcessCommand(LEFT_STAGE4_L4));
 
         processCommandHashMap = new HashMap<>();
         processCommandHashMap.put(Process.DEFAULT, defaultProcessCommand());
@@ -141,7 +121,7 @@ public class Superstructure implements Logged {
         this.isSwerveAtPlace = isSwerveAtPlace;
     }
 
-    public Command setCurrentStateCommand(RobotStates state) {
+    public Command setCurrentStateCommand(RobotState state) {
         return new ParallelCommandGroup(
                 new InstantCommand(() -> currentState = state),
                 new PrintCommand("changed state"),
@@ -154,17 +134,19 @@ public class Superstructure implements Logged {
 
     public Command scoreCoralProcessCommand() {
         Command alignment = new SequentialCommandGroup(
-                setCurrentStateCommand(scoreStage1CoralSideMap.get(coralScoreState, getScoringSide())),
-                setCurrentStateCommand(scoreStage2CoralSideMap.get(coralScoreState, getScoringSide()))
+                new SelectCommand<>(scoreStage1CoralSideMap, () -> coralScoreState),
+                new SelectCommand<>(scoreStage2CoralSideMap, () -> coralScoreState)
         );
+
 
         Command score = new SequentialCommandGroup(
-                setCurrentStateCommand(scoreStage3CoralSideMap.get(coralScoreState, getScoringSide())),
-                setCurrentStateCommand(scoreStage4CoralSideMap.get(coralScoreState, getScoringSide()))
+                new SelectCommand<>(scoreStage3CoralSideMap, () -> coralScoreState),
+                new SelectCommand<>(scoreStage4CoralSideMap, ()-> coralScoreState)
         );
 
+
         return new SequentialCommandGroup(
-                alignment.until(() -> true),
+                alignment.until(() -> new WaitCommand(2).isFinished()),
                 score,
                 this.setCurrentProcessCommand(Process.DEFAULT)
         );
@@ -193,11 +175,11 @@ public class Superstructure implements Logged {
 
     public Command intakeCoralProcessCommand() {
         return new SequentialCommandGroup(
-                setCurrentStateCommand(RobotStates.FLOOR_INTAKE),
+                setCurrentStateCommand(FLOOR_INTAKE),
                 new PrintCommand("1"),
                 new WaitUntilCommand(intakeSubsystem.either),
                 new PrintCommand("2"),
-                setCurrentStateCommand(RobotStates.DEFAULT_WITH_GAME_PIECE),
+                setCurrentStateCommand(DEFAULT_WITH_GAME_PIECE),
                 new PrintCommand("3"),
                 new WaitUntilCommand(intakeSubsystem.both),
                 new WaitCommand(0.2),
@@ -246,141 +228,19 @@ public class Superstructure implements Logged {
     }
 
     public Command defaultProcessCommand() {
-        return setCurrentStateCommand(RobotStates.DEFAULT_WITHOUT_GAME_PIECE);
-    }
-
-
-    public Command L1ScoreCommand() {
-        return new SequentialCommandGroup(
-                setCurrentStateCommand(RobotStates.PRE_L1),
-                new WaitCommand(0.3),
-                setCurrentStateCommand(RobotStates.SCORE_L1),
-                new RunCommand(() -> {
-                }).until(() -> !intakeSubsystem.getBothSensorData().getAsBoolean()),
-                new WaitCommand(0.2),
-                setCurrentStateCommand(RobotStates.DEFAULT_WITH_GAME_PIECE)
-        );
-    }
-
-    public Command intakeCommand() {
-        return new SequentialCommandGroup(
-                setCurrentStateCommand(RobotStates.FLOOR_INTAKE),
-                new RunCommand(() -> {
-                }).until(intakeSubsystem.either),
-                setCurrentStateCommand(RobotStates.DEFAULT_WITH_GAME_PIECE));
+        return setCurrentStateCommand(DEFAULT_WITHOUT_GAME_PIECE);
     }
 
     public Command handoffCommand() {
         return new SequentialCommandGroup(
                 new WaitUntilCommand(atPositionTrigger),
-                setCurrentStateCommand(RobotStates.PRE_HANDOFF),
+                setCurrentStateCommand(PRE_HANDOFF),
                 new WaitUntilCommand(atPositionTrigger),
                 new WaitCommand(0.5),
-                setCurrentStateCommand(RobotStates.HANDOFF),
+                setCurrentStateCommand(HANDOFF),
                 new WaitUntilCommand(gripperSubsystem.hasGamePieceTrigger),
                 new WaitCommand(0.2),
-                setCurrentStateCommand(RobotStates.DEFAULT_WITH_GAME_PIECE)
-        );
-    }
-
-    public Command returnToDefaultCommand() {
-        return new RunCommand(() -> setCurrentStateCommand(RobotStates.DEFAULT_WITH_GAME_PIECE));
-    }
-
-    public Command L2ScoreCommand() {
-        return new ConditionalCommand(
-                new SequentialCommandGroup(
-                        new ConditionalCommand(
-                                new SequentialCommandGroup(
-                                        setCurrentStateCommand(RobotStates.LEFT_STAGE1_L2),
-                                        new PrintCommand("1"),
-                                        new WaitUntilCommand(atPositionTrigger),
-                                        new PrintCommand("2")),
-                                Commands.none(),
-                                () -> (
-                                        armSubsystem.getAngleSupplier() > RobotStates.LEFT_STAGE1_L2.armPosition.getAngle() &&
-                                                armSubsystem.getAngleSupplier() < RobotStates.LEFT_STAGE2_L2.armPosition.getAngle())
-                        ),
-                        setCurrentStateCommand(RobotStates.LEFT_STAGE2_L2),
-                        new PrintCommand("3"),
-                        new WaitUntilCommand(atPositionTrigger),
-                        new PrintCommand("4"),
-                        setCurrentStateCommand(RobotStates.LEFT_STAGE3_L2),
-                        new PrintCommand("5"),
-                        setCurrentStateCommand(RobotStates.LEFT_STAGE4_L2),
-                        new PrintCommand("6"),
-                        new WaitCommand(0.2),
-                        new WaitUntilCommand(gripperSubsystem.hasGamePieceTrigger.negate()),
-                        setCurrentStateCommand(RobotStates.DEFAULT_WITH_GAME_PIECE)
-                ),
-                new PrintCommand("there is no coral in the system"),
-                gripperSubsystem.hasGamePieceTrigger
-        );
-    }
-
-    public Command L3ScoreCommand() {
-        return new ConditionalCommand(
-                new SequentialCommandGroup(
-                        new ConditionalCommand(
-                                new SequentialCommandGroup(
-                                        setCurrentStateCommand(RobotStates.LEFT_STAGE1_L3),
-                                        new PrintCommand("1"),
-                                        new WaitUntilCommand(atPositionTrigger),
-                                        new PrintCommand("2")),
-                                Commands.none(),
-                                () -> (
-                                        armSubsystem.getAngleSupplier() > RobotStates.LEFT_STAGE1_L3.armPosition.getAngle() &&
-                                                armSubsystem.getAngleSupplier() < RobotStates.LEFT_STAGE3_L3.armPosition.getAngle())
-                        ),
-                        setCurrentStateCommand(RobotStates.LEFT_STAGE2_L3),
-                        new PrintCommand("3"),
-                        new WaitUntilCommand(atPositionTrigger),
-                        new PrintCommand("4"),
-                        new WaitCommand(0.2),
-                        setCurrentStateCommand(RobotStates.LEFT_STAGE3_L3),
-                        new PrintCommand("5"),
-                        new WaitCommand(0.5),
-                        setCurrentStateCommand(RobotStates.LEFT_STAGE4_L3),
-                        new PrintCommand("6"),
-                        new WaitCommand(0.5),
-                        new WaitUntilCommand(gripperSubsystem.hasGamePieceTrigger.negate()),
-                        setCurrentStateCommand(RobotStates.DEFAULT_WITH_GAME_PIECE)
-                ),
-                new PrintCommand("there is no coral in the system"),
-                gripperSubsystem.hasGamePieceTrigger
-        );
-    }
-
-    public Command L4ScoreCommand() {
-        return new ConditionalCommand(
-                new SequentialCommandGroup(
-                        new ConditionalCommand(
-                                new SequentialCommandGroup(
-                                        setCurrentStateCommand(RobotStates.LEFT_STAGE1_L4),
-                                        new PrintCommand("1"),
-                                        new WaitUntilCommand(atPositionTrigger),
-                                        new PrintCommand("2")),
-                                Commands.none(),
-                                () -> (
-                                        armSubsystem.getAngleSupplier() > RobotStates.LEFT_STAGE1_L4.armPosition.getAngle() &&
-                                                armSubsystem.getAngleSupplier() < RobotStates.LEFT_STAGE3_L4.armPosition.getAngle())
-                        ),
-                        setCurrentStateCommand(RobotStates.LEFT_STAGE2_L4),
-                        new PrintCommand("3"),
-                        new WaitUntilCommand(atPositionTrigger),
-                        new PrintCommand("4"),
-                        new WaitCommand(0.2),
-                        setCurrentStateCommand(RobotStates.LEFT_STAGE3_L4),
-                        new PrintCommand("5"),
-                        new WaitCommand(0.5),
-                        setCurrentStateCommand(RobotStates.LEFT_STAGE4_L4),
-                        new PrintCommand("6"),
-                        new WaitCommand(0.5),
-                        new WaitUntilCommand(gripperSubsystem.hasGamePieceTrigger.negate()),
-                        setCurrentStateCommand(RobotStates.DEFAULT_WITH_GAME_PIECE)
-                ),
-                new PrintCommand("there is no coral in the system"),
-                gripperSubsystem.hasGamePieceTrigger
+                setCurrentStateCommand(DEFAULT_WITH_GAME_PIECE)
         );
     }
 
@@ -389,7 +249,7 @@ public class Superstructure implements Logged {
     }
 
     @Log.NT
-    public RobotStates getCurrentState() {
+    public RobotState getCurrentState() {
         return currentState;
     }
 
@@ -405,7 +265,7 @@ public class Superstructure implements Logged {
 
     @Log.NT
     public boolean getStagePosition() {
-        return armSubsystem.getAngleSupplier() < RobotStates.LEFT_STAGE1_L2.armPosition.getAngle();
+        return armSubsystem.getAngleSupplier() < LEFT_STAGE1_L2.armPosition.getAngle();
     }
 
     public Command setCoralScoreStateCommand(CoralScoreState coralScoreState) {
@@ -438,7 +298,7 @@ public class Superstructure implements Logged {
     }
 
     @Log.NT
-    public Process getCurrentProcess() {
+    public Process getCurrentProcessSupplier() {
         return currentProcess;
     }
 
@@ -447,7 +307,15 @@ public class Superstructure implements Logged {
         return processChangeTrigger.getTrigger().debounce(1.5).getAsBoolean();
     }
 
-    ;
+    @Log.NT
+    public String getCoralScoreState() {
+        return coralScoreState.name();
+    }
+
+    public Command getCoralStateProcessCommand(RobotState robotState) {
+        return setCurrentStateCommand(robotState);
+    }
+
 }
 
 

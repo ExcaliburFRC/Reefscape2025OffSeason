@@ -5,7 +5,7 @@ import frc.robot.subsystems.elevator.ElevatorStates;
 import frc.robot.subsystems.gripper.GripperStates;
 import frc.robot.subsystems.intake.IntakeState;
 
-public enum RobotStates {
+public enum RobotState {
     // ------ HIGH REEF CORAL SCORE ------
     RIGHT_STAGE1_L2(ArmPosition.GO_THROUGH_FOR_RIGHT, ElevatorStates.L2, IntakeState.DEFAULT, GripperStates.VACENT),
     RIGHT_STAGE2_L2(ArmPosition.RIGHT_PRE_L2, ElevatorStates.L2, IntakeState.DEFAULT, GripperStates.VACENT),
@@ -79,7 +79,7 @@ public enum RobotStates {
     IntakeState intakeState;
     GripperStates gripperState;
 
-    RobotStates(ArmPosition armPosition, ElevatorStates elevatorState, IntakeState intakeState, GripperStates gripperState) {
+    RobotState(ArmPosition armPosition, ElevatorStates elevatorState, IntakeState intakeState, GripperStates gripperState) {
         this.armPosition = armPosition;
         this.elevatorState = elevatorState;
         this.intakeState = intakeState;

@@ -45,7 +45,9 @@ public class RobotContainer implements Logged {
 
     private void configureBindings() {
 
-        driver.triangle().onTrue(superstructure.setCurrentProcessCommand(Superstructure.Process.INTAKE_CORAL));
+        driver.R1().onTrue(superstructure.setCurrentProcessCommand(Superstructure.Process.SCORE_CORAL));
+        driver.triangle().onTrue(superstructure.setCoralScoreStateCommand(CoralScoreState.L4));
+        driver.circle().onTrue(superstructure.setCoralScoreStateCommand(CoralScoreState.L3));
         driver.square().onTrue(superstructure.setCurrentProcessCommand(Superstructure.Process.DEFAULT));
 
 //        swerve.setDefaultCommand(
