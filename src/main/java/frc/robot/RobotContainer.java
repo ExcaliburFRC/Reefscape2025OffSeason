@@ -32,7 +32,7 @@ public class RobotContainer implements Logged {
 
     CommandPS5Controller driver = new CommandPS5Controller(DRIVER_CONTROLLER_PORT);
 
-    AuroraClient client = new AuroraClient(AURORA_CLIENT_PORT);
+//    AuroraClient client = new AuroraClient(AURORA_CLIENT_PORT);
 
     Superstructure superstructure = new Superstructure(new Trigger(()-> true));
 
@@ -45,11 +45,8 @@ public class RobotContainer implements Logged {
 
     private void configureBindings() {
 
-        driver.triangle().onTrue(superstructure.setCoralScoreStateCommand(CoralScoreState.L4));
-        driver.circle().onTrue(superstructure.setCoralScoreStateCommand(CoralScoreState.L3));
-        driver.square().onTrue(superstructure.setCoralScoreStateCommand(CoralScoreState.L2));
-        driver.cross().onTrue(superstructure.setCoralScoreStateCommand(CoralScoreState.L1));
-        driver.R1().onTrue(superstructure.scoreCoralProcessCommand());
+        driver.triangle().onTrue(superstructure.setCurrentProcessCommand(Superstructure.Process.INTAKE_CORAL));
+        driver.square().onTrue(superstructure.setCurrentProcessCommand(Superstructure.Process.DEFAULT));
 
 //        swerve.setDefaultCommand(
 //                swerve.driveCommand(
@@ -75,9 +72,10 @@ public class RobotContainer implements Logged {
 
 
 //        driver.povUp().onTrue(superstructure.L1ScoreCommand());
-//        driver.options().whileTrue(superstructure.elevatorSubsystem.coastCommand().ignoringDisable(true));
+        driver.touchpad().whileTrue(superstructure.elevatorSubsystem.coastCommand().ignoringDisable(true));
 
-//        driver.create().onTrue(superstructure.elevatorSubsystem.setElevatorHeightCommand(0).ignoringDisable(true));
+        driver.options().toggleOnTrue(superstructure.intakeSubsystem.resetAngleCommand().ignoringDisable(true));
+        driver.create().onTrue(superstructure.elevatorSubsystem.setElevatorHeightCommand(0).ignoringDisable(true));
 
 
 
@@ -92,8 +90,8 @@ public class RobotContainer implements Logged {
         return Commands.none();
     }
 
-    @NT
-    public Pose2d getRobotPose() {
-        return client.getPose2d();
-    }
+//    @NT
+//    public Pose2d getRobotPose() {
+//        return client.getPose2d();
+//    }
 }

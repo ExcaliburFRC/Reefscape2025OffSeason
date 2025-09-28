@@ -67,7 +67,6 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
 
         armMotor.getConfigurator().apply(limitsConfigs);
 
-
         elevatorHeightSupplier = () -> 0;
         isIntakeOpen = new Trigger(() -> false);
 

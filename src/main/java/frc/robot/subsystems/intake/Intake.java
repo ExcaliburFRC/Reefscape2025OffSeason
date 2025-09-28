@@ -38,7 +38,6 @@ public class Intake extends SubsystemBase implements Logged {
     private final Trigger atPosition;
     private final Trigger intakeOpen;
     public final Trigger hasCoral;
-    private final Trigger limitSwitchTrigger;
 
 
     // == States ==
@@ -63,7 +62,7 @@ public class Intake extends SubsystemBase implements Logged {
         armMotor.setPositionConversionFactor(ARM_POSITION_CONVERSION_FACTOR);
         armMotor.setVelocityConversionFactor(ARM_POSITION_CONVERSION_FACTOR);
 
-        armMotor.setMotorPosition(ARM_POSITION_CONVERSION_FACTOR);
+        armMotor.setMotorPosition(ARM_DEFAULT_START_RAD);
 
         armMotor.setInverted(DirectionState.FORWARD);
 
@@ -82,7 +81,6 @@ public class Intake extends SubsystemBase implements Logged {
 
         armMotor.setNeutralMode(NeutralModeValue.Brake);
 
-        limitSwitchTrigger = new Trigger(() -> !limitSwitch.get());
 
         rightSensor = new AnalogInput(RIGHT_SENSOR_CHANNEL);
         leftSensor = new AnalogInput(LEFT_SENSOR_CHANNEL);
@@ -123,9 +121,7 @@ public class Intake extends SubsystemBase implements Logged {
                 () -> 3.18
         );
 
-        hasCoral = new Trigger(() -> (true)).debounce(0.1);
-
-        limitSwitchTrigger.whileTrue(resetAngleCommand());
+        hasCoral = new Trigger(() -> (true));
 
         setDefaultCommand(goToStateCommand());
 
@@ -243,8 +239,7 @@ public class Intake extends SubsystemBase implements Logged {
     }
 
     public Command resetAngleCommand() {
-        return new RunCommand(() -> armMotor.setMotorPosition(ARM_DEFAULT_START_RAD)
-        ).ignoringDisable(true);
+        return new InstantCommand(() -> armMotor.setMotorPosition(ARM_DEFAULT_START_RAD));
     }
 
 

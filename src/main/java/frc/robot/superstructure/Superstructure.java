@@ -41,7 +41,6 @@ public class Superstructure implements Logged {
     private final HashMap<Superstructure.Process, Command> processCommandHashMap;
     public RobotStates currentState;
     public final Trigger atPositionTrigger;
-    public final Trigger readyToCloseTrigger;
 
     private final ProcessChangeTrigger processChangeTrigger;
     private final LevelChangeTrigger levelChangeTrigger;
@@ -61,8 +60,14 @@ public class Superstructure implements Logged {
         gripperSubsystem = new Gripper();
         climberSubsystem = new ClimberSubsystem();
 
-
         currentProcess = Process.DEFAULT;
+        algaeScoreState = AlgaeScoreState.NET;
+
+        atPositionTrigger = new Trigger(
+                () -> elevatorSubsystem.atPositionTrigger.getAsBoolean() &&
+                        armSubsystem.isAtPosition() &&
+                        intakeSubsystem.isAtPosition().getAsBoolean()
+        );
 
         levelChangeTrigger = new LevelChangeTrigger(() -> this.coralScoreState);
 
@@ -111,36 +116,27 @@ public class Superstructure implements Logged {
 
         processCommandHashMap = new HashMap<>();
         processCommandHashMap.put(Process.DEFAULT, defaultProcessCommand());
-        processCommandHashMap.put(Process.SCORE_ALGAE, scoreAlgaeProcessCommand());
+        processCommandHashMap.put(Process.SCORE_ALGAE, new InstantCommand());
         processCommandHashMap.put(Process.SCORE_CORAL, scoreCoralProcessCommand());
-        processCommandHashMap.put(Process.INTAKE_ALGAE, intakeAlgaeProcessCommand());
+        processCommandHashMap.put(Process.INTAKE_ALGAE, new InstantCommand());
         processCommandHashMap.put(Process.INTAKE_CORAL, intakeCoralProcessCommand());
 
         commandMutex = new CommandMutex();
 
-        processChangeTrigger.onTrue(
+        processChangeTrigger.getTrigger().onFalse(
                 commandMutex.scheduleCommand(
                         new SelectCommand<Process>(
                                 processCommandHashMap,
                                 () -> currentProcess
                         )
-                )
+                ).alongWith(new PrintCommand("processChangeTrigger schduled a command!"))
         );
-
-        atPositionTrigger = new Trigger(
-                () -> elevatorSubsystem.atPositionTrigger.getAsBoolean() &&
-                        armSubsystem.isAtPosition() &&
-                        intakeSubsystem.isAtPosition().getAsBoolean()
-        );
-
 
         elevatorSubsystem.setArmAngleSuppier(armSubsystem::getAngleSupplier);
         armSubsystem.setElevatorHeightSupplier(elevatorSubsystem::getElevatorHeight);
 
         armSubsystem.setIntakeOpen(new Trigger(intakeSubsystem.isIntakeOpen()));
         elevatorSubsystem.setIntakeOpenTrigger(intakeSubsystem.isIntakeOpen());
-
-        readyToCloseTrigger = new Trigger(atPositionTrigger.and(intakeSubsystem.hasCoral));
 
         this.isSwerveAtPlace = isSwerveAtPlace;
     }
@@ -156,16 +152,11 @@ public class Superstructure implements Logged {
         ).until(atPositionTrigger);
     }
 
-    public void returnToDefaultState() {
-        this.currentState = RobotStates.DEFAULT_WITHOUT_GAME_PIECE;
-    }
-
-    public Command setCurrentProcessCommand(Process process) {
-        return new InstantCommand(() -> this.currentProcess = process);
-    }
-
     public Command scoreCoralProcessCommand() {
-        Command alignment = new InstantCommand();
+        Command alignment = new SequentialCommandGroup(
+                setCurrentStateCommand(scoreStage1CoralSideMap.get(coralScoreState, getScoringSide())),
+                setCurrentStateCommand(scoreStage2CoralSideMap.get(coralScoreState, getScoringSide()))
+        );
 
         Command score = new SequentialCommandGroup(
                 setCurrentStateCommand(scoreStage3CoralSideMap.get(coralScoreState, getScoringSide())),
@@ -174,78 +165,88 @@ public class Superstructure implements Logged {
 
         return new SequentialCommandGroup(
                 alignment.until(() -> true),
-                new ConditionalCommand(
-                        score,
-                        setCurrentStateCommand(scoreStage2CoralSideMap.get(coralScoreState, getScoringSide())), () -> true
-                ),
+                score,
                 this.setCurrentProcessCommand(Process.DEFAULT)
         );
     }
 
     public Command scoreAlgaeProcessCommand() {
-        return new ConditionalCommand(
-                new SequentialCommandGroup(
-                        new WaitUntilCommand(null),//positioned
-                        setCurrentStateCommand(null),//stage 1
-                        setCurrentStateCommand(null),//stage 2
-                        setCurrentStateCommand(null),//stage 3
-                        new WaitUntilCommand(null),//gripper empty
-                        setCurrentStateCommand(null)//stage 4
-                ),
-                new SequentialCommandGroup(
-                        new WaitUntilCommand(null),//positioned
-                        setCurrentStateCommand(null),//stage 1
-                        setCurrentStateCommand(null),//stage 2
-                        new WaitUntilCommand(null)//empty gripper
-                ),
-                () -> algaeScoreState.equals(AlgaeScoreState.NET)
-        ).andThen(setCurrentProcessCommand(Process.DEFAULT));
+        return new PrintCommand("62873");
+//        return new ConditionalCommand(
+//                new SequentialCommandGroup(
+//                        new WaitUntilCommand(isSwerveAtPlace),//positioned
+//                        setCurrentStateCommand(null),//stage 1
+//                        setCurrentStateCommand(null),//stage 2
+//                        setCurrentStateCommand(null),//stage 3
+//                        new WaitUntilCommand(null),//gripper empty
+//                        setCurrentStateCommand(null)//stage 4
+//                ),
+//                new SequentialCommandGroup(
+//                        new WaitUntilCommand(null),//positioned
+//                        setCurrentStateCommand(null),//stage 1
+//                        setCurrentStateCommand(null),//stage 2
+//                        new WaitUntilCommand(null)//empty gripper
+//                ),
+//                () -> algaeScoreState.equals(AlgaeScoreState.NET)
+//        ).andThen(setCurrentProcessCommand(Process.DEFAULT));
     }
 
     public Command intakeCoralProcessCommand() {
-        return new ConditionalCommand(
-                new SequentialCommandGroup(
-                        setCurrentStateCommand(RobotStates.FLOOR_INTAKE_WITH_ALGAE),
-                        new WaitUntilCommand(intakeSubsystem.either),
-                        setCurrentStateCommand(null),// closed intake
-                        setCurrentProcessCommand(Process.DEFAULT)
-                ),
-                new SequentialCommandGroup(
-                        setCurrentStateCommand(RobotStates.FLOOR_INTAKE),
-                        new WaitUntilCommand(intakeSubsystem.either),
-                        setCurrentStateCommand(null),// closed intake
-                        setCurrentProcessCommand(Process.SCORE_CORAL)
-                ),
-                () -> true //algae present
-
+        return new SequentialCommandGroup(
+                setCurrentStateCommand(RobotStates.FLOOR_INTAKE),
+                new PrintCommand("1"),
+                new WaitUntilCommand(intakeSubsystem.either),
+                new PrintCommand("2"),
+                setCurrentStateCommand(RobotStates.DEFAULT_WITH_GAME_PIECE),
+                new PrintCommand("3"),
+                new WaitUntilCommand(intakeSubsystem.both),
+                new WaitCommand(0.2),
+                new PrintCommand("4"),
+                handoffCommand(),
+                new PrintCommand("5"),
+                setCurrentProcessCommand(Process.DEFAULT)
         );
+
+//        return new ConditionalCommand(
+//                new SequentialCommandGroup(
+//                        setCurrentStateCommand(RobotStates.FLOOR_INTAKE_WITH_ALGAE),
+//                        new WaitUntilCommand(intakeSubsystem.either),
+//                        setCurrentStateCommand(null),// closed intake
+//                        setCurrentProcessCommand(Process.DEFAULT)
+//                ),
+//                new SequentialCommandGroup(
+//                        setCurrentStateCommand(RobotStates.FLOOR_INTAKE),
+//                        new WaitUntilCommand(intakeSubsystem.either),
+//                        setCurrentStateCommand(null),// closed intake
+//                        setCurrentProcessCommand(Process.SCORE_CORAL)
+//                ),
+//                () -> false
+//
+//        );
     }
 
     public Command intakeAlgaeProcessCommand() {
-        Command emptyGripper = new SequentialCommandGroup(
-                setCurrentStateCommand(null),//gripper above intake, intake rotating inwards
-                setCurrentStateCommand(null),//passing the coral
-                new WaitUntilCommand(intakeSubsystem.either)
-        );
-        return new SequentialCommandGroup(
-                new ConditionalCommand(
-                        emptyGripper,
-                        new InstantCommand(),
-                        () -> true//coral in gripper
-                ),
-                setCurrentStateCommand(null),// algae intake state
-                new WaitUntilCommand(() -> true),//algae present and robot is at safe distance from rif
-                setCurrentProcessCommand(Process.DEFAULT)
-
-        );
+        return new PrintCommand("242");
+//        Command emptyGripper = new SequentialCommandGroup(
+//                setCurrentStateCommand(null),//gripper above intake, intake rotating inwards
+//                setCurrentStateCommand(null),//passing the coral
+//                new WaitUntilCommand(intakeSubsystem.either)
+//        );
+//        return new SequentialCommandGroup(
+//                new ConditionalCommand(
+//                        emptyGripper,
+//                        new InstantCommand(),
+//                        () -> true//coral in gripper
+//                ),
+//                setCurrentStateCommand(null),// algae intake state
+//                new WaitUntilCommand(() -> true),//algae present and robot is at safe distance from rif
+//                setCurrentProcessCommand(Process.DEFAULT)
+//
+//        );
     }
 
     public Command defaultProcessCommand() {
-        return new ConditionalCommand(
-                setCurrentStateCommand(RobotStates.DEFAULT_WITHOUT_GAME_PIECE),
-                setCurrentStateCommand(RobotStates.DEFAULT_WITHOUT_GAME_PIECE),
-                () -> true
-        );
+        return setCurrentStateCommand(RobotStates.DEFAULT_WITHOUT_GAME_PIECE);
     }
 
 
@@ -271,16 +272,13 @@ public class Superstructure implements Logged {
 
     public Command handoffCommand() {
         return new SequentialCommandGroup(
-                setCurrentStateCommand(RobotStates.PRE_HANDOFF),
-                new PrintCommand("1"),
                 new WaitUntilCommand(atPositionTrigger),
-                new WaitCommand(0.2),
-                new PrintCommand("2"),
+                setCurrentStateCommand(RobotStates.PRE_HANDOFF),
+                new WaitUntilCommand(atPositionTrigger),
+                new WaitCommand(0.5),
                 setCurrentStateCommand(RobotStates.HANDOFF),
-                new PrintCommand("3"),
-                new WaitUntilCommand(readyToCloseTrigger),
+                new WaitUntilCommand(gripperSubsystem.hasGamePieceTrigger),
                 new WaitCommand(0.2),
-                new PrintCommand("4"),
                 setCurrentStateCommand(RobotStates.DEFAULT_WITH_GAME_PIECE)
         );
     }
@@ -390,10 +388,6 @@ public class Superstructure implements Logged {
         return Commands.none();
     }
 
-    public Command goToDefualtCommand() {
-        return setCurrentStateCommand(RobotStates.DEFAULT_WITH_GAME_PIECE);
-    }
-
     @Log.NT
     public RobotStates getCurrentState() {
         return currentState;
@@ -439,7 +433,21 @@ public class Superstructure implements Logged {
         return ScoreSide.LEFT;
     }
 
+    public Command setCurrentProcessCommand(Process currentProcess) {
+        return new InstantCommand(() -> this.currentProcess = currentProcess);
+    }
 
+    @Log.NT
+    public Process getCurrentProcess() {
+        return currentProcess;
+    }
+
+    @Log.NT
+    public boolean getProcessChangeTrigger() {
+        return processChangeTrigger.getTrigger().debounce(1.5).getAsBoolean();
+    }
+
+    ;
 }
 
 
