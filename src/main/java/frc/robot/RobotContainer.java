@@ -34,7 +34,7 @@ public class RobotContainer implements Logged {
 
 //    AuroraClient client = new AuroraClient(AURORA_CLIENT_PORT);
 
-    Superstructure superstructure = new Superstructure(new Trigger(() -> true));
+    Superstructure superstructure = new Superstructure(new Trigger(() -> true), driver.L1());
 
 //    Swerve swerve = Constants.SwerveConstants.configureSwerve(new Pose2d());
 
@@ -48,7 +48,7 @@ public class RobotContainer implements Logged {
         driver.R1().onTrue(superstructure.setCurrentProcessCommand(Superstructure.Process.SCORE_CORAL));
         driver.triangle().onTrue(superstructure.setCoralScoreStateCommand(CoralScoreState.L4));
         driver.circle().onTrue(superstructure.setCoralScoreStateCommand(CoralScoreState.L3));
-        driver.square().onTrue(superstructure.setCoralScoreStateCommand(CoralScoreState.L3));
+        driver.square().onTrue(superstructure.setCoralScoreStateCommand(CoralScoreState.L2));
         driver.cross().onTrue(superstructure.setCurrentProcessCommand(Superstructure.Process.DEFAULT));
 
 //        swerve.setDefaultCommand(
