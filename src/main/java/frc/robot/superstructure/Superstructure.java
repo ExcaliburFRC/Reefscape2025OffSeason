@@ -105,25 +105,15 @@ public class Superstructure implements Logged {
 
         commandMutex = new CommandMutex();
 
-        processChangeDefaultTrigger.onTrue(
-                commandMutex.scheduleCommand(defaultProcessCommand())
-        );
+        processChangeDefaultTrigger.onTrue(commandMutex.scheduleCommand(defaultProcessCommand()));
 
-        processChangeIntakeCoralTrigger.onTrue(
-                commandMutex.scheduleCommand(intakeCoralProcessCommand())
-        );
+        processChangeIntakeCoralTrigger.onTrue(commandMutex.scheduleCommand(intakeCoralProcessCommand()));
 
-        processChangeScoreCoralTrigger.onTrue(
-                commandMutex.scheduleCommand(scoreCoralProcessCommand(alignmentTrigger))
-        );
+        processChangeScoreCoralTrigger.onTrue(commandMutex.scheduleCommand(scoreCoralProcessCommand(alignmentTrigger)));
 
-        processChangeScoreAlgaeTrigger.onTrue(
-                commandMutex.scheduleCommand(scoreAlgaeProcessCommand())
-        );
+        processChangeScoreAlgaeTrigger.onTrue(commandMutex.scheduleCommand(scoreAlgaeProcessCommand()));
 
-        processChangeIntakeAlgaeTrigger.onTrue(
-                commandMutex.scheduleCommand(intakeAlgaeProcessCommand())
-        );
+        processChangeIntakeAlgaeTrigger.onTrue(commandMutex.scheduleCommand(intakeAlgaeProcessCommand()));
 
         elevatorSubsystem.setArmAngleSuppier(armSubsystem::getAngleSupplier);
         armSubsystem.setElevatorHeightSupplier(elevatorSubsystem::getElevatorHeight);
@@ -173,23 +163,24 @@ public class Superstructure implements Logged {
     }
 
     public Command scoreAlgaeProcessCommand() {
-        return new ConditionalCommand(
-                new SequentialCommandGroup(
-                        new WaitUntilCommand(isSwerveAtPlace),//positioned
-                        setCurrentStateCommand(null),//stage 1
-                        setCurrentStateCommand(null),//stage 2
-                        setCurrentStateCommand(null),//stage 3
-                        new WaitUntilCommand(null),//gripper empty
-                        setCurrentStateCommand(null)//stage 4
-                ),
-                new SequentialCommandGroup(
-                        new WaitUntilCommand(null),//positioned
-                        setCurrentStateCommand(null),//stage 1
-                        setCurrentStateCommand(null),//stage 2
-                        new WaitUntilCommand(null)//empty gripper
-                ),
-                () -> algaeScoreState.equals(AlgaeScoreState.NET)
-        ).andThen(setCurrentProcessCommand(Process.DEFAULT));
+        return new InstantCommand();
+//        return new ConditionalCommand(
+//                new SequentialCommandGroup(
+//                        new WaitUntilCommand(isSwerveAtPlace),//positioned
+//                        setCurrentStateCommand(null),//stage 1
+//                        setCurrentStateCommand(null),//stage 2
+//                        setCurrentStateCommand(null),//stage 3
+//                        new WaitUntilCommand(null),//gripper empty
+//                        setCurrentStateCommand(null)//stage 4
+//                ),
+//                new SequentialCommandGroup(
+//                        new WaitUntilCommand(null),//positioned
+//                        setCurrentStateCommand(null),//stage 1
+//                        setCurrentStateCommand(null),//stage 2
+//                        new WaitUntilCommand(null)//empty gripper
+//                ),
+//                () -> algaeScoreState.equals(AlgaeScoreState.NET)
+//        ).andThen(setCurrentProcessCommand(Process.DEFAULT));
     }
 
     public Command intakeCoralProcessCommand() {
@@ -356,7 +347,6 @@ public class Superstructure implements Logged {
         INTAKE_CORAL,
         INTAKE_ALGAE;
     }
-
 }
 
 
