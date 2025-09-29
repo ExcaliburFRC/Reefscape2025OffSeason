@@ -8,13 +8,11 @@ import frc.robot.subsystems.climber.ClimberSubsystem;
 import frc.robot.subsystems.elevator.ElevatorSubsystem;
 import frc.robot.subsystems.gripper.Gripper;
 import frc.robot.subsystems.intake.Intake;
-import frc.robot.util.AlgaeScoreState;
-import frc.robot.util.CoralScoreState;
-import frc.robot.util.LevelChangeTrigger;
-import frc.robot.util.ProcessChangeTrigger;
+import frc.robot.util.*;
 import monologue.Logged;
 
 import java.util.HashMap;
+import java.util.function.Supplier;
 
 import static frc.robot.superstructure.RobotState.*;
 import static frc.robot.superstructure.RobotState.LEFT_STAGE3_L2;
@@ -49,6 +47,8 @@ public class Superstructure implements Logged {
 
     private Trigger isSwerveAtPlace;
 
+    private Supplier<CoralScoreState> algaeHeightSuppier;
+
 
     public Superstructure(Trigger isSwerveAtPlace) {
         currentState = DEFAULT_WITHOUT_GAME_PIECE;
@@ -61,7 +61,8 @@ public class Superstructure implements Logged {
 
         currentProcess = Process.DEFAULT;
         algaeScoreState = AlgaeScoreState.NET;
-        coralScoreState = CoralScoreState.L2;
+        coralScoreState = CoralScoreState.L1;
+        algaeHeightSuppier = () -> CoralScoreState.L2;
 
         atPositionTrigger = new Trigger(
                 () -> elevatorSubsystem.atPositionTrigger.getAsBoolean() &&
@@ -109,7 +110,7 @@ public class Superstructure implements Logged {
                                 processCommandHashMap,
                                 () -> currentProcess
                         )
-                ).alongWith(new PrintCommand("processChangeTrigger schduled a command!"))
+                )
         );
 
         elevatorSubsystem.setArmAngleSuppier(armSubsystem::getAngleSupplier);
@@ -124,7 +125,7 @@ public class Superstructure implements Logged {
     public Command setCurrentStateCommand(RobotState state) {
         return new ParallelCommandGroup(
                 new InstantCommand(() -> currentState = state),
-                new PrintCommand("changed state"),
+                new PrintCommand("Changed State to:" + state),
                 intakeSubsystem.setStateCommand(state.intakeState),
                 armSubsystem.setStateCommand(state.armPosition),
                 elevatorSubsystem.setStateCommand(state.elevatorState),
@@ -138,22 +139,21 @@ public class Superstructure implements Logged {
                 new SelectCommand<>(scoreStage2CoralSideMap, () -> coralScoreState)
         );
 
-
         Command score = new SequentialCommandGroup(
                 new SelectCommand<>(scoreStage3CoralSideMap, () -> coralScoreState),
-                new SelectCommand<>(scoreStage4CoralSideMap, ()-> coralScoreState)
+                new SelectCommand<>(scoreStage4CoralSideMap, () -> coralScoreState)
         );
 
 
         return new SequentialCommandGroup(
-                alignment.until(() -> new WaitCommand(2).isFinished()),
+                alignment.until(() -> new WaitCommand(5).isFinished()), //todo
                 score,
                 this.setCurrentProcessCommand(Process.DEFAULT)
         );
     }
 
     public Command scoreAlgaeProcessCommand() {
-        return new PrintCommand("62873");
+        return Commands.none(); //todo
 //        return new ConditionalCommand(
 //                new SequentialCommandGroup(
 //                        new WaitUntilCommand(isSwerveAtPlace),//positioned
@@ -188,43 +188,28 @@ public class Superstructure implements Logged {
                 new PrintCommand("5"),
                 setCurrentProcessCommand(Process.DEFAULT)
         );
-
-//        return new ConditionalCommand(
-//                new SequentialCommandGroup(
-//                        setCurrentStateCommand(RobotStates.FLOOR_INTAKE_WITH_ALGAE),
-//                        new WaitUntilCommand(intakeSubsystem.either),
-//                        setCurrentStateCommand(null),// closed intake
-//                        setCurrentProcessCommand(Process.DEFAULT)
-//                ),
-//                new SequentialCommandGroup(
-//                        setCurrentStateCommand(RobotStates.FLOOR_INTAKE),
-//                        new WaitUntilCommand(intakeSubsystem.either),
-//                        setCurrentStateCommand(null),// closed intake
-//                        setCurrentProcessCommand(Process.SCORE_CORAL)
-//                ),
-//                () -> false
-//
-//        );
     }
 
     public Command intakeAlgaeProcessCommand() {
-        return new PrintCommand("242");
-//        Command emptyGripper = new SequentialCommandGroup(
-//                setCurrentStateCommand(null),//gripper above intake, intake rotating inwards
-//                setCurrentStateCommand(null),//passing the coral
-//                new WaitUntilCommand(intakeSubsystem.either)
-//        );
-//        return new SequentialCommandGroup(
-//                new ConditionalCommand(
-//                        emptyGripper,
-//                        new InstantCommand(),
-//                        () -> true//coral in gripper
-//                ),
-//                setCurrentStateCommand(null),// algae intake state
-//                new WaitUntilCommand(() -> true),//algae present and robot is at safe distance from rif
-//                setCurrentProcessCommand(Process.DEFAULT)
-//
-//        );
+
+
+        Command emptyGripperCommand = new SequentialCommandGroup(
+                setCurrentStateCommand(PRE_HANDOFF),
+                setCurrentStateCommand(REVERSE_HANDOFF),
+                new WaitUntilCommand(intakeSubsystem.either)
+        );
+
+        return new SequentialCommandGroup(
+                new ConditionalCommand(
+                        emptyGripperCommand,
+                        new InstantCommand(),
+                        gripperSubsystem.hasGamePieceTrigger
+                ),
+                getAlgaeScoreCommand(algaeHeightSuppier.get()),
+                new WaitUntilCommand(() -> true), //algae present and robot is at safe distance from reef //todo
+                setCurrentProcessCommand(Process.DEFAULT)
+
+        );
     }
 
     public Command defaultProcessCommand() {
@@ -236,7 +221,7 @@ public class Superstructure implements Logged {
                 new WaitUntilCommand(atPositionTrigger),
                 setCurrentStateCommand(PRE_HANDOFF),
                 new WaitUntilCommand(atPositionTrigger),
-                new WaitCommand(0.5),
+                new WaitCommand(0.2),
                 setCurrentStateCommand(HANDOFF),
                 new WaitUntilCommand(gripperSubsystem.hasGamePieceTrigger),
                 new WaitCommand(0.2),
@@ -245,7 +230,7 @@ public class Superstructure implements Logged {
     }
 
     public Command secureCommand() {
-        return Commands.none();
+        return Commands.none(); //todo
     }
 
     @Log.NT
@@ -276,21 +261,8 @@ public class Superstructure implements Logged {
         this.algaeScoreState = algaeScoreState;
     }
 
-    public enum Process {
-        DEFAULT,
-        SCORE_CORAL,
-        SCORE_ALGAE,
-        INTAKE_CORAL,
-        INTAKE_ALGAE;
-    }
-
-    public enum ScoreSide {
-        LEFT,
-        RIGHT;
-    }
-
-    public ScoreSide getScoringSide() {
-        return ScoreSide.LEFT;
+    public OpeningDirection getScoringSide() {
+        return OpeningDirection.LEFT;
     }
 
     public Command setCurrentProcessCommand(Process currentProcess) {
@@ -316,6 +288,35 @@ public class Superstructure implements Logged {
         return setCurrentStateCommand(robotState);
     }
 
+    public void setAlgaeHeightSuppier(CoralScoreState algaeHeightSuppier) {
+        this.algaeHeightSuppier = () -> algaeHeightSuppier;
+    }
+
+    public Command getAlgaeScoreCommand(CoralScoreState height) {
+        return new SequentialCommandGroup(
+                new ConditionalCommand(
+                        new ConditionalCommand(
+                                setCurrentStateCommand(LEFT_ALGAE2),
+                                setCurrentStateCommand(RIGHT_ALGAE2),
+                                () -> getScoringSide().equals(OpeningDirection.LEFT)
+                        ),
+                        new ConditionalCommand(
+                                setCurrentStateCommand(LEFT_ALGAE3),
+                                setCurrentStateCommand(RIGHT_ALGAE3),
+                                () -> getScoringSide().equals(OpeningDirection.LEFT)
+                        ),
+                        () -> height.equals(CoralScoreState.L2)
+                )
+        );
+    }
+
+    public enum Process {
+        DEFAULT,
+        SCORE_CORAL,
+        SCORE_ALGAE,
+        INTAKE_CORAL,
+        INTAKE_ALGAE;
+    }
 }
 
 

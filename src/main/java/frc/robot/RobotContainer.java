@@ -34,7 +34,7 @@ public class RobotContainer implements Logged {
 
 //    AuroraClient client = new AuroraClient(AURORA_CLIENT_PORT);
 
-    Superstructure superstructure = new Superstructure(new Trigger(()-> true));
+    Superstructure superstructure = new Superstructure(new Trigger(() -> true));
 
 //    Swerve swerve = Constants.SwerveConstants.configureSwerve(new Pose2d());
 
@@ -48,7 +48,8 @@ public class RobotContainer implements Logged {
         driver.R1().onTrue(superstructure.setCurrentProcessCommand(Superstructure.Process.SCORE_CORAL));
         driver.triangle().onTrue(superstructure.setCoralScoreStateCommand(CoralScoreState.L4));
         driver.circle().onTrue(superstructure.setCoralScoreStateCommand(CoralScoreState.L3));
-        driver.square().onTrue(superstructure.setCurrentProcessCommand(Superstructure.Process.DEFAULT));
+        driver.square().onTrue(superstructure.setCoralScoreStateCommand(CoralScoreState.L3));
+        driver.cross().onTrue(superstructure.setCurrentProcessCommand(Superstructure.Process.DEFAULT));
 
 //        swerve.setDefaultCommand(
 //                swerve.driveCommand(
@@ -60,7 +61,6 @@ public class RobotContainer implements Logged {
 //                )
 //        );
 
-
 //        driver.options().onTrue(new RunCommand(() -> swerve.resetOdometry(new Pose2d())));
 //
 //
@@ -68,17 +68,10 @@ public class RobotContainer implements Logged {
 //        driver.L1().onTrue(superstructure.intakeCommand());
 //        driver.R1().onTrue(superstructure.handoffCommand());
 
-//        driver.cross().onTrue(superstructure.L2ScoreCommand());
-//        driver.circle().onTrue(superstructure.L3ScoreCommand());
-//        driver.triangle().onTrue(superstructure.L4ScoreCommand());
-
-
-//        driver.povUp().onTrue(superstructure.L1ScoreCommand());
         driver.touchpad().whileTrue(superstructure.elevatorSubsystem.coastCommand().ignoringDisable(true));
 
         driver.options().toggleOnTrue(superstructure.intakeSubsystem.resetAngleCommand().ignoringDisable(true));
-        driver.create().onTrue(superstructure.elevatorSubsystem.setElevatorHeightCommand(0).ignoringDisable(true));
-
+        driver.create().onTrue(superstructure.elevatorSubsystem.setElevatorHeightCommand(0.15).ignoringDisable(true));
 
 
     }

@@ -71,7 +71,10 @@ public enum RobotState {
     DEFAULT_WITHOUT_GAME_PIECE(ArmPosition.DEFAULT_WITHOUT_GAME_PIECE, ElevatorStates.DEFAULT_WITH_GAME_PIECE, IntakeState.DEFAULT, GripperStates.INTAKE_CORAL),
     PRE_HANDOFF(ArmPosition.HANDOFF, ElevatorStates.PRE_HANDOFF, IntakeState.DEFAULT, GripperStates.INTAKE_CORAL),
     HANDOFF(ArmPosition.HANDOFF, ElevatorStates.HANDOFF, IntakeState.HANDOFF, GripperStates.INTAKE_CORAL),
+    PRE_REVERSE_HANDOFF(ArmPosition.HANDOFF, ElevatorStates.HANDOFF, IntakeState.REVERSE_HANDOFF, GripperStates.CORAL),
+    REVERSE_HANDOFF(ArmPosition.HANDOFF, ElevatorStates.HANDOFF, IntakeState.REVERSE_HANDOFF, GripperStates.RELEASE_CORAL),
     CLIMB(ArmPosition.HANDOFF, ElevatorStates.HANDOFF, IntakeState.HANDOFF, GripperStates.INTAKE_CORAL);
+
 
 
     ArmPosition armPosition;

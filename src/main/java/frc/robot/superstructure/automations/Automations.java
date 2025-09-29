@@ -11,6 +11,7 @@ import frc.robot.subsystems.climber.ClimberSubsystem;
 import frc.robot.superstructure.RobotState;
 import frc.robot.superstructure.Superstructure;
 import frc.robot.superstructure.automations.climbMode.ClimbOperator;
+import frc.robot.util.OpeningDirection;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,12 +31,6 @@ public class Automations {
     public Automations(Swerve swerve, Superstructure superstructure) {
         this.swerve = swerve;
         this.superstructure = superstructure;
-
-//        scoreMap.put(RobotStates.SCORE_L1, superstructure.L1ScoreCommand());
-//        scoreMap.put(RobotStates.L2, superstructure.openToScoreCommand(RobotStates.L2));
-//        scoreMap.put(RobotStates.L3, superstructure.openToScoreCommand(RobotStates.L3));
-//        scoreMap.put(RobotStates.L4, superstructure.openToScoreCommand(RobotStates.L4));
-//        scoreMap.put(RobotStates.NET, superstructure.netScoreCommand());
 
         climbOperator = new ClimbOperator();
         climber = new ClimberSubsystem();
@@ -114,13 +109,7 @@ public class Automations {
             return OpeningDirection.LEFT;
         }
 
-        return OpeningDirection.RIGHT;
-
-    }
-
-    public enum OpeningDirection {
-        LEFT,
-        RIGHT
+        return OpeningDirection.RIGHT; //todo: fix alignment
     }
 
     public double getDeltaPostions(Translation2d poseA, Translation2d poseB) {
