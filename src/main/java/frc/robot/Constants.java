@@ -25,6 +25,9 @@ import frc.excalib.swerve.SwerveModule;
 import static com.revrobotics.spark.SparkLowLevel.MotorType.kBrushless;
 
 public final class Constants {
+    public static class SuperstructureConstants {
+        public static final double HANDOFF_TIME_DELAY = 0.2;
+    }
     public static class SwerveConstants {
         public static final int FRONT_LEFT_DRIVE_ID = 20;
         public static final int FRONT_RIGHT_DRIVE_ID = 10;
