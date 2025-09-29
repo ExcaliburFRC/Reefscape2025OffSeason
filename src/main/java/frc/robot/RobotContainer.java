@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.excalib.control.math.Vector2D;
 import frc.excalib.mechanisms.Arm.Arm;
 import frc.excalib.slam.mapper.AuroraClient;
@@ -17,6 +18,7 @@ import frc.excalib.swerve.Swerve;
 import frc.robot.subsystems.climber.ClimberSubsystem;
 import frc.robot.subsystems.elevator.ElevatorSubsystem;
 import frc.robot.superstructure.Superstructure;
+import frc.robot.util.CoralScoreState;
 import monologue.Logged;
 
 import static frc.robot.Constants.AURORA_CLIENT_PORT;
@@ -30,12 +32,11 @@ public class RobotContainer implements Logged {
 
     CommandPS5Controller driver = new CommandPS5Controller(DRIVER_CONTROLLER_PORT);
 
-    AuroraClient client = new AuroraClient(AURORA_CLIENT_PORT);
+//    AuroraClient client = new AuroraClient(AURORA_CLIENT_PORT);
 
-//    Superstructure superstructure = new Superstructure();
-//    ElevatorSubsystem elevatorSubsystem = new ElevatorSubsystem();
+    Superstructure superstructure = new Superstructure(new Trigger(() -> true), driver.L1());
 
-    Swerve swerve = Constants.SwerveConstants.configureSwerve(new Pose2d());
+//    Swerve swerve = Constants.SwerveConstants.configureSwerve(new Pose2d());
 
     public RobotContainer() {
         configureBindings();
@@ -44,33 +45,35 @@ public class RobotContainer implements Logged {
 
     private void configureBindings() {
 
-        swerve.setDefaultCommand(
-                swerve.driveCommand(
-                        () -> new Vector2D(
-                                applyDeadband(-driver.getLeftY()) * MAX_VEL,
-                                applyDeadband(-driver.getLeftX()) * MAX_VEL),
-                        () -> applyDeadband(driver.getRightX()) * MAX_OMEGA_RAD_PER_SEC,
-                        () -> true
-                )
-        );
+        driver.R1().onTrue(superstructure.setCurrentProcessCommand(Superstructure.Process.SCORE_CORAL));
+        driver.triangle().onTrue(superstructure.setCoralScoreStateCommand(CoralScoreState.L4));
+        driver.circle().onTrue(superstructure.setCoralScoreStateCommand(CoralScoreState.L3));
+        driver.square().onTrue(superstructure.setCoralScoreStateCommand(CoralScoreState.L2));
+        driver.cross().onTrue(superstructure.setCurrentProcessCommand(Superstructure.Process.DEFAULT));
 
+//        swerve.setDefaultCommand(
+//                swerve.driveCommand(
+//                        () -> new Vector2D(
+//                                applyDeadband(-driver.getLeftY()) * MAX_VEL,
+//                                applyDeadband(-driver.getLeftX()) * MAX_VEL),
+//                        () -> applyDeadband(driver.getRightX()) * MAX_OMEGA_RAD_PER_SEC,
+//                        () -> true
+//                )
+//        );
 
-        driver.options().onTrue(new RunCommand(() -> swerve.resetOdometry(new Pose2d())));
-
-
-        driver.povUp().onTrue(swerve.pidToPoseCommand(()-> new Pose2d(0,0, new Rotation2d(Math.PI/2))));
+//        driver.options().onTrue(new RunCommand(() -> swerve.resetOdometry(new Pose2d())));
+//
+//
+//        driver.povUp().onTrue(swerve.pidToPoseCommand(()-> new Pose2d(0,0, new Rotation2d(Math.PI/2))));
 //        driver.L1().onTrue(superstructure.intakeCommand());
 //        driver.R1().onTrue(superstructure.handoffCommand());
 
-//        driver.cross().onTrue(superstructure.L2ScoreCommand());
-//        driver.circle().onTrue(superstructure.L3ScoreCommand());
-//        driver.triangle().onTrue(superstructure.L4ScoreCommand());
+        driver.touchpad().whileTrue(superstructure.elevatorSubsystem.coastCommand().ignoringDisable(true));
+
+        driver.options().toggleOnTrue(superstructure.intakeSubsystem.resetAngleCommand().ignoringDisable(true));
+        driver.create().onTrue(superstructure.elevatorSubsystem.setElevatorHeightCommand(0.15).ignoringDisable(true));
 
 
-//        driver.povUp().onTrue(superstructure.L1ScoreCommand());
-//        driver.options().whileTrue(superstructure.elevatorSubsystem.coastCommand().ignoringDisable(true));
-
-//        driver.create().onTrue(superstructure.elevatorSubsystem.setElevatorHeightCommand(0).ignoringDisable(true));
     }
 
     public double applyDeadband(double val) {
@@ -82,8 +85,8 @@ public class RobotContainer implements Logged {
         return Commands.none();
     }
 
-    @NT
-    public Pose2d getRobotPose() {
-        return client.getPose2d();
-    }
+//    @NT
+//    public Pose2d getRobotPose() {
+//        return client.getPose2d();
+//    }
 }

@@ -3,6 +3,7 @@ package frc.robot.subsystems.gripper;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -70,12 +71,22 @@ public class Gripper extends SubsystemBase implements Logged {
 
 
     public Command setStateCommand(GripperStates stateToSet) {
-        return new InstantCommand(() -> currentState = stateToSet);
+        return new ConditionalCommand(
+                new InstantCommand(() -> this.currentHoldingState = HoldingState.CORAL_EXPECTED),
+                new InstantCommand(),
+                () -> stateToSet.equals(GripperStates.INTAKE_CORAL)
+        ).andThen(
+                new InstantCommand(() -> currentState = stateToSet));
     }
 
     @Log.NT
     public boolean getHasAlgaeTrigger() {
         return hasAlgaeTrigger.getAsBoolean();
+    }
+
+    @Log.NT
+    public HoldingState getCurrentHoldingState(){
+        return currentHoldingState;
     }
 
     @Log.NT

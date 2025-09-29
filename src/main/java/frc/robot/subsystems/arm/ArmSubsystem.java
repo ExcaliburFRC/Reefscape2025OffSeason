@@ -67,7 +67,6 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
 
         armMotor.getConfigurator().apply(limitsConfigs);
 
-
         elevatorHeightSupplier = () -> 0;
         isIntakeOpen = new Trigger(() -> false);
 
@@ -75,7 +74,7 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
                 armMotor,
                 angleSupplier,
                 VELOCITY_LIMIT,
-                new Gains(2.5, 0, 0.25, 0, 0, 0, 1.2),
+                new Gains(2.9, 0, 0.2, 0, 0, 0, 1.2),
                 new Mass(
                         () -> Math.cos(angleSupplier.getAsDouble()),
                         () -> Math.sin(angleSupplier.getAsDouble()),

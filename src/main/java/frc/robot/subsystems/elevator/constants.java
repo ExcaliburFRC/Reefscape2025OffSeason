@@ -10,10 +10,10 @@ public class constants {
 
     public static DoubleSupplier ELEVATOR_ANGLE = () -> PI / 2;
 
-    public static double MAX_VELOCITY = 1;
-    public static double MAX_ACCELERATION = 2.7;
+    public static double MAX_VELOCITY = 2;
+    public static double MAX_ACCELERATION = 3.1;
 
-    public static double TOLERANCE = 0.005;
+    public static double TOLERANCE = 0.003;
 
     public static final double MAX_ELEVATOR_HIGHT = 1.41;
     public static final double MIN_ELEVATOR_HIGHT = 0;

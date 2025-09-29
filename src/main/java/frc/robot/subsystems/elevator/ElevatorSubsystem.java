@@ -78,7 +78,7 @@ public class ElevatorSubsystem extends SubsystemBase implements Logged {
                         return 0.8;
 
                     }
-                    return 0;
+                    return 0.15;
 
                 },
                 () -> MAX_ELEVATOR_HIGHT
@@ -141,7 +141,7 @@ public class ElevatorSubsystem extends SubsystemBase implements Logged {
     }
 
     public Command setElevatorHeightCommand(double hight) {
-        return new InstantCommand(() -> motorGroup.setMotorPosition(0));
+        return new InstantCommand(() -> motorGroup.setMotorPosition(hight));
     }
 
     public Command zeroElevator() {

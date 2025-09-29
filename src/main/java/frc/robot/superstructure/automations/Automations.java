@@ -3,15 +3,15 @@ package frc.robot.superstructure.automations;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.*;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.excalib.additional_utilities.AllianceUtils;
 import frc.excalib.swerve.Swerve;
 import frc.robot.Constants;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.subsystems.climber.ClimberSubsystem;
-import frc.robot.superstructure.RobotStates;
+import frc.robot.superstructure.RobotState;
 import frc.robot.superstructure.Superstructure;
 import frc.robot.superstructure.automations.climbMode.ClimbOperator;
+import frc.robot.util.OpeningDirection;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,8 +19,8 @@ import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 public class Automations {
-    public Map<RobotStates, Command> scoreMap = new HashMap<>();
-    public RobotStates scoreState = RobotStates.DEFAULT_WITH_GAME_PIECE;
+    public Map<RobotState, Command> scoreMap = new HashMap<>();
+    public RobotState scoreState = RobotState.DEFAULT_WITH_GAME_PIECE;
 
     public Swerve swerve;
     public Superstructure superstructure;
@@ -31,12 +31,6 @@ public class Automations {
     public Automations(Swerve swerve, Superstructure superstructure) {
         this.swerve = swerve;
         this.superstructure = superstructure;
-
-//        scoreMap.put(RobotStates.SCORE_L1, superstructure.L1ScoreCommand());
-//        scoreMap.put(RobotStates.L2, superstructure.openToScoreCommand(RobotStates.L2));
-//        scoreMap.put(RobotStates.L3, superstructure.openToScoreCommand(RobotStates.L3));
-//        scoreMap.put(RobotStates.L4, superstructure.openToScoreCommand(RobotStates.L4));
-//        scoreMap.put(RobotStates.NET, superstructure.netScoreCommand());
 
         climbOperator = new ClimbOperator();
         climber = new ClimberSubsystem();
@@ -115,13 +109,7 @@ public class Automations {
             return OpeningDirection.LEFT;
         }
 
-        return OpeningDirection.RIGHT;
-
-    }
-
-    public enum OpeningDirection {
-        LEFT,
-        RIGHT
+        return OpeningDirection.RIGHT; //todo: fix alignment
     }
 
     public double getDeltaPostions(Translation2d poseA, Translation2d poseB) {
