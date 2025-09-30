@@ -26,7 +26,7 @@ public class Superstructure implements Logged {
     public final ElevatorSubsystem elevatorSubsystem;
     public final Intake intakeSubsystem;
     public final Gripper gripperSubsystem;
-    public final ClimberSubsystem climberSubsystem;
+//    public final ClimberSubsystem climberSubsystem;
 
     private CoralScoreState coralScoreState;
     private AlgaeScoreState algaeScoreState;
@@ -62,7 +62,7 @@ public class Superstructure implements Logged {
         elevatorSubsystem = new ElevatorSubsystem();
         intakeSubsystem = new Intake();
         gripperSubsystem = new Gripper();
-        climberSubsystem = new ClimberSubsystem();
+//        climberSubsystem = new ClimberSubsystem();
 
         currentProcess = Process.DEFAULT;
         algaeScoreState = AlgaeScoreState.NET;

@@ -12,9 +12,11 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.excalib.additional_utilities.AllianceUtils;
 import frc.excalib.control.math.Vector2D;
 import frc.excalib.mechanisms.Arm.Arm;
 import frc.excalib.slam.mapper.AuroraClient;
@@ -23,6 +25,7 @@ import frc.excalib.swerve.Swerve;
 import frc.robot.subsystems.climber.ClimberSubsystem;
 import frc.robot.subsystems.elevator.ElevatorSubsystem;
 import frc.robot.superstructure.Superstructure;
+import frc.robot.superstructure.automations.Automations;
 import frc.robot.util.CoralScoreState;
 import monologue.Logged;
 
@@ -37,11 +40,14 @@ public class RobotContainer implements Logged {
 
     CommandPS5Controller driver = new CommandPS5Controller(DRIVER_CONTROLLER_PORT);
 
-//    AuroraClient client = new AuroraClient(AURORA_CLIENT_PORT);
+    AuroraClient client = new AuroraClient(AURORA_CLIENT_PORT);
 
-    Superstructure superstructure = new Superstructure(new Trigger(() -> true), driver.R2());
+//    Superstructure superstructure = new Superstructure(new Trigger(() -> true), driver.R2());
 
     Swerve swerve = Constants.SwerveConstants.configureSwerve(new Pose2d());
+
+    Automations automations = new Automations(swerve);
+
 
     public RobotContainer() {
         configureBindings();
@@ -57,11 +63,14 @@ public class RobotContainer implements Logged {
 //        driver.PS().onTrue(superstructure.setCurrentProcessCommand(Superstructure.Process.DEFAULT));
 //        driver.L1().onTrue(superstructure.setCurrentProcessCommand(Superstructure.Process.INTAKE_CORAL));
 
-        driver.circle().onTrue(swerve.pidToPoseCommand(()-> new Pose2d(new Translation2d(), new Rotation2d(Math.PI/2))));
-        driver.square().onTrue(swerve.pidToPoseCommand(()-> new Pose2d(new Translation2d(), new Rotation2d())));
-        driver.triangle()
-                .onTrue(swerve.pidToPoseCommand(()-> new Pose2d(new Translation2d(), new Rotation2d(Math.PI))));
+//        driver.circle().onTrue(swerve.pidToPoseCommand(() -> new Pose2d(new Translation2d(), new Rotation2d(Math.PI / 2))));
+//        driver.square().onTrue(swerve.pidToPoseCommand(() -> new Pose2d(new Translation2d(), new Rotation2d())));
+//        driver.triangle().onTrue(swerve.pidToPoseCommand(() -> new Pose2d(new Translation2d(), new Rotation2d(Math.PI))));
 
+        driver.triangle().onTrue(new InstantCommand(() -> swerve.resetOdometry(new Pose2d(Constants.FieldConstants.B1_LEFT_SCORE, Rotation2d.k180deg))).ignoringDisable(true));
+        driver.povLeft().onTrue(new InstantCommand(() -> swerve.resetOdometry(new Pose2d(Constants.FieldConstants.B12_LEFT_SCORE, Rotation2d.k180deg))).ignoringDisable(true));
+        driver.circle().onTrue(new InstantCommand(() -> swerve.resetOdometry(new Pose2d(AllianceUtils.getReefCenter(), Rotation2d.kZero))).ignoringDisable(true));
+        driver.square().onTrue(new InstantCommand(() -> swerve.resetOdometry(new Pose2d(16, 2, Rotation2d.kZero))).ignoringDisable(true));
         swerve.setDefaultCommand(
                 swerve.driveCommand(
                         () -> new Vector2D(
@@ -72,21 +81,20 @@ public class RobotContainer implements Logged {
                 )
         );
 
-        driver.options().whileTrue(new RunCommand(() -> swerve.resetOdometry(new Pose2d())).ignoringDisable(true));
+        driver.options().whileTrue(new RunCommand(() -> swerve.resetOdometry(new Pose2d(0, 0, Rotation2d.kZero))).ignoringDisable(true));
 
-        driver.touchpad().whileTrue(superstructure.elevatorSubsystem.coastCommand().ignoringDisable(true));
-//
-        driver.povDown().toggleOnTrue(superstructure.intakeSubsystem.resetAngleCommand().ignoringDisable(true));
-        driver.create().onTrue(superstructure.elevatorSubsystem.setElevatorHeightCommand(0.15).ignoringDisable(true));
+//        driver.touchpad().whileTrue(superstructure.elevatorSubsystem.coastCommand().ignoringDisable(true));
+
+//        driver.povDown().toggleOnTrue(superstructure.intakeSubsystem.resetAngleCommand().ignoringDisable(true));
+//        driver.create().onTrue(superstructure.elevatorSubsystem.setElevatorHeightCommand(0.15).ignoringDisable(true));
 
     }
 
-//    public void preodic() {
-////        if (!client.getPose2d().equals(new Pose2d())) {
-////            swerve.m_odometry.addVisionMeasurement(client.getPose2d(), Timer.getFPGATimestamp());
-////        }
-//
-//    }
+    public void preodic() {
+        if (!client.getPose2d().equals(new Pose2d())) {
+            swerve.m_odometry.addVisionMeasurement(client.getPose2d(), Timer.getFPGATimestamp());
+        }
+    }
 
     public double applyDeadband(double val) {
         return Math.abs(val) < 0.09 ? 0 : val;
@@ -102,9 +110,9 @@ public class RobotContainer implements Logged {
         return swerve.getPose2D();
     }
 
-//    @NT
-//    public Pose2d getAuroraPose() {
-//        return client.getPose2d();
-//    }
+    @NT
+    public Pose2d getAuroraPose() {
+        return client.getPose2d();
+    }
 
 }

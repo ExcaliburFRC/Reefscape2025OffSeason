@@ -6,31 +6,36 @@ import edu.wpi.first.wpilibj2.command.*;
 import frc.excalib.additional_utilities.AllianceUtils;
 import frc.excalib.swerve.Swerve;
 import frc.robot.Constants;
-import frc.robot.Constants.FieldConstants;
+import frc.robot.Constants.FieldConstants.Side;
 import frc.robot.subsystems.climber.ClimberSubsystem;
 import frc.robot.superstructure.RobotState;
 import frc.robot.superstructure.Superstructure;
 import frc.robot.superstructure.automations.climbMode.ClimbOperator;
 import frc.robot.util.OpeningDirection;
+import monologue.Logged;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
-public class Automations {
+import static frc.excalib.additional_utilities.AllianceUtils.FIELD_LENGTH_METERS;
+import static frc.excalib.additional_utilities.AllianceUtils.FIELD_WIDTH_METERS;
+import static monologue.Annotations.*;
+
+public class Automations implements Logged {
     public Map<RobotState, Command> scoreMap = new HashMap<>();
     public RobotState scoreState = RobotState.DEFAULT_WITH_GAME_PIECE;
 
     public Swerve swerve;
-    public Superstructure superstructure;
+//    public Superstructure superstructure;
 
     public ClimberSubsystem climber;
     public ClimbOperator climbOperator;
 
-    public Automations(Swerve swerve, Superstructure superstructure) {
+    public Automations(Swerve swerve) {
         this.swerve = swerve;
-        this.superstructure = superstructure;
+//        this.superstructure = superstructure;
 
         climbOperator = new ClimbOperator();
         climber = new ClimberSubsystem();
@@ -50,33 +55,37 @@ public class Automations {
                         ));
     }
 
-    private AllianceUtils.AlliancePose getAlignmentTargetPose(Pose2d currentPose, boolean rightBranch) {
-        FieldConstants.Side currentSide = getClosestSide(currentPose);
-        if (rightBranch)
-            return currentSide.rightBrachPose;
-        return currentSide.leftBranchPose;
+    public AllianceUtils.AlliancePose getAlignmentTargetPose(Pose2d currentPose, boolean rightBranch) {
+//        if (rightBranch)
+//            return getSlice(swerve.getPose2D().getTranslation()).rightBranchLeftScorePose;
+//        return getSlice(swerve.getPose2D().getTranslation()).leftBranchLeftScorePose;
+        return null;
     }
 
-
-    private FieldConstants.Side getClosestSide(Pose2d currentPose) {
-        Translation2d diff = currentPose.minus(swerve.getPose2D()).getTranslation();
-        double robotAngleByReefCenter = diff.getAngle().getDegrees();
-        if (robotAngleByReefCenter < 30 && robotAngleByReefCenter > -30) {
-            return FieldConstants.Side.NORTH;
+    @Log.NT
+    public String getSlice() {
+        Translation2d robotTranslation = swerve.getPose2D().getTranslation();
+        if (AllianceUtils.isRedAlliance()) {
+            robotTranslation = new Translation2d(FIELD_LENGTH_METERS - robotTranslation.getX(), FIELD_WIDTH_METERS - robotTranslation.getY());
         }
-        if (robotAngleByReefCenter < -30 && robotAngleByReefCenter > -90) {
-            return FieldConstants.Side.NORTH_EAST;
+        robotTranslation = robotTranslation.minus(AllianceUtils.getReefCenter());
+        double angle = robotTranslation.getAngle().getDegrees();
+        if (angle < 30 && angle > -30) {
+            return Side.NORTH.name();
         }
-        if (robotAngleByReefCenter < -90 && robotAngleByReefCenter > -150) {
-            return FieldConstants.Side.NORTH_WEST;
+        if (angle < -30 && angle > -90) {
+            return Side.NORTH_EAST.name();
         }
-        if (robotAngleByReefCenter > 150 || robotAngleByReefCenter < -150) {
-            return FieldConstants.Side.SOUTH;
+        if (angle < -90 && angle > -150) {
+            return Side.SOUTH_EAST.name();
         }
-        if (robotAngleByReefCenter > 90 && robotAngleByReefCenter < 150) {
-            return FieldConstants.Side.SOUTH_EAST;
+        if (angle > 150 || angle < -150) {
+            return Side.SOUTH.name();
         }
-        return FieldConstants.Side.SOUTH_WEST;
+        if (angle > 90 && angle < 150) {
+            return Side.SOUTH_EAST.name();
+        }
+        return Side.NORTH_EAST.name();
     }
 
     public BooleanSupplier isInTranslationTolerance(Translation2d translationCenter, DoubleSupplier tolerance) {
@@ -95,6 +104,15 @@ public class Automations {
         );
     }
 
+    @Log.NT
+    public double getAngleDiff() {
+        Translation2d robotTranslation = swerve.getPose2D().getTranslation();
+        if (AllianceUtils.isRedAlliance()) {
+            robotTranslation = new Translation2d(FIELD_LENGTH_METERS - robotTranslation.getX(), FIELD_WIDTH_METERS - robotTranslation.getY());
+        }
+        robotTranslation = robotTranslation.minus(AllianceUtils.getReefCenter());
+        return robotTranslation.getAngle().getDegrees();
+    }
 }
 
 
