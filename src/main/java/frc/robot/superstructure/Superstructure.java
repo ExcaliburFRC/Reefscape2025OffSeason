@@ -150,10 +150,10 @@ public class Superstructure implements Logged {
                 new WaitUntilCommand(atPositionTrigger),
                 new PrintCommand("3"),
                 new SelectCommand<>(scoreStage4CoralSideMap, () -> coralScoreState),
+                new PrintCommand("#"),
                 new WaitUntilCommand(atPositionTrigger),
                 new PrintCommand("4")
         );
-
 
         return new SequentialCommandGroup(
                 alignment.until(alignmentTrigger), // Todo

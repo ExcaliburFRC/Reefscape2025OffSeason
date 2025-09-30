@@ -85,31 +85,7 @@ public class Automations {
     }
 
     public OpeningDirection getOpeningDirection() {
-        double leftBeanXFactor = swerve.getPose2D().getX() * Math.cos(swerve.getPose2D().getRotation().getRadians());
-        double leftBeanYFactor = swerve.getPose2D().getY() * Math.sin(swerve.getPose2D().getRotation().getRadians());
-        AllianceUtils.AlliancePose leftBeamFromRobot = new AllianceUtils.AlliancePose(
-                new Translation2d(
-                        swerve.getPose2D().getX() + leftBeanXFactor,
-                        swerve.getPose2D().getY() + leftBeanYFactor),
-                swerve.getPose2D().getRotation()
-        );
-
-        double rightBeanXFactor = swerve.getPose2D().getX() * Math.cos(swerve.getPose2D().getRotation().getRadians());
-        double rightBeanYFactor = swerve.getPose2D().getY() * Math.sin(swerve.getPose2D().getRotation().getRadians());
-        AllianceUtils.AlliancePose rightBeamFromRobot = new AllianceUtils.AlliancePose(
-                new Translation2d(
-                        swerve.getPose2D().getX() + leftBeanXFactor - Math.PI,
-                        swerve.getPose2D().getY() + leftBeanYFactor - Math.PI),
-                swerve.getPose2D().getRotation()
-        );
-
-        if (
-                getDeltaPostions(rightBeamFromRobot.get().getTranslation(), AllianceUtils.getReefCenter())>
-                getDeltaPostions(leftBeamFromRobot.get().getTranslation(), AllianceUtils.getReefCenter())) {
-            return OpeningDirection.LEFT;
-        }
-
-        return OpeningDirection.RIGHT; //todo: fix alignment
+        return OpeningDirection.LEFT;
     }
 
     public double getDeltaPostions(Translation2d poseA, Translation2d poseB) {
