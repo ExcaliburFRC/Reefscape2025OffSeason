@@ -3,6 +3,7 @@ package frc.robot.superstructure;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.excalib.commands.CommandMutex;
+import frc.robot.Constants;
 import frc.robot.subsystems.arm.ArmSubsystem;
 import frc.robot.subsystems.climber.ClimberSubsystem;
 import frc.robot.subsystems.elevator.ElevatorSubsystem;
@@ -14,6 +15,7 @@ import monologue.Logged;
 import java.util.HashMap;
 import java.util.function.Supplier;
 
+import static frc.robot.Constants.SuperstructureConstants.HANDOFF_TIME_DELAY;
 import static frc.robot.superstructure.RobotState.*;
 import static frc.robot.superstructure.RobotState.LEFT_STAGE3_L2;
 import static monologue.Annotations.*;
@@ -44,6 +46,7 @@ public class Superstructure implements Logged {
     private final Trigger processChangeIntakeAlgaeTrigger;
     private final Trigger processChangeScoreCoralTrigger;
     private final Trigger processChangeScoreAlgaeTrigger;
+
     private final LevelChangeTrigger levelChangeTrigger;
 
     private CommandMutex commandMutex;
@@ -69,8 +72,7 @@ public class Superstructure implements Logged {
         atPositionTrigger = new Trigger(
                 () -> elevatorSubsystem.atPositionTrigger.getAsBoolean() &&
                         armSubsystem.isAtPosition() &&
-                        intakeSubsystem.isAtPosition().getAsBoolean()
-        );
+                        intakeSubsystem.isAtPosition().getAsBoolean());
 
         levelChangeTrigger = new LevelChangeTrigger(() -> this.coralScoreState);
 
@@ -103,25 +105,15 @@ public class Superstructure implements Logged {
 
         commandMutex = new CommandMutex();
 
-        processChangeDefaultTrigger.onTrue(
-                commandMutex.scheduleCommand(defaultProcessCommand())
-        );
+        processChangeDefaultTrigger.onTrue(commandMutex.scheduleCommand(defaultProcessCommand()));
 
-        processChangeIntakeCoralTrigger.onTrue(
-                commandMutex.scheduleCommand(intakeCoralProcessCommand())
-        );
+        processChangeIntakeCoralTrigger.onTrue(commandMutex.scheduleCommand(intakeCoralProcessCommand()));
 
-        processChangeScoreCoralTrigger.onTrue(
-                commandMutex.scheduleCommand(scoreCoralProcessCommand(alignmentTrigger))
-        );
+        processChangeScoreCoralTrigger.onTrue(commandMutex.scheduleCommand(scoreCoralProcessCommand(alignmentTrigger)));
 
-        processChangeScoreAlgaeTrigger.onTrue(
-                commandMutex.scheduleCommand(scoreAlgaeProcessCommand())
-        );
+        processChangeScoreAlgaeTrigger.onTrue(commandMutex.scheduleCommand(scoreAlgaeProcessCommand()));
 
-        processChangeIntakeAlgaeTrigger.onTrue(
-                commandMutex.scheduleCommand(intakeAlgaeProcessCommand())
-        );
+        processChangeIntakeAlgaeTrigger.onTrue(commandMutex.scheduleCommand(intakeAlgaeProcessCommand()));
 
         elevatorSubsystem.setArmAngleSuppier(armSubsystem::getAngleSupplier);
         armSubsystem.setElevatorHeightSupplier(elevatorSubsystem::getElevatorHeight);
@@ -158,20 +150,20 @@ public class Superstructure implements Logged {
                 new WaitUntilCommand(atPositionTrigger),
                 new PrintCommand("3"),
                 new SelectCommand<>(scoreStage4CoralSideMap, () -> coralScoreState),
+                new PrintCommand("#"),
                 new WaitUntilCommand(atPositionTrigger),
                 new PrintCommand("4")
         );
 
-
         return new SequentialCommandGroup(
-                alignment.until(alignmentTrigger), //todo
+                alignment.until(alignmentTrigger), // Todo
                 score,
                 this.setCurrentProcessCommand(Process.DEFAULT)
         );
     }
 
     public Command scoreAlgaeProcessCommand() {
-        return Commands.none(); //todo
+        return new InstantCommand();
 //        return new ConditionalCommand(
 //                new SequentialCommandGroup(
 //                        new WaitUntilCommand(isSwerveAtPlace),//positioned
@@ -238,16 +230,16 @@ public class Superstructure implements Logged {
                 new WaitUntilCommand(atPositionTrigger),
                 setCurrentStateCommand(PRE_HANDOFF),
                 new WaitUntilCommand(atPositionTrigger),
-                new WaitCommand(0.2),
+                new WaitCommand(HANDOFF_TIME_DELAY),
                 setCurrentStateCommand(HANDOFF),
                 new WaitUntilCommand(gripperSubsystem.hasGamePieceTrigger),
-                new WaitCommand(0.2),
+                new WaitCommand(HANDOFF_TIME_DELAY),
                 setCurrentStateCommand(DEFAULT_WITH_GAME_PIECE)
         );
     }
 
     public Command secureCommand() {
-        return Commands.none(); //todo
+        return Commands.none();  // Todo
     }
 
     @Log.NT
@@ -255,53 +247,13 @@ public class Superstructure implements Logged {
         return currentState;
     }
 
-    @Log.NT
-    public boolean getEither() {
-        return intakeSubsystem.either.getAsBoolean();
-    }
-
-    @Log.NT
-    public boolean getAtPostionTrigger() {
-        return atPositionTrigger.getAsBoolean();
-    }
-
-    @Log.NT
-    public boolean getStagePosition() {
-        return armSubsystem.getAngleSupplier() < LEFT_STAGE1_L2.armPosition.getAngle();
-    }
-
-    public Command setCoralScoreStateCommand(CoralScoreState coralScoreState) {
-        return new InstantCommand(() -> this.coralScoreState = coralScoreState);
-    }
-
-    public void setAlgaeScoreState(AlgaeScoreState algaeScoreState) {
-        this.algaeScoreState = algaeScoreState;
-    }
-
-    public OpeningDirection getScoringSide() {
-        return OpeningDirection.LEFT;
-    }
-
-    public Command setCurrentProcessCommand(Process currentProcess) {
-        return new InstantCommand(() -> this.currentProcess = currentProcess);
-    }
-
-    @Log.NT
-    public Process getCurrentProcessSupplier() {
-        return currentProcess;
-    }
-
-    @Log.NT
-    public String getCoralScoreState() {
-        return coralScoreState.name();
-    }
 
     public Command getCoralStateProcessCommand(RobotState robotState) {
         return setCurrentStateCommand(robotState);
     }
 
-    public void setAlgaeHeightSuppier(CoralScoreState algaeHeightSuppier) {
-        this.algaeHeightSuppier = () -> algaeHeightSuppier;
+    public OpeningDirection getScoringSide() {
+        return OpeningDirection.LEFT;
     }
 
     public Command getAlgaeScoreCommand(CoralScoreState height) {
@@ -322,37 +274,78 @@ public class Superstructure implements Logged {
         );
     }
 
+    public void setAlgaeScoreState(AlgaeScoreState algaeScoreState) {
+        this.algaeScoreState = algaeScoreState;
+    }
+
+    public void setAlgaeHeightSuppier(CoralScoreState algaeHeightSuppier) {
+        this.algaeHeightSuppier = () -> algaeHeightSuppier;
+    }
+
+    public Command setCurrentProcessCommand(Process currentProcess) {
+        return new InstantCommand(() -> this.currentProcess = currentProcess);
+    }
+
+    public Command setCoralScoreStateCommand(CoralScoreState coralScoreState) {
+        return new InstantCommand(() -> this.coralScoreState = coralScoreState);
+    }
+
+    @Log.NT
+    public boolean getTriggerIntakeAlgae() {
+        return processChangeIntakeAlgaeTrigger.getAsBoolean();
+    }
+
+    @Log.NT
+    public boolean getTriggerScoreAlgae() {
+        return processChangeScoreCoralTrigger.getAsBoolean();
+    }
+
+    @Log.NT
+    public boolean getTriggerIntakeCoral() {
+        return processChangeIntakeCoralTrigger.getAsBoolean();
+    }
+
+    @Log.NT
+    public boolean getEither() {
+        return intakeSubsystem.either.getAsBoolean();
+    }
+
+    @Log.NT
+    public boolean getAtPostionTrigger() {
+        return atPositionTrigger.getAsBoolean();
+    }
+
+    @Log.NT
+    public boolean getStagePosition() {
+        return armSubsystem.getAngleSupplier() < LEFT_STAGE1_L2.armPosition.getAngle();
+    }
+
+    @Log.NT
+    public boolean getTriggerScoreCoral() {
+        return processChangeScoreCoralTrigger.getAsBoolean();
+    }
+
+    @Log.NT
+    public boolean getDefaultTrigger() {
+        return processChangeDefaultTrigger.getAsBoolean();
+    }
+
+    @Log.NT
+    public Process getCurrentProcessSupplier() {
+        return currentProcess;
+    }
+
+    @Log.NT
+    public String getCoralScoreState() {
+        return coralScoreState.name();
+    }
+
     public enum Process {
         DEFAULT,
         SCORE_CORAL,
         SCORE_ALGAE,
         INTAKE_CORAL,
         INTAKE_ALGAE;
-    }
-
-    @Log.NT
-    public boolean getTriggerIntakeAlgae(){
-        return processChangeIntakeAlgaeTrigger.getAsBoolean();
-    }
-
-    @Log.NT
-    public boolean getTriggerScoreAlgae(){
-        return processChangeScoreCoralTrigger.getAsBoolean();
-    }
-
-    @Log.NT
-    public boolean getTriggerIntakeCoral(){
-        return processChangeIntakeCoralTrigger.getAsBoolean();
-    }
-
-    @Log.NT
-    public boolean getTriggerScoreCoral(){
-        return processChangeScoreCoralTrigger.getAsBoolean();
-    }
-
-    @Log.NT
-    public boolean getDefaultTrigger(){
-        return processChangeDefaultTrigger.getAsBoolean();
     }
 }
 

@@ -44,7 +44,7 @@ import static monologue.Annotations.Log;
 public class Swerve extends SubsystemBase implements Logged {
     public final ModulesHolder modules;
     private final IMU m_imu;
-    private final Odometry m_odometry;
+    public final Odometry m_odometry;
     private ChassisSpeeds m_desiredChassisSpeeds = new ChassisSpeeds();
     private Trigger finishTrigger;
     private Rotation2d pi = new Rotation2d(Math.PI);

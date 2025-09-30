@@ -74,7 +74,7 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
                 armMotor,
                 angleSupplier,
                 VELOCITY_LIMIT,
-                new Gains(2.9, 0, 0.2, 0, 0, 0, 1.2),
+                new Gains(3, 0, 0.1, 0, 0, 0, 0.8),
                 new Mass(
                         () -> Math.cos(angleSupplier.getAsDouble()),
                         () -> Math.sin(angleSupplier.getAsDouble()),
@@ -97,7 +97,7 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
                                 angleSupplier.getAsDouble(), Math.PI / 2) + 1.1 - Math.PI / 2;
                     }
                     if (heightDiff > ARM_LENGTH) {
-                        return -8.3;
+                        return -10;
                     }
                     return limitHelper.getSetpoint(
                             angleSupplier.getAsDouble(), Math.PI / 2) + getMin() - Math.PI / 2 ;
@@ -109,7 +109,7 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
                                 angleSupplier.getAsDouble(), Math.PI / 2) + 1.8 - Math.PI / 2;
                     }
                     if (heightDiff > ARM_LENGTH) {
-                        return 6.7;
+                        return 3.5;
                     }
 
                     return limitHelper.getSetpoint(

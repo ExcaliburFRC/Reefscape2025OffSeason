@@ -7,6 +7,8 @@ package frc.robot;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.path.PathConstraints;
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -16,15 +18,16 @@ import frc.excalib.additional_utilities.AllianceUtils;
 import frc.excalib.control.gains.Gains;
 import frc.excalib.control.imu.IMU;
 import frc.excalib.control.imu.Pigeon;
-import frc.excalib.control.motor.controllers.SparkMaxMotor;
 import frc.excalib.control.motor.controllers.TalonFXMotor;
 import frc.excalib.swerve.ModulesHolder;
 import frc.excalib.swerve.Swerve;
 import frc.excalib.swerve.SwerveModule;
 
-import static com.revrobotics.spark.SparkLowLevel.MotorType.kBrushless;
-
 public final class Constants {
+    public static class SuperstructureConstants {
+        public static final double HANDOFF_TIME_DELAY = 0.2;
+    }
+
     public static class SwerveConstants {
         public static final int FRONT_LEFT_DRIVE_ID = 20;
         public static final int FRONT_RIGHT_DRIVE_ID = 10;
@@ -39,7 +42,7 @@ public final class Constants {
         public static final int GYRO_ID = 3;
         public static final String SWERVE_CANBUS = "CTRESwerve";
 
-        private static final double PID_TOLERANCE = 0.2;
+        private static final double PID_TOLERANCE = 0.01;
 
         public static final double TRACK_WIDTH = 0.726; // m
         public static final Translation2d FRONT_LEFT_TRANSLATION =
@@ -66,7 +69,7 @@ public final class Constants {
         public static final double MAX_FORWARD_ACC = 9;
         public static final double MAX_VEL = 4;
         public static final double MAX_OMEGA_RAD_PER_SEC = 4;
-        public static final double MAX_OMEGA_RAD_PER_SEC_SQUARE = 1;
+        public static final double MAX_OMEGA_RAD_PER_SEC_SQUARE = 4;
 
         public static final PathConstraints MAX_PATH_CONSTRAINTS = new PathConstraints(
                 MAX_VEL,
@@ -77,10 +80,10 @@ public final class Constants {
                 false
         );
 
-        private static final CANcoder FRONT_LEFT_ABS_ENCODER = new CANcoder(21, SWERVE_CANBUS);
         public static final CANcoder FRONT_RIGHT_ABS_ENCODER = new CANcoder(11, SWERVE_CANBUS);
-        private static final CANcoder BACK_RIGHT_ABS_ENCODER = new CANcoder(41, SWERVE_CANBUS);
+        private static final CANcoder FRONT_LEFT_ABS_ENCODER = new CANcoder(21, SWERVE_CANBUS);
         private static final CANcoder BACK_LEFT_ABS_ENCODER = new CANcoder(31, SWERVE_CANBUS);
+        private static final CANcoder BACK_RIGHT_ABS_ENCODER = new CANcoder(41, SWERVE_CANBUS);
 
         private static final double VELOCITY_CONVERSION_FACTOR = Units.inchesToMeters(4) * Math.PI / 6.12;
         private static final double POSITION_CONVERSION_FACTOR = Units.inchesToMeters(4) * Math.PI / 6.12;
@@ -88,8 +91,8 @@ public final class Constants {
 
         public static final PIDConstants TRANSLATION_PID_PP_CONSTANTS = new PIDConstants(10.0, 0.0, 0.0); //TODO
         public static final PIDConstants ANGLE_PID_PP_CONSTANTS = new PIDConstants(5.0, 0.0, 0.0);
-        public static final Gains ANGLE_PID_GAINS = new Gains(0.4,0,0);
-        public static final Gains TRANSLATION_PID_GAINS = new Gains(2,0,0);
+        public static final Gains ANGLE_PID_GAINS = new Gains(0.1, 0, 0);
+        public static final Gains TRANSLATION_PID_GAINS = new Gains(3.62, 0, 0);
 
         private static final IMU GYRO = new Pigeon(GYRO_ID, SWERVE_CANBUS, new Rotation3d());
 
@@ -105,7 +108,6 @@ public final class Constants {
                                     FRONT_LEFT_TRANSLATION,
                                     () -> FRONT_LEFT_ABS_ENCODER.getAbsolutePosition().getValueAsDouble() * 2 * Math.PI,
                                     MAX_MODULE_VEL,
-
                                     VELOCITY_CONVERSION_FACTOR,
                                     POSITION_CONVERSION_FACTOR,
                                     ROTATION_VELOCITY_CONVERSION_FACTOR
@@ -156,8 +158,10 @@ public final class Constants {
     }
 
     public static class FieldConstants {
-        public static Translation2d BLUE_REEF_CENTER = new Translation2d();
-        public static Translation2d RED_REEF_CENTER = new Translation2d();
+        public static double FIELD_LENGTH = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeWelded).getFieldLength();
+        public static double FIELD_WIDTH = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeWelded).getFieldWidth();
+
+        public static Translation2d CURRENT_REEF_CENTER = AllianceUtils.toAlliancePose(new Pose2d(new Translation2d(Units.inchesToMeters(4.48945), FIELD_WIDTH / 2), new Rotation2d())).getTranslation();
 
         public static Translation2d B1 = new Translation2d();
         public static Translation2d B12 = new Translation2d();
@@ -165,29 +169,29 @@ public final class Constants {
 
         public static final AllianceUtils.AlliancePose[] LEFT_BRANCHES = {
                 new AllianceUtils.AlliancePose(B1, Rotation2d.fromDegrees(180)),
-                new AllianceUtils.AlliancePose(B1.rotateAround(BLUE_REEF_CENTER, Rotation2d.fromDegrees(-60)), Rotation2d.fromDegrees(120)),
-                new AllianceUtils.AlliancePose(B1.rotateAround(BLUE_REEF_CENTER, Rotation2d.fromDegrees(-120)), Rotation2d.fromDegrees(60)),
-                new AllianceUtils.AlliancePose(B1.rotateAround(BLUE_REEF_CENTER, Rotation2d.fromDegrees(-180)), new Rotation2d()),
-                new AllianceUtils.AlliancePose(B1.rotateAround(BLUE_REEF_CENTER, Rotation2d.fromDegrees(-240)), Rotation2d.fromDegrees(-60)),
-                new AllianceUtils.AlliancePose(B1.rotateAround(BLUE_REEF_CENTER, Rotation2d.fromDegrees(-300)), Rotation2d.fromDegrees(-120)),
+                new AllianceUtils.AlliancePose(B1.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-60)), Rotation2d.fromDegrees(120)),
+                new AllianceUtils.AlliancePose(B1.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-120)), Rotation2d.fromDegrees(60)),
+                new AllianceUtils.AlliancePose(B1.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-180)), new Rotation2d()),
+                new AllianceUtils.AlliancePose(B1.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-240)), Rotation2d.fromDegrees(-60)),
+                new AllianceUtils.AlliancePose(B1.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-300)), Rotation2d.fromDegrees(-120)),
         };
 
         public static final AllianceUtils.AlliancePose[] RIGHT_BRANCHES = {
                 new AllianceUtils.AlliancePose(B12, Rotation2d.fromDegrees(180)),
-                new AllianceUtils.AlliancePose(B12.rotateAround(BLUE_REEF_CENTER, Rotation2d.fromDegrees(-60)), Rotation2d.fromDegrees(120)),
-                new AllianceUtils.AlliancePose(B12.rotateAround(BLUE_REEF_CENTER, Rotation2d.fromDegrees(-120)), Rotation2d.fromDegrees(60)),
-                new AllianceUtils.AlliancePose(B12.rotateAround(BLUE_REEF_CENTER, Rotation2d.fromDegrees(-180)), new Rotation2d()),
-                new AllianceUtils.AlliancePose(B12.rotateAround(BLUE_REEF_CENTER, Rotation2d.fromDegrees(-240)), Rotation2d.fromDegrees(-60)),
-                new AllianceUtils.AlliancePose(B12.rotateAround(BLUE_REEF_CENTER, Rotation2d.fromDegrees(-300)), Rotation2d.fromDegrees(-120))
+                new AllianceUtils.AlliancePose(B12.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-60)), Rotation2d.fromDegrees(120)),
+                new AllianceUtils.AlliancePose(B12.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-120)), Rotation2d.fromDegrees(60)),
+                new AllianceUtils.AlliancePose(B12.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-180)), new Rotation2d()),
+                new AllianceUtils.AlliancePose(B12.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-240)), Rotation2d.fromDegrees(-60)),
+                new AllianceUtils.AlliancePose(B12.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-300)), Rotation2d.fromDegrees(-120))
         };
 
         public static final AllianceUtils.AlliancePose[] ALGAE_POSES = {
                 new AllianceUtils.AlliancePose(BASE_ALGAE, Rotation2d.fromDegrees(0)),
-                new AllianceUtils.AlliancePose(BASE_ALGAE.rotateAround(BLUE_REEF_CENTER, Rotation2d.fromDegrees(-60)), Rotation2d.fromDegrees(-60)),
-                new AllianceUtils.AlliancePose(BASE_ALGAE.rotateAround(BLUE_REEF_CENTER, Rotation2d.fromDegrees(-120)), Rotation2d.fromDegrees(-120)),
-                new AllianceUtils.AlliancePose(BASE_ALGAE.rotateAround(BLUE_REEF_CENTER, Rotation2d.fromDegrees(-180)), Rotation2d.fromDegrees(180)),
-                new AllianceUtils.AlliancePose(BASE_ALGAE.rotateAround(BLUE_REEF_CENTER, Rotation2d.fromDegrees(-240)), Rotation2d.fromDegrees(120)),
-                new AllianceUtils.AlliancePose(BASE_ALGAE.rotateAround(BLUE_REEF_CENTER, Rotation2d.fromDegrees(-300)), Rotation2d.fromDegrees(60)),
+                new AllianceUtils.AlliancePose(BASE_ALGAE.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-60)), Rotation2d.fromDegrees(-60)),
+                new AllianceUtils.AlliancePose(BASE_ALGAE.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-120)), Rotation2d.fromDegrees(-120)),
+                new AllianceUtils.AlliancePose(BASE_ALGAE.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-180)), Rotation2d.fromDegrees(180)),
+                new AllianceUtils.AlliancePose(BASE_ALGAE.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-240)), Rotation2d.fromDegrees(120)),
+                new AllianceUtils.AlliancePose(BASE_ALGAE.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-300)), Rotation2d.fromDegrees(60)),
         };
 
         public enum Side {
@@ -212,10 +216,7 @@ public final class Constants {
     }
 
     public static int DRIVER_CONTROLLER_PORT = 0;
-    public static int DRIVER_SIMULATION_CONTROLLER_PORT = 6;
-    public static int OPERATOR_CONTROLLER_PORT = 0;
     public static double MAX_AUTO_ALIGNMENT_DISTANCE = 0;
-    public static final double DEADBAND_VALUE = 0;
 
     public static final int AURORA_CLIENT_PORT = 5000;
 

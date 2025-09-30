@@ -38,7 +38,6 @@ public enum RobotState {
     LEFT_STAGE4_L4(ArmPosition.LEFT_L4_FOLLOWTHROUGH, ElevatorStates.L4_FOLLOWTHROUGH, IntakeState.DEFAULT, GripperStates.RELEASE_CORAL),
 
 
-
     // ------ ALGAE REMOVAL & SCORE ------
     RIGHT_ALGAE2(ArmPosition.RIGHT_ALGAE2, ElevatorStates.ALGAE2, IntakeState.DEFAULT, GripperStates.INTAKE_CORAL),
     LEFT_ALGAE2(ArmPosition.LEFT_ALGAE2, ElevatorStates.ALGAE2, IntakeState.DEFAULT, GripperStates.INTAKE_CORAL),
@@ -60,6 +59,7 @@ public enum RobotState {
     SCORE_L1(ArmPosition.DEFAULT_WITH_GAME_PIECE, ElevatorStates.DEFAULT_WITH_GAME_PIECE, IntakeState.L1_SCORE, GripperStates.VACENT),
     PRE_L1_WITH_ALGAE(ArmPosition.DEFAULT_WITH_GAME_PIECE, ElevatorStates.DEFAULT_WITH_GAME_PIECE, IntakeState.L1_SCORE, GripperStates.INTAKE_CORAL),
     SCORE_L1_WITH_ALGAE(ArmPosition.DEFAULT_WITH_GAME_PIECE, ElevatorStates.DEFAULT_WITH_GAME_PIECE, IntakeState.L1_SCORE, GripperStates.INTAKE_CORAL),
+
     FLOOR_INTAKE(ArmPosition.DEFAULT_WITH_GAME_PIECE, ElevatorStates.DEFAULT_WITH_GAME_PIECE, IntakeState.FLOOR_INTAKE, GripperStates.INTAKE_CORAL),
     FLOOR_INTAKE_WITH_ALGAE(ArmPosition.DEFAULT_WITH_GAME_PIECE, ElevatorStates.DEFAULT_WITH_GAME_PIECE, IntakeState.FLOOR_INTAKE, GripperStates.INTAKE_CORAL),
     EJECT_CORAL_FROM_INTAKE(ArmPosition.DEFAULT_WITH_GAME_PIECE, ElevatorStates.DEFAULT_WITH_GAME_PIECE, IntakeState.EJECT_CORAL, GripperStates.INTAKE_CORAL),

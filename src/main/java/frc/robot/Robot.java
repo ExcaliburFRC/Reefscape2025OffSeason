@@ -26,6 +26,8 @@ public class Robot extends TimedRobot implements Logged {
     public void robotPeriodic() {
         CommandScheduler.getInstance().run();
         Monologue.updateAll();
+//        m_robotContainer.preodic();
+
     }
 
     @Override

@@ -42,7 +42,7 @@ public class AllianceUtils {
     }
 
     public static Translation2d getReefCenter(){
-        return isBlueAlliance()? BLUE_REEF_CENTER : RED_REEF_CENTER;
+        return CURRENT_REEF_CENTER;
     }
 
     /**

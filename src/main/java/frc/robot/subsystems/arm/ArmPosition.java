@@ -37,7 +37,7 @@ public enum ArmPosition {
     LEFT_NET(0),
     LEFT_NET_POST(0),
 
-    DEFAULT_WITHOUT_GAME_PIECE(-Math.PI / 2),
+    DEFAULT_WITHOUT_GAME_PIECE(-1.5),
     DEFAULT_WITH_GAME_PIECE(Math.PI/2),
 
     LEFT_PROCESSOR(0),
