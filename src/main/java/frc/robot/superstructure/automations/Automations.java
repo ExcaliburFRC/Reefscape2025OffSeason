@@ -63,29 +63,24 @@ public class Automations implements Logged {
     }
 
     @Log.NT
-    public String getSlice() {
-        Translation2d robotTranslation = swerve.getPose2D().getTranslation();
-        if (AllianceUtils.isRedAlliance()) {
-            robotTranslation = new Translation2d(FIELD_LENGTH_METERS - robotTranslation.getX(), FIELD_WIDTH_METERS - robotTranslation.getY());
-        }
-        robotTranslation = robotTranslation.minus(AllianceUtils.getReefCenter());
-        double angle = robotTranslation.getAngle().getDegrees();
+    public Side getSlice() {
+        double angle = getAngleDiff();
         if (angle < 30 && angle > -30) {
-            return Side.NORTH.name();
+            return Side.SOUTH;
         }
         if (angle < -30 && angle > -90) {
-            return Side.NORTH_EAST.name();
+            return Side.SOUTH_WEST;
         }
         if (angle < -90 && angle > -150) {
-            return Side.SOUTH_EAST.name();
+            return Side.SOUTH_EAST;
         }
         if (angle > 150 || angle < -150) {
-            return Side.SOUTH.name();
+            return Side.NORTH;
         }
         if (angle > 90 && angle < 150) {
-            return Side.SOUTH_EAST.name();
+            return Side.NORTH_WEST;
         }
-        return Side.NORTH_EAST.name();
+        return Side.NORTH_EAST;
     }
 
     public BooleanSupplier isInTranslationTolerance(Translation2d translationCenter, DoubleSupplier tolerance) {
@@ -112,6 +107,16 @@ public class Automations implements Logged {
         }
         robotTranslation = robotTranslation.minus(AllianceUtils.getReefCenter());
         return robotTranslation.getAngle().getDegrees();
+    }
+
+    @Log.NT
+    public Pose2d getSetpointPerSlice(){
+        return AllianceUtils.switchAlliance(getSlice().leftBranchLeftScorePose.get());
+    }
+
+    @Log.NT
+    public Translation2d getReefCenter(){
+        return AllianceUtils.getReefCenter();
     }
 }
 

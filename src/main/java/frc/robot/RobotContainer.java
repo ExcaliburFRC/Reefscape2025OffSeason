@@ -63,14 +63,10 @@ public class RobotContainer implements Logged {
 //        driver.PS().onTrue(superstructure.setCurrentProcessCommand(Superstructure.Process.DEFAULT));
 //        driver.L1().onTrue(superstructure.setCurrentProcessCommand(Superstructure.Process.INTAKE_CORAL));
 
-//        driver.circle().onTrue(swerve.pidToPoseCommand(() -> new Pose2d(new Translation2d(), new Rotation2d(Math.PI / 2))));
-//        driver.square().onTrue(swerve.pidToPoseCommand(() -> new Pose2d(new Translation2d(), new Rotation2d())));
-//        driver.triangle().onTrue(swerve.pidToPoseCommand(() -> new Pose2d(new Translation2d(), new Rotation2d(Math.PI))));
-
-        driver.triangle().onTrue(new InstantCommand(() -> swerve.resetOdometry(new Pose2d(Constants.FieldConstants.B1_LEFT_SCORE, Rotation2d.k180deg))).ignoringDisable(true));
-        driver.povLeft().onTrue(new InstantCommand(() -> swerve.resetOdometry(new Pose2d(Constants.FieldConstants.B12_LEFT_SCORE, Rotation2d.k180deg))).ignoringDisable(true));
-        driver.circle().onTrue(new InstantCommand(() -> swerve.resetOdometry(new Pose2d(AllianceUtils.getReefCenter(), Rotation2d.kZero))).ignoringDisable(true));
-        driver.square().onTrue(new InstantCommand(() -> swerve.resetOdometry(new Pose2d(16, 2, Rotation2d.kZero))).ignoringDisable(true));
+//        driver.triangle().onTrue(new InstantCommand(() -> swerve.resetOdometry(new Pose2d(Constants.FieldConstants.B1_LEFT_SCORE, Rotation2d.k180deg))).ignoringDisable(true));
+//        driver.povLeft().onTrue(new InstantCommand(() -> swerve.resetOdometry(new Pose2d(Constants.FieldConstants.B12_LEFT_SCORE, Rotation2d.k180deg))).ignoringDisable(true));
+//        driver.circle().onTrue(new InstantCommand(() -> swerve.resetOdometry(new Pose2d(AllianceUtils.getReefCenter(), Rotation2d.kZero))).ignoringDisable(true));
+//        driver.square().onTrue(new InstantCommand(() -> swerve.resetOdometry(new Pose2d(16, 2, Rotation2d.kZero))).ignoringDisable(true));
         swerve.setDefaultCommand(
                 swerve.driveCommand(
                         () -> new Vector2D(
