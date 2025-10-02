@@ -163,10 +163,6 @@ public final class Constants {
 
         public static Translation2d CURRENT_REEF_CENTER = AllianceUtils.toAlliancePose(new Pose2d(new Translation2d((4.48945), FIELD_WIDTH / 2), new Rotation2d())).getTranslation();
 
-        //        public static Translation2d B1_LEFT_SCORE = new Translation2d(CURRENT_REEF_CENTER.getX() + 0.45, CURRENT_REEF_CENTER.getY() - 1.276);
-//        public static Translation2d B1_RIGHT_SCORE = new Translation2d(CURRENT_REEF_CENTER.getX() - 0.322, CURRENT_REEF_CENTER.getY() - 1.276);
-//        public static Translation2d B12_LEFT_SCORE = new Translation2d(CURRENT_REEF_CENTER.getX() + 0.329, CURRENT_REEF_CENTER.getY() - 1.276);
-//        public static Translation2d B12_RIGHT_SCORE = new Translation2d(CURRENT_REEF_CENTER.getX() - 0.45, CURRENT_REEF_CENTER.getY() - 1.276);
         public static Translation2d B1_LEFT_SCORE = new Translation2d(CURRENT_REEF_CENTER.getX() - 1.276, CURRENT_REEF_CENTER.getY() + 0.45);
         public static Translation2d B1_RIGHT_SCORE = new Translation2d(CURRENT_REEF_CENTER.getX() - 1.276, CURRENT_REEF_CENTER.getY() + 0.322);
         public static Translation2d B12_LEFT_SCORE = new Translation2d(CURRENT_REEF_CENTER.getX() - 1.276, CURRENT_REEF_CENTER.getY() - 0.329);
@@ -175,23 +171,19 @@ public final class Constants {
 
         public static final AllianceUtils.AlliancePose[] LEFT_BRANCHES_LEFT_SCORE = {
                 new AllianceUtils.AlliancePose(B1_LEFT_SCORE, Rotation2d.fromDegrees(180)),
-                new AllianceUtils.AlliancePose(B1_LEFT_SCORE.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-300)), Rotation2d.fromDegrees(-120)),
                 new AllianceUtils.AlliancePose(B1_LEFT_SCORE.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-60)), Rotation2d.fromDegrees(120)),
                 new AllianceUtils.AlliancePose(B1_LEFT_SCORE.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-120)), Rotation2d.fromDegrees(60)),
                 new AllianceUtils.AlliancePose(B1_LEFT_SCORE.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-180)), new Rotation2d()),
                 new AllianceUtils.AlliancePose(B1_LEFT_SCORE.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-240)), Rotation2d.fromDegrees(-60)),
-
-
+                new AllianceUtils.AlliancePose(B1_LEFT_SCORE.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-300)), Rotation2d.fromDegrees(-120)),
         };
         public static final AllianceUtils.AlliancePose[] LEFT_BRANCHES_RIGHT_SCORE = {
                 new AllianceUtils.AlliancePose(B1_RIGHT_SCORE, Rotation2d.fromDegrees(180)),
+                new AllianceUtils.AlliancePose(B1_RIGHT_SCORE.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-60)), Rotation2d.fromDegrees(120)),
+                new AllianceUtils.AlliancePose(B1_RIGHT_SCORE.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-120)), Rotation2d.fromDegrees(60)),
                 new AllianceUtils.AlliancePose(B1_RIGHT_SCORE.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-180)), new Rotation2d()),
                 new AllianceUtils.AlliancePose(B1_RIGHT_SCORE.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-240)), Rotation2d.fromDegrees(-60)),
                 new AllianceUtils.AlliancePose(B1_RIGHT_SCORE.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-300)), Rotation2d.fromDegrees(-120)),
-                new AllianceUtils.AlliancePose(B1_RIGHT_SCORE.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-60)), Rotation2d.fromDegrees(120)),
-                new AllianceUtils.AlliancePose(B1_RIGHT_SCORE.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-120)), Rotation2d.fromDegrees(60)),
-
-
         };
 
         public static final AllianceUtils.AlliancePose[] RIGHT_BRANCHES_LEFT_SCORE = {
@@ -224,9 +216,9 @@ public final class Constants {
         public enum Side {
             NORTH(LEFT_BRANCHES_LEFT_SCORE[0], LEFT_BRANCHES_RIGHT_SCORE[0], RIGHT_BRANCHES_RIGHT_SCORE[0], RIGHT_BRANCHES_LEFT_SCORE[0], ALGAE_POSES[0]),
             NORTH_EAST(LEFT_BRANCHES_LEFT_SCORE[1], LEFT_BRANCHES_RIGHT_SCORE[1], RIGHT_BRANCHES_RIGHT_SCORE[1], RIGHT_BRANCHES_LEFT_SCORE[1], ALGAE_POSES[1]),
-            SOUTH_WEST(LEFT_BRANCHES_LEFT_SCORE[2], LEFT_BRANCHES_RIGHT_SCORE[2], RIGHT_BRANCHES_RIGHT_SCORE[2], RIGHT_BRANCHES_LEFT_SCORE[2], ALGAE_POSES[2]),
-            SOUTH(LEFT_BRANCHES_LEFT_SCORE[4], LEFT_BRANCHES_RIGHT_SCORE[4], RIGHT_BRANCHES_RIGHT_SCORE[4], RIGHT_BRANCHES_LEFT_SCORE[4], ALGAE_POSES[4]),
-            SOUTH_EAST(LEFT_BRANCHES_LEFT_SCORE[3], LEFT_BRANCHES_RIGHT_SCORE[3], RIGHT_BRANCHES_RIGHT_SCORE[3], RIGHT_BRANCHES_LEFT_SCORE[3], ALGAE_POSES[3]),
+            SOUTH_EAST(LEFT_BRANCHES_LEFT_SCORE[2], LEFT_BRANCHES_RIGHT_SCORE[2], RIGHT_BRANCHES_RIGHT_SCORE[2], RIGHT_BRANCHES_LEFT_SCORE[2], ALGAE_POSES[2]),
+            SOUTH(LEFT_BRANCHES_LEFT_SCORE[3], LEFT_BRANCHES_RIGHT_SCORE[3], RIGHT_BRANCHES_RIGHT_SCORE[3], RIGHT_BRANCHES_LEFT_SCORE[3], ALGAE_POSES[3]),
+            SOUTH_WEST(LEFT_BRANCHES_LEFT_SCORE[4], LEFT_BRANCHES_RIGHT_SCORE[4], RIGHT_BRANCHES_RIGHT_SCORE[4], RIGHT_BRANCHES_LEFT_SCORE[4], ALGAE_POSES[4]),
             NORTH_WEST(LEFT_BRANCHES_LEFT_SCORE[5], LEFT_BRANCHES_RIGHT_SCORE[5], RIGHT_BRANCHES_RIGHT_SCORE[5], RIGHT_BRANCHES_LEFT_SCORE[5], ALGAE_POSES[5]);
 
             public final AllianceUtils.AlliancePose leftBranchLeftScorePose,

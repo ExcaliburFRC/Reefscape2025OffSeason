@@ -56,17 +56,9 @@ public class RobotContainer implements Logged {
 
     private void configureBindings() {
 
-//        driver.R1().onTrue(superstructure.setCurrentProcessCommand(Superstructure.Process.SCORE_CORAL));
-//        driver.triangle().onTrue(superstructure.setCoralScoreStateCommand(CoralScoreState.L4));
-//        driver.circle().onTrue(superstructure.setCoralScoreStateCommand(CoralScoreState.L3));
-//        driver.square().onTrue(superstructure.setCoralScoreStateCommand(CoralScoreState.L2));
-//        driver.PS().onTrue(superstructure.setCurrentProcessCommand(Superstructure.Process.DEFAULT));
-//        driver.L1().onTrue(superstructure.setCurrentProcessCommand(Superstructure.Process.INTAKE_CORAL));
+        driver.R1().whileTrue(new InstantCommand(() -> automations.getAlignmentTargetPose(true)).ignoringDisable(true));
+        driver.L1().whileTrue(new InstantCommand(() -> automations.getAlignmentTargetPose(false)).ignoringDisable(true));
 
-//        driver.triangle().onTrue(new InstantCommand(() -> swerve.resetOdometry(new Pose2d(Constants.FieldConstants.B1_LEFT_SCORE, Rotation2d.k180deg))).ignoringDisable(true));
-//        driver.povLeft().onTrue(new InstantCommand(() -> swerve.resetOdometry(new Pose2d(Constants.FieldConstants.B12_LEFT_SCORE, Rotation2d.k180deg))).ignoringDisable(true));
-//        driver.circle().onTrue(new InstantCommand(() -> swerve.resetOdometry(new Pose2d(AllianceUtils.getReefCenter(), Rotation2d.kZero))).ignoringDisable(true));
-//        driver.square().onTrue(new InstantCommand(() -> swerve.resetOdometry(new Pose2d(16, 2, Rotation2d.kZero))).ignoringDisable(true));
         swerve.setDefaultCommand(
                 swerve.driveCommand(
                         () -> new Vector2D(
@@ -78,11 +70,6 @@ public class RobotContainer implements Logged {
         );
 
         driver.options().whileTrue(new RunCommand(() -> swerve.resetOdometry(new Pose2d(0, 0, Rotation2d.kZero))).ignoringDisable(true));
-
-//        driver.touchpad().whileTrue(superstructure.elevatorSubsystem.coastCommand().ignoringDisable(true));
-
-//        driver.povDown().toggleOnTrue(superstructure.intakeSubsystem.resetAngleCommand().ignoringDisable(true));
-//        driver.create().onTrue(superstructure.elevatorSubsystem.setElevatorHeightCommand(0.15).ignoringDisable(true));
 
     }
 

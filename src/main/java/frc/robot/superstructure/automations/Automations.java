@@ -24,9 +24,7 @@ import static frc.excalib.additional_utilities.AllianceUtils.FIELD_WIDTH_METERS;
 import static monologue.Annotations.*;
 
 public class Automations implements Logged {
-    public Map<RobotState, Command> scoreMap = new HashMap<>();
-    public RobotState scoreState = RobotState.DEFAULT_WITH_GAME_PIECE;
-
+    private Pose2d currentSetpoint = new Pose2d();
     public Swerve swerve;
 //    public Superstructure superstructure;
 
@@ -45,9 +43,7 @@ public class Automations implements Logged {
         return swerve
                 .pidToPoseCommand(
                         () -> getAlignmentTargetPose(
-                                swerve.getPose2D(),
-                                rightBranch)
-                                .get())
+                                rightBranch))
                 .unless
                         (isInTranslationTolerance(
                                 AllianceUtils.getReefCenter(),
@@ -55,11 +51,12 @@ public class Automations implements Logged {
                         ));
     }
 
-    public AllianceUtils.AlliancePose getAlignmentTargetPose(Pose2d currentPose, boolean rightBranch) {
-//        if (rightBranch)
-//            return getSlice(swerve.getPose2D().getTranslation()).rightBranchLeftScorePose;
-//        return getSlice(swerve.getPose2D().getTranslation()).leftBranchLeftScorePose;
-        return null;
+    public Pose2d getAlignmentTargetPose(boolean rightBranch) {
+        if (rightBranch)
+            currentSetpoint = AllianceUtils.switchAlliance(getSlice().rightBranchLeftScorePose.get());
+        else
+            currentSetpoint = AllianceUtils.switchAlliance(getSlice().leftBranchLeftScorePose.get());
+        return currentSetpoint;
     }
 
     @Log.NT
@@ -72,15 +69,15 @@ public class Automations implements Logged {
             return Side.SOUTH_WEST;
         }
         if (angle < -90 && angle > -150) {
-            return Side.SOUTH_EAST;
+            return Side.NORTH_WEST;
         }
         if (angle > 150 || angle < -150) {
             return Side.NORTH;
         }
         if (angle > 90 && angle < 150) {
-            return Side.NORTH_WEST;
+            return Side.NORTH_EAST;
         }
-        return Side.NORTH_EAST;
+        return Side.SOUTH_EAST;
     }
 
     public BooleanSupplier isInTranslationTolerance(Translation2d translationCenter, DoubleSupplier tolerance) {
@@ -102,7 +99,7 @@ public class Automations implements Logged {
     @Log.NT
     public double getAngleDiff() {
         Translation2d robotTranslation = swerve.getPose2D().getTranslation();
-        if (AllianceUtils.isRedAlliance()) {
+        if (AllianceUtils.isBlueAlliance()) {
             robotTranslation = new Translation2d(FIELD_LENGTH_METERS - robotTranslation.getX(), FIELD_WIDTH_METERS - robotTranslation.getY());
         }
         robotTranslation = robotTranslation.minus(AllianceUtils.getReefCenter());
@@ -110,13 +107,18 @@ public class Automations implements Logged {
     }
 
     @Log.NT
-    public Pose2d getSetpointPerSlice(){
+    public Pose2d getSetpointPerSlice() {
         return AllianceUtils.switchAlliance(getSlice().leftBranchLeftScorePose.get());
     }
 
     @Log.NT
-    public Translation2d getReefCenter(){
+    public Translation2d getReefCenter() {
         return AllianceUtils.getReefCenter();
+    }
+
+    @Log.NT
+    public Pose2d getCurrentSetpoint() {
+        return currentSetpoint;
     }
 }
 

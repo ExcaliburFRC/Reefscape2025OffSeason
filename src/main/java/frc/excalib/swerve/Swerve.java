@@ -401,23 +401,23 @@ public class Swerve extends SubsystemBase implements Logged {
      * A function that initialize the Swerve tab for Elastic.
      */
     public void initElastic() {
-        SmartDashboard.putData("Swerve Drive", builder -> {
-            builder.setSmartDashboardType("SwerveDrive");
-
-            builder.addDoubleProperty("Front Left Angle", () -> modules.m_frontLeft.getPosition().getRadians(), null);
-            builder.addDoubleProperty("Front Left Velocity", () -> modules.m_frontLeft.getVelocity().getDistance(), null);
-
-            builder.addDoubleProperty("Front Right Angle", () -> modules.m_frontRight.getPosition().getRadians(), null);
-            builder.addDoubleProperty("Front Right Velocity", () -> modules.m_frontLeft.getVelocity().getDistance(), null);
-
-            builder.addDoubleProperty("Back Left Angle", () -> modules.m_backLeft.getPosition().getRadians(), null);
-            builder.addDoubleProperty("Back Left Velocity", () -> modules.m_frontLeft.getVelocity().getDistance(), null);
-
-            builder.addDoubleProperty("Back Right Angle", () -> modules.m_backRight.getPosition().getRadians(), null);
-            builder.addDoubleProperty("Back Right Velocity", () -> modules.m_frontLeft.getVelocity().getDistance(), null);
-
-            builder.addDoubleProperty("Robot Angle", () -> getRotation2D().getRadians(), null);
-        });
+//        SmartDashboard.putData("Swerve Drive", builder -> {
+//            builder.setSmartDashboardType("SwerveDrive");
+//
+//            builder.addDoubleProperty("Front Left Angle", () -> modules.m_frontLeft.getPosition().getRadians(), null);
+//            builder.addDoubleProperty("Front Left Velocity", () -> modules.m_frontLeft.getVelocity().getDistance(), null);
+//
+//            builder.addDoubleProperty("Front Right Angle", () -> modules.m_frontRight.getPosition().getRadians(), null);
+//            builder.addDoubleProperty("Front Right Velocity", () -> modules.m_frontLeft.getVelocity().getDistance(), null);
+//
+//            builder.addDoubleProperty("Back Left Angle", () -> modules.m_backLeft.getPosition().getRadians(), null);
+//            builder.addDoubleProperty("Back Left Velocity", () -> modules.m_frontLeft.getVelocity().getDistance(), null);
+//
+//            builder.addDoubleProperty("Back Right Angle", () -> modules.m_backRight.getPosition().getRadians(), null);
+//            builder.addDoubleProperty("Back Right Velocity", () -> modules.m_frontLeft.getVelocity().getDistance(), null);
+//
+//            builder.addDoubleProperty("Robot Angle", () -> getRotation2D().getRadians(), null);
+//        });
 
         SmartDashboard.putData("Field", field);
 
