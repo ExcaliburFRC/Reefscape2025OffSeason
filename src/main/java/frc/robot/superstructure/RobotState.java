@@ -34,8 +34,8 @@ public enum RobotState {
     PROCESSOR(ArmPosition.PROCESSOR, ElevatorStates.PROCESSOR, IntakeState.DEFAULT, GripperStates.RELEASE_ALGAE),
 
     NET_SCORE_STAGE_1(ArmPosition.UPWARDS, ElevatorStates.NET, IntakeState.DEFAULT, GripperStates.ALGAE),
-    NET_SCORE_STAGE_2(ArmPosition.PRE_NET, ElevatorStates.NET, IntakeState.DEFAULT, GripperStates.ALGAE),
-    NET_SCORE_STAGE_3(ArmPosition.SCORE_NET, ElevatorStates.NET, IntakeState.DEFAULT, GripperStates.RELEASE_ALGAE),
+    NET_SCORE_STAGE_2(ArmPosition.NET, ElevatorStates.NET, IntakeState.DEFAULT, GripperStates.ALGAE),
+    NET_SCORE_STAGE_3(ArmPosition.NET, ElevatorStates.NET, IntakeState.DEFAULT, GripperStates.RELEASE_ALGAE),
     NET_SCORE_STAGE_4(ArmPosition.UPWARDS, ElevatorStates.NET, IntakeState.DEFAULT, GripperStates.VACENT),
 
     // CORAL INTAKE

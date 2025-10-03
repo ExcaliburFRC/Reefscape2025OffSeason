@@ -1,21 +1,19 @@
 package frc.robot.subsystems.arm;
 
 public enum ArmPosition { // todo
-    PRE_CORAL_SCORE(0.3),
+    PRE_CORAL_SCORE(1.084),
 
-    TILTED_BRANCH_CORAL_SCORE(0),
-    TILTED_BRANCH_CORAL_SCORE_POST(0),
+    TILTED_BRANCH_CORAL_SCORE(0.421),
+    TILTED_BRANCH_CORAL_SCORE_POST(1.841),
 
-    L4(-0.05),
-    L4_POST(0),
+    L4(0.5614),
+    L4_POST(1.841),
 
     INTAKE_ALGAE(0),
 
-    PRE_NET(0),
-    SCORE_NET(0),
-    POST_NET(0),
+    NET(0),
 
-    DOWNWARDS(4.71),
+    DOWNWARDS(1.5 * Math.PI),
 
     UPWARDS(Math.PI / 2),
 
