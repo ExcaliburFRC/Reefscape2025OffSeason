@@ -42,7 +42,7 @@ public class RobotContainer implements Logged {
 
     AuroraClient client = new AuroraClient(AURORA_CLIENT_PORT);
 
-//    Superstructure superstructure = new Superstructure(new Trigger(() -> true), driver.R2());
+    Superstructure superstructure = new Superstructure(new Trigger(() -> true), driver.R2());
 
     Swerve swerve = Constants.SwerveConstants.configureSwerve(new Pose2d());
 
@@ -56,9 +56,13 @@ public class RobotContainer implements Logged {
 
     private void configureBindings() {
 
-        driver.R1().whileTrue(new InstantCommand(() -> automations.getAlignmentTargetPose(true)).ignoringDisable(true));
-        driver.L1().whileTrue(new InstantCommand(() -> automations.getAlignmentTargetPose(false)).ignoringDisable(true));
+        driver.R1().onTrue(superstructure.setCurrentProcessCommand(Superstructure.Process.SCORE_CORAL));
+        driver.triangle().onTrue(superstructure.setCoralScoreStateCommand(CoralScoreState.L4));
+        driver.circle().onTrue(superstructure.setCoralScoreStateCommand(CoralScoreState.L3));
+        driver.square().onTrue(superstructure.setCoralScoreStateCommand(CoralScoreState.L2));
+        driver.cross().onTrue(superstructure.setCurrentProcessCommand(Superstructure.Process.DEFAULT));
 
+        driver.povDown().onTrue(superstructure.setCurrentProcessCommand(Superstructure.Process.INTAKE_CORAL));
         swerve.setDefaultCommand(
                 swerve.driveCommand(
                         () -> new Vector2D(
@@ -69,7 +73,11 @@ public class RobotContainer implements Logged {
                 )
         );
 
-        driver.options().whileTrue(new RunCommand(() -> swerve.resetOdometry(new Pose2d(0, 0, Rotation2d.kZero))).ignoringDisable(true));
+        driver.touchpad().whileTrue(superstructure.elevatorSubsystem.coastCommand().ignoringDisable(true));
+
+        driver.options().toggleOnTrue(superstructure.intakeSubsystem.resetAngleCommand().ignoringDisable(true));
+        driver.create().onTrue(superstructure.elevatorSubsystem.setElevatorHeightCommand(0.15).ignoringDisable(true));
+
 
     }
 

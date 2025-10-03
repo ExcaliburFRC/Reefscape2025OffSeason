@@ -16,8 +16,9 @@ public enum ElevatorStates {
     PRE_HANDOFF(1.03),
     NET(0),
     PROCESSOR(0),
-    DEFAULT_WITH_GAME_PIECE(0.4),
-    DEFAULT_WITHOUT_GAME_PIECE(0);
+    DEFAULT_WITH_CORAL(0.4),
+    DEFAULT_WITH_ALGAE(0.6),
+    DEFAULT_WITHOUT_GAME_PIECE(0.98);
 
     private final double height;
 

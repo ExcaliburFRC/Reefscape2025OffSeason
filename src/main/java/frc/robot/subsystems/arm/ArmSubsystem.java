@@ -76,8 +76,8 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
                 VELOCITY_LIMIT,
                 new Gains(3, 0, 0.1, 0, 0, 0, 0.8),
                 new Mass(
-                        () -> Math.cos(angleSupplier.getAsDouble()),
-                        () -> Math.sin(angleSupplier.getAsDouble()),
+                        () -> Math.cos(angleSupplier.getAsDouble() + ARM_MASS_TO_AXIS_OFFSET),
+                        () -> Math.sin(angleSupplier.getAsDouble() + ARM_MASS_TO_AXIS_OFFSET),
                         1
                 )
         );
@@ -86,8 +86,7 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
                 () -> (
                         Math.abs(getLimitedSetpoint() - angleSupplier.getAsDouble()) < POSITION_TOLERANCE_RAD));
 
-        limitHelper = new ContinuousSoftLimit(() -> -8.3, () -> 6.7);
-
+        limitHelper = new ContinuousSoftLimit(() -> -MAX_SCORE_RAD, () -> 3 * Math.PI + MAX_SCORE_RAD);
 
         softLimit = new ContinuousSoftLimit(
                 () -> {
@@ -97,10 +96,11 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
                                 angleSupplier.getAsDouble(), Math.PI / 2) + 1.1 - Math.PI / 2;
                     }
                     if (heightDiff > ARM_LENGTH) {
-                        return -10;
+                        return limitHelper.getMinLimit();
+
                     }
                     return limitHelper.getSetpoint(
-                            angleSupplier.getAsDouble(), Math.PI / 2) + getMin() - Math.PI / 2 ;
+                            angleSupplier.getAsDouble(), Math.PI / 2) + getMin() - Math.PI / 2;
                 },
                 () -> {
                     double heightDiff = elevatorHeightSupplier.getAsDouble() - INTAKE_HEIGHT;
@@ -109,11 +109,11 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
                                 angleSupplier.getAsDouble(), Math.PI / 2) + 1.8 - Math.PI / 2;
                     }
                     if (heightDiff > ARM_LENGTH) {
-                        return 3.5;
+                        return limitHelper.getMaxLimit();
                     }
 
                     return limitHelper.getSetpoint(
-                            angleSupplier.getAsDouble(), Math.PI / 2) + getMax() - Math.PI / 2 ;
+                            angleSupplier.getAsDouble(), Math.PI / 2) + getMax() - Math.PI / 2;
                 }
         );
 
@@ -130,7 +130,8 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
                         softLimit.getSetpoint(
                                 angleSupplier.getAsDouble(),
                                 currentState.getAngle()
-                        )),
+                        )
+                ),
                 (at) -> at = false,
                 POSITION_TOLERANCE_RAD,
                 this

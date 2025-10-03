@@ -7,10 +7,10 @@ public class Constants {
     public static final int CAN_CODER_ID = 22;
     public static final SoftLimit VELOCITY_LIMIT = new SoftLimit(() -> -10, () -> 10);
     public static final double RPS_TO_RAD_PER_SEC = Math.PI * 2;
-    public static final double ARM_COLISION_ELEVATOR_LENGTH = 0;
-
-    public static final double ROTATIONS_TO_RAD = 2 * Math.PI;
 
     public static final double INTAKE_HEIGHT = 0.32;
     public static final double ARM_LENGTH = 0.60;
+
+    public static final double ARM_MASS_TO_AXIS_OFFSET = 0.07079632;
+    public static final double MAX_SCORE_RAD = 0.88;
 }

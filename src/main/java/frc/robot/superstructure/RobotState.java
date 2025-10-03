@@ -6,76 +6,51 @@ import frc.robot.subsystems.gripper.GripperStates;
 import frc.robot.subsystems.intake.IntakeState;
 
 public enum RobotState {
-    // ------ HIGH REEF CORAL SCORE ------
-    RIGHT_STAGE1_L2(ArmPosition.GO_THROUGH_FOR_RIGHT, ElevatorStates.L2, IntakeState.DEFAULT, GripperStates.VACENT),
-    RIGHT_STAGE2_L2(ArmPosition.RIGHT_PRE_L2, ElevatorStates.L2, IntakeState.DEFAULT, GripperStates.VACENT),
-    RIGHT_STAGE3_L2(ArmPosition.RIGHT_L2, ElevatorStates.L2, IntakeState.DEFAULT, GripperStates.RELEASE_CORAL),
-    RIGHT_STAGE4_L2(ArmPosition.RIGHT_L2_FOLLOWTHROUGH, ElevatorStates.L2_FOLLOWTHROUGH, IntakeState.DEFAULT, GripperStates.RELEASE_CORAL),
+    PRE_L2(ArmPosition.PRE_L2, ElevatorStates.L2, IntakeState.DEFAULT, GripperStates.VACENT),
+    SCORE_L2(ArmPosition.L2, ElevatorStates.L2, IntakeState.DEFAULT, GripperStates.VACENT),
+    POST_L2(ArmPosition.L2_FOLLOWTHROUGH, ElevatorStates.L2_FOLLOWTHROUGH, IntakeState.DEFAULT, GripperStates.RELEASE_CORAL),
 
-    RIGHT_STAGE1_L3(ArmPosition.GO_THROUGH_FOR_RIGHT, ElevatorStates.L3, IntakeState.DEFAULT, GripperStates.VACENT),
-    RIGHT_STAGE2_L3(ArmPosition.RIGHT_PRE_L3, ElevatorStates.L3, IntakeState.DEFAULT, GripperStates.VACENT),
-    RIGHT_STAGE3_L3(ArmPosition.RIGHT_L3, ElevatorStates.L3, IntakeState.DEFAULT, GripperStates.RELEASE_CORAL),
-    RIGHT_STAGE4_L3(ArmPosition.RIGHT_L3_FOLLOWTHROUGH, ElevatorStates.L3_FOLLOWTHROUGH, IntakeState.DEFAULT, GripperStates.RELEASE_CORAL),
+    PRE_L3(ArmPosition.PRE_L3, ElevatorStates.L3, IntakeState.DEFAULT, GripperStates.VACENT),
+    SCORE_L3(ArmPosition.L3, ElevatorStates.L3, IntakeState.DEFAULT, GripperStates.VACENT),
+    POST_L3(ArmPosition.L3_FOLLOWTHROUGH, ElevatorStates.L3_FOLLOWTHROUGH, IntakeState.DEFAULT, GripperStates.RELEASE_CORAL),
 
-    RIGHT_STAGE1_L4(ArmPosition.GO_THROUGH_FOR_RIGHT, ElevatorStates.L4, IntakeState.DEFAULT, GripperStates.VACENT),
-    RIGHT_STAGE2_L4(ArmPosition.RIGHT_PRE_L4, ElevatorStates.L4, IntakeState.DEFAULT, GripperStates.VACENT),
-    RIGHT_STAGE3_L4(ArmPosition.RIGHT_L4, ElevatorStates.L4, IntakeState.DEFAULT, GripperStates.RELEASE_CORAL),
-    RIGHT_STAGE4_L4(ArmPosition.RIGHT_L4_FOLLOWTHROUGH, ElevatorStates.L4_FOLLOWTHROUGH, IntakeState.DEFAULT, GripperStates.RELEASE_CORAL),
+    PRE_L4(ArmPosition.PRE_L4, ElevatorStates.L4, IntakeState.DEFAULT, GripperStates.VACENT),
+    SCORE_L4(ArmPosition.L4, ElevatorStates.L4, IntakeState.DEFAULT, GripperStates.VACENT),
+    POST_L4(ArmPosition.L4_FOLLOWTHROUGH, ElevatorStates.L4_FOLLOWTHROUGH, IntakeState.DEFAULT, GripperStates.RELEASE_CORAL),
 
-    LEFT_STAGE1_L2(ArmPosition.GO_THROUGH_FOR_LEFT, ElevatorStates.L2, IntakeState.DEFAULT, GripperStates.VACENT),
-    LEFT_STAGE2_L2(ArmPosition.LEFT_PRE_L2, ElevatorStates.L2, IntakeState.DEFAULT, GripperStates.VACENT),
-    LEFT_STAGE3_L2(ArmPosition.LEFT_L2, ElevatorStates.L2, IntakeState.DEFAULT, GripperStates.VACENT),
-    LEFT_STAGE4_L2(ArmPosition.LEFT_L2_FOLLOWTHROUGH, ElevatorStates.L2_FOLLOWTHROUGH, IntakeState.DEFAULT, GripperStates.RELEASE_CORAL),
+    ALGAE2_INTAKE(ArmPosition.INTAKE_ALGAE, ElevatorStates.ALGAE2, IntakeState.DEFAULT, GripperStates.INTAKE_CORAL),
 
-    LEFT_STAGE1_L3(ArmPosition.GO_THROUGH_FOR_LEFT, ElevatorStates.L3, IntakeState.DEFAULT, GripperStates.VACENT),
-    LEFT_STAGE2_L3(ArmPosition.LEFT_PRE_L3, ElevatorStates.L3, IntakeState.DEFAULT, GripperStates.VACENT),
-    LEFT_STAGE3_L3(ArmPosition.LEFT_L3, ElevatorStates.L3, IntakeState.DEFAULT, GripperStates.VACENT),
-    LEFT_STAGE4_L3(ArmPosition.LEFT_L3_FOLLOWTHROUGH, ElevatorStates.L3_FOLLOWTHROUGH, IntakeState.DEFAULT, GripperStates.RELEASE_CORAL),
+    ALGAE3_INTAKE(ArmPosition.INTAKE_ALGAE, ElevatorStates.ALGAE3, IntakeState.DEFAULT, GripperStates.INTAKE_CORAL),
 
-    LEFT_STAGE1_L4(ArmPosition.GO_THROUGH_FOR_LEFT, ElevatorStates.L4, IntakeState.DEFAULT, GripperStates.VACENT),
-    LEFT_STAGE2_L4(ArmPosition.LEFT_PRE_L4, ElevatorStates.L4, IntakeState.DEFAULT, GripperStates.VACENT),
-    LEFT_STAGE3_L4(ArmPosition.LEFT_L4, ElevatorStates.L4, IntakeState.DEFAULT, GripperStates.VACENT),
-    LEFT_STAGE4_L4(ArmPosition.LEFT_L4_FOLLOWTHROUGH, ElevatorStates.L4_FOLLOWTHROUGH, IntakeState.DEFAULT, GripperStates.RELEASE_CORAL),
+    PRE_PROCESSOR(ArmPosition.PROCESSOR, ElevatorStates.PROCESSOR, IntakeState.DEFAULT, GripperStates.INTAKE_CORAL),
+    PROCESSOR(ArmPosition.PROCESSOR, ElevatorStates.PROCESSOR, IntakeState.DEFAULT, GripperStates.INTAKE_CORAL),
 
+    NET_SCORE_STAGE_1(ArmPosition.DEFAULT_WITH_GAME_PIECE, ElevatorStates.NET, IntakeState.DEFAULT, GripperStates.ALGAE),
+    NET_SCORE_STAGE_2(ArmPosition.PRE_NET, ElevatorStates.NET, IntakeState.DEFAULT, GripperStates.ALGAE),
+    NET_SCORE_STAGE_3(ArmPosition.SCORE_NET, ElevatorStates.NET, IntakeState.DEFAULT, GripperStates.RELEASE_ALGAE),
+    NET_SCORE_STAGE_4(ArmPosition.DEFAULT_WITH_GAME_PIECE, ElevatorStates.NET, IntakeState.DEFAULT, GripperStates.VACENT),
 
-    // ------ ALGAE REMOVAL & SCORE ------
-    RIGHT_ALGAE2(ArmPosition.RIGHT_ALGAE2, ElevatorStates.ALGAE2, IntakeState.DEFAULT, GripperStates.INTAKE_CORAL),
-    LEFT_ALGAE2(ArmPosition.LEFT_ALGAE2, ElevatorStates.ALGAE2, IntakeState.DEFAULT, GripperStates.INTAKE_CORAL),
+    L1_DEFAULT(ArmPosition.DOWNWARDS, ElevatorStates.DEFAULT_WITHOUT_GAME_PIECE, IntakeState.DEFAULT, GripperStates.VACENT),
+    PRE_L1(ArmPosition.DEFAULT_WITH_GAME_PIECE, ElevatorStates.DEFAULT_WITH_CORAL, IntakeState.L1_SCORE_PRE, GripperStates.VACENT),
+    SCORE_L1(ArmPosition.DEFAULT_WITH_GAME_PIECE, ElevatorStates.DEFAULT_WITH_CORAL, IntakeState.L1_SCORE, GripperStates.VACENT),
+    PRE_L1_WITH_ALGAE(ArmPosition.DEFAULT_WITH_GAME_PIECE, ElevatorStates.DEFAULT_WITH_ALGAE, IntakeState.L1_SCORE, GripperStates.INTAKE_CORAL),
+    SCORE_L1_WITH_ALGAE(ArmPosition.DEFAULT_WITH_GAME_PIECE, ElevatorStates.DEFAULT_WITH_ALGAE, IntakeState.L1_SCORE, GripperStates.INTAKE_CORAL),
 
-    LEFT_ALGAE3(ArmPosition.LEFT_ALGAE3, ElevatorStates.ALGAE3, IntakeState.DEFAULT, GripperStates.INTAKE_CORAL),
-    RIGHT_ALGAE3(ArmPosition.RIGHT_ALGAE3, ElevatorStates.ALGAE3, IntakeState.DEFAULT, GripperStates.INTAKE_CORAL),
+    FLOOR_INTAKE(ArmPosition.DOWNWARDS, ElevatorStates.DEFAULT_WITHOUT_GAME_PIECE, IntakeState.FLOOR_INTAKE, GripperStates.INTAKE_CORAL),
+    FLOOR_INTAKE_WITH_ALGAE(ArmPosition.DEFAULT_WITH_GAME_PIECE, ElevatorStates.DEFAULT_WITHOUT_GAME_PIECE, IntakeState.FLOOR_INTAKE, GripperStates.ALGAE),
 
-    RIGHT_NET(ArmPosition.RIGHT_NET_POST, ElevatorStates.NET, IntakeState.DEFAULT, GripperStates.INTAKE_CORAL),
-    RIGHT_NET_PRE(ArmPosition.RIGHT_NET, ElevatorStates.NET, IntakeState.DEFAULT, GripperStates.INTAKE_CORAL),
-    LEFT_NET(ArmPosition.LEFT_NET_POST, ElevatorStates.NET, IntakeState.DEFAULT, GripperStates.INTAKE_CORAL),
-    LEFT_NET_PRE(ArmPosition.LEFT_NET, ElevatorStates.NET, IntakeState.DEFAULT, GripperStates.INTAKE_CORAL),
+    CENTERLIZE(ArmPosition.DEFAULT_WITH_GAME_PIECE, ElevatorStates.DEFAULT_WITHOUT_GAME_PIECE, IntakeState.CENTERLIZE, GripperStates.VACENT),
+    DEFAULT_WITHOUT_GAME_PIECE(ArmPosition.DOWNWARDS, ElevatorStates.DEFAULT_WITHOUT_GAME_PIECE, IntakeState.DEFAULT, GripperStates.INTAKE_CORAL),
 
-    RIGHT_PROCESSOR(ArmPosition.RIGHT_PROCESSOR, ElevatorStates.PROCESSOR, IntakeState.DEFAULT, GripperStates.INTAKE_CORAL),
-    LEFT_PROCESSOR(ArmPosition.LEFT_PROCESSOR, ElevatorStates.PROCESSOR, IntakeState.DEFAULT, GripperStates.INTAKE_CORAL),
+    DEFAULT_WITH_CORAL(ArmPosition.DEFAULT_WITH_GAME_PIECE, ElevatorStates.DEFAULT_WITH_CORAL, IntakeState.DEFAULT, GripperStates.VACENT),
+    DEFAULT_WITH_ALGAE(ArmPosition.DEFAULT_WITH_GAME_PIECE, ElevatorStates.DEFAULT_WITH_ALGAE, IntakeState.DEFAULT, GripperStates.VACENT),
 
-
-    // ------ INTAKE ------
-    PRE_L1(ArmPosition.DEFAULT_WITH_GAME_PIECE, ElevatorStates.DEFAULT_WITH_GAME_PIECE, IntakeState.L1_SCORE_PRE, GripperStates.VACENT),
-    SCORE_L1(ArmPosition.DEFAULT_WITH_GAME_PIECE, ElevatorStates.DEFAULT_WITH_GAME_PIECE, IntakeState.L1_SCORE, GripperStates.VACENT),
-    PRE_L1_WITH_ALGAE(ArmPosition.DEFAULT_WITH_GAME_PIECE, ElevatorStates.DEFAULT_WITH_GAME_PIECE, IntakeState.L1_SCORE, GripperStates.INTAKE_CORAL),
-    SCORE_L1_WITH_ALGAE(ArmPosition.DEFAULT_WITH_GAME_PIECE, ElevatorStates.DEFAULT_WITH_GAME_PIECE, IntakeState.L1_SCORE, GripperStates.INTAKE_CORAL),
-
-    FLOOR_INTAKE(ArmPosition.DEFAULT_WITH_GAME_PIECE, ElevatorStates.DEFAULT_WITH_GAME_PIECE, IntakeState.FLOOR_INTAKE, GripperStates.INTAKE_CORAL),
-    FLOOR_INTAKE_WITH_ALGAE(ArmPosition.DEFAULT_WITH_GAME_PIECE, ElevatorStates.DEFAULT_WITH_GAME_PIECE, IntakeState.FLOOR_INTAKE, GripperStates.INTAKE_CORAL),
-    EJECT_CORAL_FROM_INTAKE(ArmPosition.DEFAULT_WITH_GAME_PIECE, ElevatorStates.DEFAULT_WITH_GAME_PIECE, IntakeState.EJECT_CORAL, GripperStates.INTAKE_CORAL),
-    EJECT_GAME_PIECE_FROM_GRIPPER(ArmPosition.EJECT_GAME_PIECE, ElevatorStates.DEFAULT_WITH_GAME_PIECE, IntakeState.DEFAULT, GripperStates.INTAKE_CORAL),
-
-
-    // ------ GENERAL ------
-    DEFAULT_WITH_GAME_PIECE(ArmPosition.DEFAULT_WITH_GAME_PIECE, ElevatorStates.DEFAULT_WITH_GAME_PIECE, IntakeState.DEFAULT, GripperStates.VACENT),
-    DEFAULT_WITHOUT_GAME_PIECE(ArmPosition.DEFAULT_WITHOUT_GAME_PIECE, ElevatorStates.DEFAULT_WITH_GAME_PIECE, IntakeState.DEFAULT, GripperStates.INTAKE_CORAL),
     PRE_HANDOFF(ArmPosition.HANDOFF, ElevatorStates.PRE_HANDOFF, IntakeState.DEFAULT, GripperStates.INTAKE_CORAL),
     HANDOFF(ArmPosition.HANDOFF, ElevatorStates.HANDOFF, IntakeState.HANDOFF, GripperStates.INTAKE_CORAL),
     PRE_REVERSE_HANDOFF(ArmPosition.HANDOFF, ElevatorStates.HANDOFF, IntakeState.REVERSE_HANDOFF, GripperStates.CORAL),
+
     REVERSE_HANDOFF(ArmPosition.HANDOFF, ElevatorStates.HANDOFF, IntakeState.REVERSE_HANDOFF, GripperStates.RELEASE_CORAL),
     CLIMB(ArmPosition.HANDOFF, ElevatorStates.HANDOFF, IntakeState.HANDOFF, GripperStates.INTAKE_CORAL);
-
-
 
     ArmPosition armPosition;
     ElevatorStates elevatorState;

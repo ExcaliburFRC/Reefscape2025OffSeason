@@ -52,10 +52,19 @@ public class Automations implements Logged {
     }
 
     public Pose2d getAlignmentTargetPose(boolean rightBranch) {
-        if (rightBranch)
-            currentSetpoint = AllianceUtils.switchAlliance(getSlice().rightBranchLeftScorePose.get());
-        else
-            currentSetpoint = AllianceUtils.switchAlliance(getSlice().leftBranchLeftScorePose.get());
+        if (rightBranch) {
+            if (getSlice().angle - swerve.getPose2D().getRotation().getDegrees() < 90) {
+                currentSetpoint = AllianceUtils.switchAlliance(getSlice().rightBranchLeftScorePose.get());
+            } else {
+                currentSetpoint = AllianceUtils.switchAlliance(getSlice().rightBranchRightScorePose.get());
+            }
+        } else {
+            if (getSlice().angle - swerve.getPose2D().getRotation().getDegrees() < 90) {
+                currentSetpoint = AllianceUtils.switchAlliance(getSlice().leftBranchLeftScorePose.get());
+            } else {
+                currentSetpoint = AllianceUtils.switchAlliance(getSlice().leftBranchRightScorePose.get());
+            }
+        }
         return currentSetpoint;
     }
 
