@@ -1,17 +1,13 @@
 package frc.robot.subsystems.arm;
 
-public enum ArmPosition {
-    PRE_L2(0.345),
-    L2(0.04),
-    L2_FOLLOWTHROUGH(-0.4),
+public enum ArmPosition { // todo
+    PRE_CORAL_SCORE(0.3),
 
-    PRE_L3(0.8964),
-    L3(0.4171),
-    L3_FOLLOWTHROUGH(-0.216),
+    TILTED_BRANCH_CORAL_SCORE(0),
+    TILTED_BRANCH_CORAL_SCORE_POST(0),
 
-    PRE_L4(0.9826738),
     L4(-0.05),
-    L4_FOLLOWTHROUGH(0),
+    L4_POST(0),
 
     INTAKE_ALGAE(0),
 
@@ -20,15 +16,10 @@ public enum ArmPosition {
     POST_NET(0),
 
     DOWNWARDS(4.71),
-    DEFAULT_WITH_GAME_PIECE(Math.PI / 2),
 
-    PROCESSOR(0),
+    UPWARDS(Math.PI / 2),
 
-    HANDOFF(4.653),
-
-    EJECT_GAME_PIECE(0),
-
-    INTAKE(1.5 * Math.PI);
+    PROCESSOR(0);
 
     private final double angle;
 

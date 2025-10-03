@@ -3,6 +3,7 @@ package frc.robot.superstructure.automations;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.*;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.excalib.additional_utilities.AllianceUtils;
 import frc.excalib.swerve.Swerve;
 import frc.robot.Constants;
@@ -26,15 +27,12 @@ import static monologue.Annotations.*;
 public class Automations implements Logged {
     private Pose2d currentSetpoint = new Pose2d();
     public Swerve swerve;
-//    public Superstructure superstructure;
 
     public ClimberSubsystem climber;
     public ClimbOperator climbOperator;
 
     public Automations(Swerve swerve) {
         this.swerve = swerve;
-//        this.superstructure = superstructure;
-
         climbOperator = new ClimbOperator();
         climber = new ClimberSubsystem();
     }
@@ -94,8 +92,9 @@ public class Automations implements Logged {
         return () -> cuurentPose.getDistance(translationCenter) < tolerance.getAsDouble();
     }
 
-    public OpeningDirection getOpeningDirection() {
-        return OpeningDirection.LEFT;
+    @Log.NT
+    public Trigger openToRightTrigger() {
+        return new Trigger(() -> getSlice().angle - swerve.getPose2D().getRotation().getDegrees() < 90);
     }
 
     public double getDeltaPostions(Translation2d poseA, Translation2d poseB) {

@@ -18,14 +18,16 @@ import static monologue.Annotations.*;
 public class Gripper extends SubsystemBase implements Logged {
     // === Motors ===
     private final TalonFXMotor gripperMotor;
-    public final Trigger hasGamePieceTrigger; //
-    public final Trigger hasAlgaeTrigger; //
     public final AnalogInput sensor = new AnalogInput(0);
     public GripperStates currentState = GripperStates.VACENT;
     public Trigger setAlgaeStateTrigger;
     public Trigger setCoralStateTrigger;
     public Trigger setEmptyTrigger;
     private HoldingState currentHoldingState = HoldingState.CORAL;
+    private final Trigger hasGamePieceTrigger;
+
+    public final Trigger hasCoral;
+    public final Trigger hasAlgae;
 
     // === Inputs ===
     private final FlyWheel gripperWheels;
@@ -44,10 +46,13 @@ public class Gripper extends SubsystemBase implements Logged {
                 MAX_JERK,
                 new Gains()
         );
-        hasGamePieceTrigger = new Trigger(() -> sensor.getValue() < 150).debounce(0.15);
-        hasAlgaeTrigger = new Trigger(() -> HAS_CORAL_CURRENT < gripperWheels.logCurrent()).debounce(0.1);
 
         setDefaultCommand(gripperWheels.manualCommand(() -> currentState.output, this));
+
+        hasAlgae = new Trigger(() -> currentHoldingState.equals(HoldingState.ALGAE));
+        hasCoral = new Trigger(() -> currentHoldingState.equals(HoldingState.CORAL));
+
+        hasGamePieceTrigger = new Trigger(() -> sensor.getValue() < 150).debounce(0.15);
 
         setCoralStateTrigger = new Trigger(
                 () -> currentHoldingState.equals(HoldingState.CORAL_EXPECTED))
@@ -80,12 +85,17 @@ public class Gripper extends SubsystemBase implements Logged {
     }
 
     @Log.NT
-    public boolean getHasAlgaeTrigger() {
-        return hasAlgaeTrigger.getAsBoolean();
+    public boolean getAlgaeTrigger() {
+        return hasAlgae.getAsBoolean();
     }
 
     @Log.NT
-    public HoldingState getCurrentHoldingState(){
+    public boolean getCoralTrigger() {
+        return hasCoral.getAsBoolean();
+    }
+
+    @Log.NT
+    public HoldingState getCurrentHoldingState() {
         return currentHoldingState;
     }
 

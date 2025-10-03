@@ -38,7 +38,6 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
     private ArmPosition currentState;
     private final CurrentLimitsConfigs limitsConfigs;
 
-
     // === Other ===
     private Gains armGains;
     private final ContinuousSoftLimit softLimit;
@@ -46,7 +45,7 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
 
 
     public ArmSubsystem() {
-        currentState = ArmPosition.DEFAULT_WITH_GAME_PIECE;
+        currentState = ArmPosition.UPWARDS;
 
         armMotor = new TalonFXMotor(FIRST_MOTOR_ID);
 

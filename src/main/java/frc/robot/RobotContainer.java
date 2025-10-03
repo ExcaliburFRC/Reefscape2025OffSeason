@@ -5,27 +5,17 @@
 package frc.robot;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.excalib.additional_utilities.AllianceUtils;
 import frc.excalib.control.math.Vector2D;
-import frc.excalib.mechanisms.Arm.Arm;
 import frc.excalib.slam.mapper.AuroraClient;
-import frc.excalib.slam.mapper.PoseEstimator;
 import frc.excalib.swerve.Swerve;
-import frc.robot.subsystems.climber.ClimberSubsystem;
-import frc.robot.subsystems.elevator.ElevatorSubsystem;
 import frc.robot.superstructure.Superstructure;
 import frc.robot.superstructure.automations.Automations;
+import frc.robot.util.AlgaeScoreState;
 import frc.robot.util.CoralScoreState;
 import monologue.Logged;
 
@@ -42,27 +32,31 @@ public class RobotContainer implements Logged {
 
     AuroraClient client = new AuroraClient(AURORA_CLIENT_PORT);
 
-    Superstructure superstructure = new Superstructure(new Trigger(() -> true), driver.R2());
+    Superstructure superstructure;
 
     Swerve swerve = Constants.SwerveConstants.configureSwerve(new Pose2d());
 
     Automations automations = new Automations(swerve);
 
-
     public RobotContainer() {
+        superstructure = new Superstructure(
+                new Trigger(() -> true),
+                driver.L1(),
+                driver.R1()
+        );
         configureBindings();
     }
 
-
     private void configureBindings() {
 
-        driver.R1().onTrue(superstructure.setCurrentProcessCommand(Superstructure.Process.SCORE_CORAL));
         driver.triangle().onTrue(superstructure.setCoralScoreStateCommand(CoralScoreState.L4));
         driver.circle().onTrue(superstructure.setCoralScoreStateCommand(CoralScoreState.L3));
         driver.square().onTrue(superstructure.setCoralScoreStateCommand(CoralScoreState.L2));
-        driver.cross().onTrue(superstructure.setCurrentProcessCommand(Superstructure.Process.DEFAULT));
+        driver.cross().onTrue(superstructure.setCoralScoreStateCommand(CoralScoreState.L1));
 
-        driver.povDown().onTrue(superstructure.setCurrentProcessCommand(Superstructure.Process.INTAKE_CORAL));
+        driver.povUp().onTrue(superstructure.setAlgaeScoreStateCommand(AlgaeScoreState.NET));
+        driver.povLeft().onTrue(superstructure.setAlgaeScoreStateCommand(AlgaeScoreState.PROCESSOR));
+
         swerve.setDefaultCommand(
                 swerve.driveCommand(
                         () -> new Vector2D(
@@ -74,11 +68,8 @@ public class RobotContainer implements Logged {
         );
 
         driver.touchpad().whileTrue(superstructure.elevatorSubsystem.coastCommand().ignoringDisable(true));
-
         driver.options().toggleOnTrue(superstructure.intakeSubsystem.resetAngleCommand().ignoringDisable(true));
-        driver.create().onTrue(superstructure.elevatorSubsystem.setElevatorHeightCommand(0.15).ignoringDisable(true));
-
-
+        driver.create().onTrue(superstructure.elevatorSubsystem.setElevatorHeightCommand(0.16).ignoringDisable(true));
     }
 
     public void preodic() {

@@ -16,8 +16,6 @@ public class constants {
     public static double TOLERANCE = 0.003;
 
     public static final double MAX_ELEVATOR_HIGHT = 1.41;
-    public static final double MIN_ELEVATOR_HIGHT = 0;
-
 
     public static final double POSITION_CONVERSION_FACTOR = 0.4756373706966272*0.0347879;
     public static final double VELOCITY_CONVERSION_FACTOR = POSITION_CONVERSION_FACTOR;

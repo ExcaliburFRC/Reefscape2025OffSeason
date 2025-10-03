@@ -19,7 +19,8 @@ import java.util.function.DoubleSupplier;
 import static frc.robot.subsystems.elevator.constants.*;
 
 public class ElevatorSubsystem extends SubsystemBase implements Logged {
-    // === Hardware ===
+    // === Hardware === /
+
     private final TalonFXMotor leftMotor, rightMotor;
     private final LinearExtension linearExtension;
     private final MotorGroup motorGroup;
@@ -41,7 +42,6 @@ public class ElevatorSubsystem extends SubsystemBase implements Logged {
 
         motorGroup = new MotorGroup(rightMotor, leftMotor);
 
-        motorGroup.setMotorPosition(0);
 
         leftMotor.setInverted(DirectionState.FORWARD);
         rightMotor.setInverted(DirectionState.REVERSE);
@@ -50,6 +50,9 @@ public class ElevatorSubsystem extends SubsystemBase implements Logged {
 
         motorGroup.setVelocityConversionFactor(VELOCITY_CONVERSION_FACTOR);
         motorGroup.setPositionConversionFactor(POSITION_CONVERSION_FACTOR);
+
+        motorGroup.setMotorPosition(0.16);
+
 
         elevatorHeight = () -> (leftMotor.getMotorPosition() + rightMotor.getMotorPosition()) / 2;
 
@@ -62,7 +65,7 @@ public class ElevatorSubsystem extends SubsystemBase implements Logged {
                 TOLERANCE
         );
 
-        currentState = ElevatorStates.DEFAULT_WITH_GAME_PIECE;
+        currentState = ElevatorStates.DEFAULT_WITH_CORAL;
 
         atPositionTrigger = new Trigger(
                 () -> (Math.abs(currentState.getHeight() - elevatorHeight.getAsDouble()) < TOLERANCE)
@@ -78,7 +81,7 @@ public class ElevatorSubsystem extends SubsystemBase implements Logged {
                         return 0.8;
 
                     }
-                    return 0.15;
+                    return 0.16;
 
                 },
                 () -> MAX_ELEVATOR_HIGHT
@@ -145,7 +148,7 @@ public class ElevatorSubsystem extends SubsystemBase implements Logged {
     }
 
     public Command zeroElevator() {
-        return new InstantCommand(() -> motorGroup.setMotorPosition(0));
+        return new InstantCommand(() -> motorGroup.setMotorPosition(0.16));
     }
 
     public Command coastCommand() {

@@ -161,7 +161,14 @@ public final class Constants {
         public static double FIELD_LENGTH = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeWelded).getFieldLength();
         public static double FIELD_WIDTH = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeWelded).getFieldWidth();
 
-        public static Translation2d CURRENT_REEF_CENTER = AllianceUtils.toAlliancePose(new Pose2d(new Translation2d((4.48945), FIELD_WIDTH / 2), new Rotation2d())).getTranslation();
+        public static Translation2d CURRENT_REEF_CENTER = AllianceUtils.toAlliancePose(
+                new Pose2d(
+                        new Translation2d(
+                                Units.inchesToMeters(176.746),
+                                FIELD_WIDTH / 2
+                        ),
+                        new Rotation2d())
+        ).getTranslation();
 
         public static Translation2d B1_LEFT_SCORE = new Translation2d(CURRENT_REEF_CENTER.getX() - 1.276, CURRENT_REEF_CENTER.getY() + 0.45);
         public static Translation2d B1_RIGHT_SCORE = new Translation2d(CURRENT_REEF_CENTER.getX() - 1.276, CURRENT_REEF_CENTER.getY() + 0.322);
