@@ -18,7 +18,7 @@ public enum RobotState {
 
     PRE_L4(ArmPosition.PRE_CORAL_SCORE, ElevatorStates.L4, IntakeState.DEFAULT, GripperStates.CORAL),
     SCORE_L4(ArmPosition.L4, ElevatorStates.L4, IntakeState.DEFAULT, GripperStates.CORAL),
-    POST_L4(ArmPosition.L4_POST, ElevatorStates.L4_FOLLOWTHROUGH, IntakeState.DEFAULT, GripperStates.RELEASE_CORAL),
+    POST_L4(ArmPosition.L4_POST, ElevatorStates.L4_POST, IntakeState.DEFAULT, GripperStates.RELEASE_CORAL),
 
     // L1 SCORING
     L1_DEFAULT(ArmPosition.DOWNWARDS, ElevatorStates.SAFE_HEIGHT, IntakeState.DEFAULT, GripperStates.VACENT),

@@ -8,13 +8,12 @@ public enum ElevatorStates {
     L3_POST(0.7),
 
     L4(1.41),
-    L4_FOLLOWTHROUGH(1.1),
+    L4_POST(1.1),
 
     ALGAE2(0),
     ALGAE3(0),
 
     HANDOFF(0.92),
-    PRE_HANDOFF(1.03),
 
     NET(0),
     PROCESSOR(0),
