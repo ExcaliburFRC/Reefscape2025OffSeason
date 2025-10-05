@@ -91,7 +91,7 @@ public class Swerve extends SubsystemBase implements Logged {
         m_swerveDriveKinematics = this.modules.getSwerveDriveKinematics();
 
         initAutoBuilder();
-        initElastic();
+//        initElastic();
     }
 
     /**
@@ -370,7 +370,6 @@ public class Swerve extends SubsystemBase implements Logged {
         }
 
         // Configure AutoBuilder last
-        assert config != null;
         AutoBuilder.configure(
                 this::getPose2D, // Robot pose supplier
                 this::resetOdometry, // Method to reset odometry (will be called if your auto has a starting pose)
@@ -392,7 +391,7 @@ public class Swerve extends SubsystemBase implements Logged {
     /**
      * A function that initialize the Swerve tab for Elastic.
      */
-    public void initElastic() {
+//    public void initElastic() {
 //        SmartDashboard.putData("Swerve Drive", builder -> {
 //            builder.setSmartDashboardType("SwerveDrive");
 //
@@ -442,7 +441,7 @@ public class Swerve extends SubsystemBase implements Logged {
 //                                Rotation2d.fromDegrees(OTFGAngleEntry.getDouble(0)))
 //                )
 //        );
-    }
+//    }
 
 
     /**
@@ -506,8 +505,8 @@ public class Swerve extends SubsystemBase implements Logged {
     }
 
     @Log.NT
-    public boolean getAngleTolernace(){
-        return angleController.atSetpoint();
+    public boolean isAtPosition(){
+        return finishTrigger.getAsBoolean();
     }
 
 }

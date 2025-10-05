@@ -10,13 +10,13 @@ public enum ElevatorStates {
     L4(1.46),
     L4_POST(1),
 
-    ALGAE2(0.16), // todo
-    ALGAE3(0.16), // todo
+    ALGAE2(0.67), // todo
+    ALGAE3(1), // todo
 
     HANDOFF(0.95),
 
-    NET(0),
-    PROCESSOR(0),
+    NET(1.3),
+    PROCESSOR(0.442),
 
     DEFAULT_WITH_CORAL(0.4),
     DEFAULT_WITH_ALGAE(0.6),

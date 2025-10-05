@@ -55,7 +55,8 @@ public enum RobotState {
 
     // OTHERS
     CLIMB(ArmPosition.UPWARDS, ElevatorStates.HANDOFF, IntakeState.HANDOFF, GripperStates.INTAKE_CORAL),
-    CENTERLIZE(ArmPosition.DOWNWARDS, ElevatorStates.SAFE_HEIGHT, IntakeState.CENTERLIZE, GripperStates.VACENT);
+    CENTERLIZE(ArmPosition.DOWNWARDS, ElevatorStates.SAFE_HEIGHT, IntakeState.CENTERLIZE, GripperStates.VACENT),
+    EJECT(ArmPosition.DOWNWARDS, ElevatorStates.SAFE_HEIGHT, IntakeState.EJECT_CORAL, GripperStates.VACENT);
 
     ArmPosition armPosition;
     ElevatorStates elevatorState;

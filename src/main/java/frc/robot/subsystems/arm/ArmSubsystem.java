@@ -128,7 +128,7 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
     public Command goToStateCommand() {
         return armMechanism.anglePositionControlCommand(
                 () -> softLimit.limit(
-                        softLimit.getSetpoint(
+                        limitHelper.getSetpoint(
                                 angleSupplier.getAsDouble(),
                                 currentState.getAngle()
                         )

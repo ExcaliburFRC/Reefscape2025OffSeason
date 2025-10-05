@@ -2,6 +2,7 @@ package frc.robot.subsystems.gripper;
 
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import edu.wpi.first.wpilibj.AnalogInput;
+import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.excalib.control.gains.Gains;
@@ -25,6 +26,7 @@ public class Gripper extends SubsystemBase implements Logged {
 
     public final Trigger hasCoral;
     public final Trigger hasAlgae;
+
 
     // === Inputs ===
     private final FlyWheel gripperWheels;

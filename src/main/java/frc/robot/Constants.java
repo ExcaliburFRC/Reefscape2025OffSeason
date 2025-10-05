@@ -68,8 +68,8 @@ public final class Constants {
         public static final double MAX_SKID_ACC = 9;
         public static final double MAX_FORWARD_ACC = 9;
         public static final double MAX_VEL = 4;
-        public static final double MAX_OMEGA_RAD_PER_SEC = 1;
-        public static final double MAX_OMEGA_RAD_PER_SEC_SQUARE = 1;
+        public static final double MAX_OMEGA_RAD_PER_SEC = 2;
+        public static final double MAX_OMEGA_RAD_PER_SEC_SQUARE = 2;
 
         public static final PathConstraints MAX_PATH_CONSTRAINTS = new PathConstraints(
                 MAX_VEL,

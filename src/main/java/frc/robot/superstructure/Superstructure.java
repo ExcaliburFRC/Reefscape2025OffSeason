@@ -25,6 +25,7 @@ public class Superstructure implements Logged {
     public final Intake intakeSubsystem;
     public final Gripper gripperSubsystem;
 
+
     private CoralScoreState coralScoreState;
     private AlgaeScoreState algaeScoreState;
 
@@ -36,6 +37,8 @@ public class Superstructure implements Logged {
 
     public RobotState currentState;
     public final Trigger atPositionTrigger;
+
+    public final Trigger coralButton;
 
     private final Trigger processChangeDefaultTrigger;
     private final Trigger processChangeCoralDefaultTrigger;
@@ -61,16 +64,18 @@ public class Superstructure implements Logged {
     private Supplier<CoralScoreState> algaeHeightSuppier;
 
     public Superstructure(Trigger isSwerveAtPlace, Trigger alageButton, Trigger coralButton) {
-        currentState = DEFAULT_WITH_CORAL;
+        currentState = DEFAULT_WITHOUT_GAME_PIECE;
 
         armSubsystem = new ArmSubsystem();
         elevatorSubsystem = new ElevatorSubsystem();
         intakeSubsystem = new Intake();
         gripperSubsystem = new Gripper();
 
+        this.coralButton = coralButton;
+
         currentProcess = Process.DEFAULT;
-        algaeScoreState = AlgaeScoreState.NET;
-        coralScoreState = CoralScoreState.L1;
+        algaeScoreState = AlgaeScoreState.PROCESSOR;
+        coralScoreState = CoralScoreState.L2;
         algaeHeightSuppier = () -> CoralScoreState.L2;
 
         atPositionTrigger = new Trigger(
@@ -164,8 +169,9 @@ public class Superstructure implements Logged {
                 intakeSubsystem.setStateCommand(state.intakeState),
                 armSubsystem.setStateCommand(state.armPosition),
                 elevatorSubsystem.setStateCommand(state.elevatorState),
-                gripperSubsystem.setStateCommand(state.gripperState)
-        ).until(atPositionTrigger);
+                gripperSubsystem.setStateCommand(state.gripperState),
+                new WaitUntilCommand(atPositionTrigger).ignoringDisable(true)
+        ).ignoringDisable(true);
     }
 
     private Command scoreCoralProcessCommand(Trigger alignmentTrigger) {
@@ -179,9 +185,9 @@ public class Superstructure implements Logged {
         );
 
         return new ConditionalCommand(
-                new InstantCommand(), // L1 todo
+                new InstantCommand(), // L1
                 new SequentialCommandGroup(
-                        alignment.until(alignmentTrigger), // Todo
+                        alignment.until(coralButton),
                         score,
                         this.setCurrentProcessCommand(Process.DEFAULT)
                 ),
@@ -206,22 +212,22 @@ public class Superstructure implements Logged {
 
     private Command intakeCoralProcessCommand() {
         return new SequentialCommandGroup(
-                setCurrentStateCommand(FLOOR_INTAKE),
+                setCurrentStateCommand(FLOOR_INTAKE).until(intakeSubsystem.either),
                 new WaitUntilCommand(intakeSubsystem.either),
                 setCurrentStateCommand(CENTERLIZE),
-                new WaitUntilCommand(intakeSubsystem.both.debounce(0.15)),
+                new WaitUntilCommand(intakeSubsystem.both)
+                ,
                 new WaitCommand(0.2),
                 setCurrentProcessCommand(Process.CORAL_DEFAULT)
-        );
+        ).ignoringDisable(true);
     }
 
     private Command intakeAlgaeProcessCommand() {
         return new SequentialCommandGroup(
                 reverseHandoffComamnd(),
                 getAlgaeIntakeCommand(AlgaeIntakeState.L2), // chnage to by by slice
-                new WaitUntilCommand(() -> true), // algae present and robot is at safe distance from reef // todo
+                new WaitUntilCommand(gripperSubsystem.hasAlgae), // algae present and robot is at safe distance from reef // todo
                 setCurrentProcessCommand(Process.ALGAE_DEFAULT)
-
         );
     }
 
@@ -238,6 +244,12 @@ public class Superstructure implements Logged {
                 ),
                 () -> coralScoreState.equals(CoralScoreState.L1)
         );
+    }
+
+    public Command ejectCommand() {
+        return setCurrentStateCommand(RobotState.EJECT)
+                .withTimeout(1)
+                .andThen(defaultProcessCommand());
     }
 
     private Command defaultAlageProcessCommand() {
@@ -324,7 +336,7 @@ public class Superstructure implements Logged {
     }
 
     private Command setCurrentProcessCommand(Process currentProcess) {
-        return new InstantCommand(() -> this.currentProcess = currentProcess);
+        return new InstantCommand(() -> this.currentProcess = currentProcess).ignoringDisable(true);
     }
 
     public Command setCoralScoreStateCommand(CoralScoreState coralScoreState) {

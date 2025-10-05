@@ -27,7 +27,6 @@ public class Intake extends SubsystemBase implements Logged {
     private final TalonFXMotor rollersMotor, centerlizerMotor;
     public final Arm arm;
     private final Mechanism centralizer, rollers;
-    private final DigitalInput limitSwitch;
 
     // === Inputs and Triggers ===
     private final AnalogInput rightSensor, leftSensor;
@@ -55,8 +54,6 @@ public class Intake extends SubsystemBase implements Logged {
         centralizer = new Mechanism(centerlizerMotor);
         rollers = new Mechanism(rollersMotor);
 
-        limitSwitch = new DigitalInput(9);
-
         armMotor.setPositionConversionFactor(ARM_POSITION_CONVERSION_FACTOR);
         armMotor.setVelocityConversionFactor(ARM_POSITION_CONVERSION_FACTOR);
 
@@ -79,7 +76,6 @@ public class Intake extends SubsystemBase implements Logged {
 
         armMotor.setNeutralMode(NeutralModeValue.Brake);
 
-
         rightSensor = new AnalogInput(RIGHT_SENSOR_CHANNEL);
         leftSensor = new AnalogInput(LEFT_SENSOR_CHANNEL);
 
@@ -91,9 +87,7 @@ public class Intake extends SubsystemBase implements Logged {
         rightSensorTrigger = new Trigger(() -> false);
         leftSensorTrigger = new Trigger(() -> false);
 
-        atPosition = new Trigger(
-                () -> Math.abs(currentState.intakeAngle - angleSupplier.getAsDouble()) < TOLERANCE
-        );
+        atPosition = new Trigger(() -> Math.abs(currentState.intakeAngle - angleSupplier.getAsDouble()) < TOLERANCE);
 
         sensorTrigger.onTrue(new PrintCommand("The Trigger Changed!"));
 

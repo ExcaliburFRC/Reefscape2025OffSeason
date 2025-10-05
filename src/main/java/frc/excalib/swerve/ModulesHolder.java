@@ -90,15 +90,15 @@ public class ModulesHolder implements Logged {
         return new Vector2D(totalX * 0.25, totalY * 0.25);
     }
 
-    @Log.NT(key = "angular vel")
-    public double getOmegaRadPerSec() {
-        return new SwerveDriveKinematics(
-                m_frontLeft.m_MODULE_LOCATION,
-                m_frontRight.m_MODULE_LOCATION,
-                m_backLeft.m_MODULE_LOCATION,
-                m_backRight.m_MODULE_LOCATION
-        ).toChassisSpeeds(logStates()).omegaRadiansPerSecond;
-    }
+//    @Log.NT(key = "angular vel")
+//    public double getOmegaRadPerSec() {
+//        return new SwerveDriveKinematics(
+//                m_frontLeft.m_MODULE_LOCATION,
+//                m_frontRight.m_MODULE_LOCATION,
+//                m_backLeft.m_MODULE_LOCATION,
+//                m_backRight.m_MODULE_LOCATION
+//        ).toChassisSpeeds(logStates()).omegaRadiansPerSecond;
+//    }
 
     @Log.NT(key = "swerve velocity")
     public double getVelocityDistance() {

@@ -11,13 +11,13 @@ public enum ArmPosition { // todo
 
     INTAKE_ALGAE(0),
 
-    NET(0),
+    NET(1.193),
 
     DOWNWARDS(1.5 * Math.PI),
 
     UPWARDS(Math.PI / 2),
 
-    PROCESSOR(0);
+    PROCESSOR(-0.223);
 
     private final double angle;
 
