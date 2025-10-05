@@ -10,10 +10,10 @@ public enum ElevatorStates {
     L4(1.46),
     L4_POST(1),
 
-    ALGAE2(0), // todo
-    ALGAE3(0), // todo
+    ALGAE2(0.16), // todo
+    ALGAE3(0.16), // todo
 
-    HANDOFF(0.92),
+    HANDOFF(0.95),
 
     NET(0),
     PROCESSOR(0),

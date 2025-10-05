@@ -48,7 +48,7 @@ public class SwerveModule implements Logged {
                         double PIDTolerance, Translation2d moduleLocation, DoubleSupplier angleSupplier,
                         double maxVel, double velocityConversionFactor, double positionConversionFactor,
                         double rotationVelocityConversionFactor) {
-        driveMotor.setInverted(FORWARD);
+        driveMotor.setInverted(REVERSE);
         driveMotor.setVelocityConversionFactor(velocityConversionFactor);
         driveMotor.setIdleState(BRAKE);
         driveMotor.setPositionConversionFactor(positionConversionFactor);

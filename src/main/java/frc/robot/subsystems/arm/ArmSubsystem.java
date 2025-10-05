@@ -43,6 +43,8 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
     private final ContinuousSoftLimit softLimit;
     private ContinuousSoftLimit limitHelper;
 
+//    private Trigger mirrorArmSetpoint;
+
 
     public ArmSubsystem() {
         currentState = ArmPosition.UPWARDS;

@@ -5,7 +5,7 @@ import frc.excalib.control.limits.SoftLimit;
 public class Constants {
     public static final int FIRST_MOTOR_ID = 20;
     public static final int CAN_CODER_ID = 22;
-    public static final SoftLimit VELOCITY_LIMIT = new SoftLimit(() -> -2, () -> 2);
+    public static final SoftLimit VELOCITY_LIMIT = new SoftLimit(() -> -3, () -> 3);
     public static final double RPS_TO_RAD_PER_SEC = Math.PI * 2;
 
     public static final double INTAKE_HEIGHT = 0.32;

@@ -68,8 +68,8 @@ public final class Constants {
         public static final double MAX_SKID_ACC = 9;
         public static final double MAX_FORWARD_ACC = 9;
         public static final double MAX_VEL = 4;
-        public static final double MAX_OMEGA_RAD_PER_SEC = 4;
-        public static final double MAX_OMEGA_RAD_PER_SEC_SQUARE = 4;
+        public static final double MAX_OMEGA_RAD_PER_SEC = 1;
+        public static final double MAX_OMEGA_RAD_PER_SEC_SQUARE = 1;
 
         public static final PathConstraints MAX_PATH_CONSTRAINTS = new PathConstraints(
                 MAX_VEL,
@@ -91,7 +91,7 @@ public final class Constants {
 
         public static final PIDConstants TRANSLATION_PID_PP_CONSTANTS = new PIDConstants(10.0, 0.0, 0.0); //TODO
         public static final PIDConstants ANGLE_PID_PP_CONSTANTS = new PIDConstants(5.0, 0.0, 0.0);
-        public static final Gains ANGLE_PID_GAINS = new Gains(0.1, 0, 0);
+        public static final Gains ANGLE_PID_GAINS = new Gains(1.47, 0, 0.4);
         public static final Gains TRANSLATION_PID_GAINS = new Gains(3.62, 0, 0);
 
         private static final IMU GYRO = new Pigeon(GYRO_ID, SWERVE_CANBUS, new Rotation3d());
@@ -103,7 +103,7 @@ public final class Constants {
                                     new TalonFXMotor(FRONT_LEFT_DRIVE_ID, SWERVE_CANBUS),
                                     new TalonFXMotor(FRONT_LEFT_ROTATION_ID, SWERVE_CANBUS),
                                     new Gains(7.5, 0, 0, 0.192, 0, 0, 0),
-                                    new Gains(0, 0, 0, 0.17418 * 0.5, 2.254, 0, 0),
+                                    new Gains(0, 0, 0, 0.08709, 2.254, 0, 0),
                                     PID_TOLERANCE,
                                     FRONT_LEFT_TRANSLATION,
                                     () -> FRONT_LEFT_ABS_ENCODER.getAbsolutePosition().getValueAsDouble() * 2 * Math.PI,
@@ -116,7 +116,7 @@ public final class Constants {
                                     new TalonFXMotor(FRONT_RIGHT_DRIVE_ID, SWERVE_CANBUS),
                                     new TalonFXMotor(FRONT_RIGHT_ROTATION_ID, SWERVE_CANBUS),
                                     new Gains(7.5, 0, 0, 0.192, 0, 0, 0),
-                                    new Gains(0, 0, 0, 0.17418 * 0.5, 2.19, 0, 0),
+                                    new Gains(0, 0, 0, 0.08709, 2.19, 0, 0),
                                     PID_TOLERANCE,
                                     FRONT_RIGHT_TRANSLATION,
                                     () -> FRONT_RIGHT_ABS_ENCODER.getAbsolutePosition().getValueAsDouble() * 2 * Math.PI,
@@ -129,7 +129,7 @@ public final class Constants {
                                     new TalonFXMotor(BACK_LEFT_DRIVE_ID, SWERVE_CANBUS),
                                     new TalonFXMotor(BACK_LEFT_ROTATION_ID, SWERVE_CANBUS),
                                     new Gains(7.5, 0, 0, 0.192, 0, 0, 0),
-                                    new Gains(0, 0, 0, 0.17418 * 0.5, 2.232, 0, 0),
+                                    new Gains(0, 0, 0, 0.08709, 2.232, 0, 0),
                                     PID_TOLERANCE,
                                     BACK_LEFT_TRANSLATION,
                                     () -> BACK_LEFT_ABS_ENCODER.getAbsolutePosition().getValueAsDouble() * 2 * Math.PI,
@@ -142,7 +142,7 @@ public final class Constants {
                                     new TalonFXMotor(BACK_RIGHT_DRIVE_ID, SWERVE_CANBUS),
                                     new TalonFXMotor(BACK_RIGHT_ROTATION_ID, SWERVE_CANBUS),
                                     new Gains(7.5, 0, 0, 0.192, 0, 0, 0),
-                                    new Gains(0, 0, 0, 0.17418 * 0.5, 2.184, 0, 0),
+                                    new Gains(0, 0, 0, 0.08709, 2.184, 0, 0),
                                     PID_TOLERANCE,
                                     BACK_RIGHT_TRANSLATION,
                                     () -> BACK_RIGHT_ABS_ENCODER.getAbsolutePosition().getValueAsDouble() * 2 * Math.PI,

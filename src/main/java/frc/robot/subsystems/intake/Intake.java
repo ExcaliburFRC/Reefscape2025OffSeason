@@ -37,8 +37,6 @@ public class Intake extends SubsystemBase implements Logged {
     public final Trigger either, both;
     private final Trigger atPosition;
     private final Trigger intakeOpen;
-    public final Trigger hasCoral;
-
 
     // == States ==
     private IntakeState currentState;
@@ -120,8 +118,6 @@ public class Intake extends SubsystemBase implements Logged {
                 () -> 0.8635,
                 () -> 3.18
         );
-
-        hasCoral = new Trigger(() -> (true));
 
         setDefaultCommand(goToStateCommand());
 

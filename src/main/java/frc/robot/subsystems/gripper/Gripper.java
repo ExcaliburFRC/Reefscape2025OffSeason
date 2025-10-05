@@ -2,10 +2,7 @@ package frc.robot.subsystems.gripper;
 
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import edu.wpi.first.wpilibj.AnalogInput;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.ConditionalCommand;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.excalib.control.gains.Gains;
 import frc.excalib.control.motor.controllers.TalonFXMotor;
@@ -23,7 +20,7 @@ public class Gripper extends SubsystemBase implements Logged {
     public Trigger setAlgaeStateTrigger;
     public Trigger setCoralStateTrigger;
     public Trigger setEmptyTrigger;
-    private HoldingState currentHoldingState = HoldingState.CORAL;
+    private HoldingState currentHoldingState = HoldingState.EMPTY;
     private final Trigger hasGamePieceTrigger;
 
     public final Trigger hasCoral;
@@ -76,11 +73,12 @@ public class Gripper extends SubsystemBase implements Logged {
 
 
     public Command setStateCommand(GripperStates stateToSet) {
-        return new ConditionalCommand(
-                new InstantCommand(() -> this.currentHoldingState = HoldingState.CORAL_EXPECTED),
-                new InstantCommand(),
-                () -> stateToSet.equals(GripperStates.INTAKE_CORAL)
-        ).andThen(
+        return new SequentialCommandGroup(
+                new ConditionalCommand(
+                        new InstantCommand(
+                                () -> this.currentHoldingState = HoldingState.CORAL_EXPECTED),
+                        new InstantCommand(),
+                        () -> stateToSet.equals(GripperStates.INTAKE_CORAL)),
                 new InstantCommand(() -> currentState = stateToSet));
     }
 

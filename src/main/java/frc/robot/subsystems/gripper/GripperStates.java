@@ -3,8 +3,8 @@ package frc.robot.subsystems.gripper;
 public enum GripperStates {
     INTAKE_ALGAE(0),
     INTAKE_CORAL(-0.7),
-    ALGAE(-0.3),
-    CORAL(-0.1),
+    ALGAE(-0.1),
+    CORAL(0),
     HANDOFF(0),
     RELEASE_CORAL(0.5),
     RELEASE_ALGAE(0),

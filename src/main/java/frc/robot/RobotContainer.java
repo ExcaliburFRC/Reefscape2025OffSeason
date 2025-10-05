@@ -5,6 +5,7 @@
 package frc.robot;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -32,44 +33,49 @@ public class RobotContainer implements Logged {
 
     AuroraClient client = new AuroraClient(AURORA_CLIENT_PORT);
 
-    Superstructure superstructure;
+//    Superstructure superstructure;
 
     Swerve swerve = Constants.SwerveConstants.configureSwerve(new Pose2d());
 
     Automations automations = new Automations(swerve);
 
     public RobotContainer() {
-        superstructure = new Superstructure(
-                new Trigger(() -> true),
-                driver.L1(),
-                driver.R1()
-        );
+//        superstructure = new Superstructure(
+//                new Trigger(() -> true),
+//                driver.L1(),
+//                driver.R1()
+//        );
         configureBindings();
     }
 
     private void configureBindings() {
 
-        driver.triangle().onTrue(superstructure.setCoralScoreStateCommand(CoralScoreState.L4));
-        driver.circle().onTrue(superstructure.setCoralScoreStateCommand(CoralScoreState.L3));
-        driver.square().onTrue(superstructure.setCoralScoreStateCommand(CoralScoreState.L2));
-        driver.cross().onTrue(superstructure.setCoralScoreStateCommand(CoralScoreState.L1));
+//        driver.povUp().toggleOnTrue(swerve.pidToPoseCommand(() -> new Pose2d(0, 0, new Rotation2d(0))));
+//        driver.povLeft().toggleOnTrue(swerve.pidToPoseCommand(() -> new Pose2d(0, 0, new Rotation2d(Math.PI / 2))));
+//        driver.povDown().toggleOnTrue(swerve.pidToPoseCommand(() -> new Pose2d(0, 0, new Rotation2d(Math.PI))));
+//        driver.povRight().toggleOnTrue(swerve.pidToPoseCommand(() -> new Pose2d(0, 0, new Rotation2d(-Math.PI/2))));
 
-        driver.povUp().onTrue(superstructure.setAlgaeScoreStateCommand(AlgaeScoreState.NET));
-        driver.povLeft().onTrue(superstructure.setAlgaeScoreStateCommand(AlgaeScoreState.PROCESSOR));
+//        driver.triangle().onTrue(superstructure.setCoralScoreStateCommand(CoralScoreState.L4));
+//        driver.circle().onTrue(superstructure.setCoralScoreStateCommand(CoralScoreState.L3));
+//        driver.square().onTrue(superstructure.setCoralScoreStateCommand(CoralScoreState.L2));
+//        driver.cross().onTrue(superstructure.setCoralScoreStateCommand(CoralScoreState.L1));
+//
+//        driver.povUp().onTrue(superstructure.setAlgaeScoreStateCommand(AlgaeScoreState.NET));
+//        driver.povLeft().onTrue(superstructure.setAlgaeScoreStateCommand(AlgaeScoreState.PROCESSOR));
 
         swerve.setDefaultCommand(
                 swerve.driveCommand(
                         () -> new Vector2D(
-                                applyDeadband(-driver.getLeftY()) * MAX_VEL,
-                                applyDeadband(-driver.getLeftX()) * MAX_VEL),
-                        () -> applyDeadband(driver.getRightX()) * MAX_OMEGA_RAD_PER_SEC,
+                                applyDeadband(driver.getLeftY()) * MAX_VEL,
+                                applyDeadband(driver.getLeftX()) * MAX_VEL),
+                        () -> applyDeadband(-driver.getRightX()) * MAX_OMEGA_RAD_PER_SEC,
                         () -> true
                 )
         );
 
-        driver.touchpad().whileTrue(superstructure.elevatorSubsystem.coastCommand().ignoringDisable(true));
-        driver.options().toggleOnTrue(superstructure.intakeSubsystem.resetAngleCommand().ignoringDisable(true));
-        driver.create().onTrue(superstructure.elevatorSubsystem.setElevatorHeightCommand(0.16).ignoringDisable(true));
+//        driver.touchpad().whileTrue(superstructure.elevatorSubsystem.coastCommand().ignoringDisable(true));
+//        driver.options().toggleOnTrue(superstructure.intakeSubsystem.resetAngleCommand().ignoringDisable(true));
+//        driver.create().onTrue(superstructure.elevatorSubsystem.setElevatorHeightCommand(0.16).ignoringDisable(true));
     }
 
     public void preodic() {

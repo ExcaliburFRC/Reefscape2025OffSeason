@@ -79,7 +79,7 @@ public class Superstructure implements Logged {
                         intakeSubsystem.isAtPosition().getAsBoolean());
 
         levelChangeTrigger = new LevelChangeTrigger(() -> this.coralScoreState);
-        hasCoralInRobot = gripperSubsystem.hasCoral.or(intakeSubsystem.hasCoral);
+        hasCoralInRobot = gripperSubsystem.hasCoral.or(intakeSubsystem.either);
 
 
         processChangeDefaultTrigger = new Trigger(() -> currentProcess.equals(Process.DEFAULT));
@@ -209,7 +209,7 @@ public class Superstructure implements Logged {
                 setCurrentStateCommand(FLOOR_INTAKE),
                 new WaitUntilCommand(intakeSubsystem.either),
                 setCurrentStateCommand(CENTERLIZE),
-                new WaitUntilCommand(intakeSubsystem.both),
+                new WaitUntilCommand(intakeSubsystem.both.debounce(0.15)),
                 new WaitCommand(0.2),
                 setCurrentProcessCommand(Process.CORAL_DEFAULT)
         );
@@ -297,7 +297,8 @@ public class Superstructure implements Logged {
                         new WaitCommand(HANDOFF_TIME_DELAY)
                 ),
                 new PrintCommand("there is no coral is the gripper!!!!!!!!"),
-                gripperSubsystem.hasCoral);
+                gripperSubsystem.hasCoral
+        );
     }
 
     private Command netScoreCommand() {
@@ -337,7 +338,7 @@ public class Superstructure implements Logged {
 
     @Log.NT
     public boolean getTriggerScoreAlgae() {
-        return processChangeScoreCoralTrigger.getAsBoolean();
+        return processChangeScoreAlgaeTrigger.getAsBoolean();
     }
 
     @Log.NT
