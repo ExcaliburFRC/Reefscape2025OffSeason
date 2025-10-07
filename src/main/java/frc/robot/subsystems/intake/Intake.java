@@ -118,8 +118,8 @@ public class Intake extends SubsystemBase implements Logged {
         either = new Trigger(() -> (getRightSensorData() || getLeftSensorData()));
         both = new Trigger(() -> (getRightSensorData() && getLeftSensorData()));
 
-        leftSensorTrigger = new Trigger(() -> rightSensor.getValue() < 4000);
-        rightSensorTrigger = new Trigger(() -> leftSensor.getValue() < 4000);
+        leftSensorTrigger = new Trigger(() -> leftSensor.getValue() < 4000);
+        rightSensorTrigger = new Trigger(() -> rightSensor.getValue() < 4000);
     }
 
 
@@ -230,6 +230,16 @@ public class Intake extends SubsystemBase implements Logged {
 
     public Command resetAngleCommand() {
         return new InstantCommand(() -> armMotor.setMotorPosition(ARM_DEFAULT_START_RAD));
+    }
+
+    @NT
+    public double getRightSendorValue(){
+        return rightSensor.getValue();
+    }
+
+ @NT
+    public double getLeftSendorValue(){
+        return leftSensor.getValue();
     }
 
 

@@ -1,5 +1,6 @@
 package frc.robot.subsystems.arm;
 
+import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -63,7 +64,7 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
         armMotor.setMotorPosition(angleSupplier.getAsDouble());
 
         limitsConfigs = new CurrentLimitsConfigs();
-        limitsConfigs.SupplyCurrentLimit = 40;
+        limitsConfigs.SupplyCurrentLimit = 45;
         limitsConfigs.SupplyCurrentLimitEnable = true;
 
         armMotor.getConfigurator().apply(limitsConfigs);

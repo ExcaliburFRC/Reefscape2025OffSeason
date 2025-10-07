@@ -11,11 +11,13 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.excalib.additional_utilities.AllianceUtils;
 import frc.excalib.control.math.Vector2D;
 import frc.excalib.slam.mapper.AuroraClient;
 import frc.excalib.swerve.Swerve;
 import frc.robot.superstructure.Superstructure;
 import frc.robot.superstructure.automations.Automations;
+import frc.robot.util.AlgaeScoreState;
 import frc.robot.util.CoralScoreState;
 import monologue.Logged;
 
@@ -30,7 +32,7 @@ public class RobotContainer implements Logged {
 
     CommandPS5Controller driver = new CommandPS5Controller(DRIVER_CONTROLLER_PORT);
 
-//    AuroraClient client = new AuroraClient(AURORA_CLIENT_PORT);
+    AuroraClient client = new AuroraClient(AURORA_CLIENT_PORT);
 
     Superstructure superstructure;
 
@@ -42,22 +44,24 @@ public class RobotContainer implements Logged {
         superstructure = new Superstructure(
                 new Trigger(() -> swerve.isAtPosition()),
                 driver.L1(),
-                driver.R1()
+                driver.R1(),
+                new Trigger(() -> swerve.getPose2D().getTranslation().getDistance(AllianceUtils.getReefCenter()) > 0.5)
         );
-
         configureBindings();
     }
 
     private void configureBindings() {
+
+        driver.R2().whileTrue(automations.alignToSide(true));
+        driver.L2().whileTrue(automations.alignToSide(false));
 
         driver.triangle().onTrue(superstructure.setCoralScoreStateCommand(CoralScoreState.L4));
         driver.circle().onTrue(superstructure.setCoralScoreStateCommand(CoralScoreState.L3));
         driver.square().onTrue(superstructure.setCoralScoreStateCommand(CoralScoreState.L2));
         driver.cross().onTrue(superstructure.setCoralScoreStateCommand(CoralScoreState.L1));
 
-//        driver.povUp().onTrue(superstructure.setAlgaeScoreStateCommand(AlgaeScoreState.NET));
-//        driver.povLeft().onTrue(superstructure.setAlgaeScoreStateCommand(AlgaeScoreState.PROCESSOR));
-
+        driver.povUp().onTrue(superstructure.setAlgaeScoreStateCommand(AlgaeScoreState.NET));
+        driver.povLeft().onTrue(superstructure.setAlgaeScoreStateCommand(AlgaeScoreState.PROCESSOR));
 
         swerve.setDefaultCommand(
                 swerve.driveCommand(
@@ -69,7 +73,7 @@ public class RobotContainer implements Logged {
                 )
         );
 
-        driver.povUp().toggleOnTrue(new InstantCommand(() -> swerve.resetOdometry(new Pose2d())));
+//        driver.povUp().toggleOnTrue(new InstantCommand(() -> swerve.resetOdometry(new Pose2d())));
 
         driver.touchpad().whileTrue(superstructure.elevatorSubsystem.coastCommand().ignoringDisable(true));
         driver.options().toggleOnTrue(superstructure.intakeSubsystem.resetAngleCommand().ignoringDisable(true));
@@ -77,11 +81,11 @@ public class RobotContainer implements Logged {
 
     }
 
-//    public void perodic() {
-//        if (!client.getPose2d().equals(new Pose2d())) {
-//            swerve.m_odometry.addVisionMeasurement(client.getPose2d(), Timer.getFPGATimestamp());
-//        }
-//    }
+    public void perodic() {
+        if (!client.getPose2d().equals(new Pose2d())) {
+            swerve.m_odometry.addVisionMeasurement(client.getPose2d(), Timer.getFPGATimestamp());
+        }
+    }
 
     public double applyDeadband(double val) {
         return Math.abs(val) < 0.09 ? 0 : val;
@@ -96,10 +100,10 @@ public class RobotContainer implements Logged {
     public Pose2d getRobotPose() {
         return swerve.getPose2D();
     }
-//
-//    @NT
-//    public Pose2d getAuroraPose() {
-//        return client.getPose2d();
-//    }
+
+    @NT
+    public Pose2d getAuroraPose() {
+        return client.getPose2d();
+    }
 
 }

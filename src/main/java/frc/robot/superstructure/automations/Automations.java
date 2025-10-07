@@ -41,12 +41,13 @@ public class Automations implements Logged {
         return swerve
                 .pidToPoseCommand(
                         () -> getAlignmentTargetPose(
-                                rightBranch))
-                .unless
-                        (isInTranslationTolerance(
-                                AllianceUtils.getReefCenter(),
-                                () -> Constants.MAX_AUTO_ALIGNMENT_DISTANCE
-                        ));
+                                rightBranch)
+                );
+//                .unless(
+//                        isInTranslationTolerance(
+//                                AllianceUtils.getReefCenter(),
+//                                () -> Constants.MAX_AUTO_ALIGNMENT_DISTANCE
+//                        ));
     }
 
     public Pose2d getAlignmentTargetPose(boolean rightBranch) {
@@ -88,8 +89,8 @@ public class Automations implements Logged {
     }
 
     public BooleanSupplier isInTranslationTolerance(Translation2d translationCenter, DoubleSupplier tolerance) {
-        Translation2d cuurentPose = swerve.getPose2D().getTranslation();
-        return () -> cuurentPose.getDistance(translationCenter) < tolerance.getAsDouble();
+        Translation2d current = swerve.getPose2D().getTranslation();
+        return () -> current.getDistance(translationCenter) < tolerance.getAsDouble();
     }
 
     @Log.NT

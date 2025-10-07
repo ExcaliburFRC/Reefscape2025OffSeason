@@ -42,7 +42,6 @@ public class ElevatorSubsystem extends SubsystemBase implements Logged {
 
         motorGroup = new MotorGroup(rightMotor, leftMotor);
 
-
         leftMotor.setInverted(DirectionState.FORWARD);
         rightMotor.setInverted(DirectionState.REVERSE);
 
@@ -53,14 +52,13 @@ public class ElevatorSubsystem extends SubsystemBase implements Logged {
 
         motorGroup.setMotorPosition(0.16);
 
-
         elevatorHeight = () -> (leftMotor.getMotorPosition() + rightMotor.getMotorPosition()) / 2;
 
         linearExtension = new LinearExtension(
                 motorGroup,
                 elevatorHeight,
                 ELEVATOR_ANGLE,
-                new Gains(0, 0, 0, 0, 7.78, 0, 0.15),
+                new Gains(0, 0, 0, 0, 7.78, 0, 0.17),
                 new TrapezoidProfile.Constraints(MAX_VELOCITY, MAX_ACCELERATION),
                 TOLERANCE
         );
