@@ -65,7 +65,7 @@ public class Superstructure implements Logged {
 
     private Supplier<CoralScoreState> algaeHeightSuppier;
 
-    public Superstructure(Trigger isSwerveAtPlace, Trigger alageButton, Trigger coralButton, Trigger safeCloseTrigger, Trigger l2Sllice, Trigger leftRiffScoreTrigger, Trigger cancelTrigger) {
+    public Superstructure(Trigger isSwerveAtPlace, Trigger alageButton, Trigger coralButton, Trigger safeCloseTrigger, Trigger l2Slice, Trigger leftRiffScoreTrigger, Trigger cancelTrigger) {
         currentState = DEFAULT_WITHOUT_GAME_PIECE;
 
         armSubsystem = new ArmSubsystem(leftRiffScoreTrigger);
@@ -81,25 +81,25 @@ public class Superstructure implements Logged {
         coralScoreState = CoralScoreState.L2;
         algaeHeightSuppier = () -> CoralScoreState.L2;
 
-        this.l2Slice = l2Sllice;
+        this.l2Slice = l2Slice;
 
         atPositionTrigger = new Trigger(
                 () -> elevatorSubsystem.atPositionTrigger.getAsBoolean() &&
                         armSubsystem.isAtPosition() &&
-                        intakeSubsystem.isAtPosition().getAsBoolean());
-        cancelTrigger.onTrue(new SequentialCommandGroup(
-                new ConditionalCommand(
-                        setCurrentProcessCommand(Process.CORAL_DEFAULT),
-                        setCurrentProcessCommand(Process.DEFAULT),
-                        this.gripperSubsystem.hasCoral.or(this.intakeSubsystem.either)
-                ),
+                        intakeSubsystem.isAtPosition().getAsBoolean()
+        );
 
+        cancelTrigger.onTrue(
                 new ConditionalCommand(
                         setCurrentProcessCommand(Process.ALGAE_DEFAULT),
-                        new InstantCommand(),
+                        new ConditionalCommand(
+                                setCurrentProcessCommand(Process.CORAL_DEFAULT),
+                                setCurrentProcessCommand(Process.DEFAULT),
+                                this.gripperSubsystem.hasCoral.or(this.intakeSubsystem.either)
+                        ),
                         gripperSubsystem.hasAlgae
-                )//TODO dont pass trough other state!!!!!!!
-        ));
+                )
+        );
 
         levelChangeTrigger = new LevelChangeTrigger(() -> this.coralScoreState);
         hasCoralInRobot = gripperSubsystem.hasCoral.or(intakeSubsystem.either);

@@ -51,7 +51,7 @@ public class Automations implements Logged {
     }
     @Log.NT
     public boolean isLeftRiffScore(){
-        if (AllianceUtils.isBlueAlliance())return getSlice().angle - swerve.getPose2D().getRotation().getDegrees() > 180;
+        if (AllianceUtils.isBlueAlliance()) return getSlice().angle - swerve.getPose2D().getRotation().getDegrees() > 180;
         return (getSlice().angle - swerve.getPose2D().getRotation().getDegrees() + 90) % 360 > 180;
     }
 
@@ -71,6 +71,7 @@ public class Automations implements Logged {
         }
         return currentSetpoint;
     }
+
     @Log.NT
     public boolean atL2Slice(){
         Side slice = getSlice();

@@ -8,7 +8,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.excalib.additional_utilities.AllianceUtils;
@@ -41,6 +40,8 @@ public class RobotContainer implements Logged {
 
     Automations automations = new Automations(swerve);
 
+
+
     public RobotContainer() {
         superstructure = new Superstructure(
                 new Trigger(() -> swerve.isAtPosition()),
@@ -49,13 +50,12 @@ public class RobotContainer implements Logged {
                 new Trigger(() -> swerve.getPose2D().getTranslation().getDistance(AllianceUtils.getReefCenter()) > 0.5),
                 new Trigger(() -> automations.atL2Slice()),
                 new Trigger(()->automations.isLeftRiffScore()),
-                driver.povRight()
+                driver.povLeft()
         );
         configureBindings();
     }
 
     private void configureBindings() {
-
         driver.R2().whileTrue(automations.alignToSide(true));
         driver.L2().whileTrue(automations.alignToSide(false));
 
@@ -65,7 +65,6 @@ public class RobotContainer implements Logged {
         driver.cross().onTrue(superstructure.setCoralScoreStateCommand(CoralScoreState.L1));
 
         driver.povUp().onTrue(superstructure.setAlgaeScoreStateCommand(AlgaeScoreState.NET));
-        driver.povLeft().onTrue(superstructure.setAlgaeScoreStateCommand(AlgaeScoreState.PROCESSOR));
 
         swerve.setDefaultCommand(
                 swerve.driveCommand(
