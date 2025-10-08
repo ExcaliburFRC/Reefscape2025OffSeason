@@ -7,8 +7,6 @@ package frc.robot;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.excalib.additional_utilities.AllianceUtils;
@@ -19,7 +17,6 @@ import frc.robot.superstructure.Superstructure;
 import frc.robot.superstructure.automations.Automations;
 import frc.robot.util.AlgaeScoreState;
 import frc.robot.util.CoralScoreState;
-import monologue.Annotations;
 import monologue.Logged;
 
 import static frc.robot.Constants.AURORA_CLIENT_PORT;
@@ -50,7 +47,7 @@ public class RobotContainer implements Logged {
                 driver.R1(),
                 new Trigger(() -> swerve.getPose2D().getTranslation().getDistance(AllianceUtils.getReefCenter()) > 0.5),
                 new Trigger(() -> automations.atL2Slice()),
-                new Trigger(() -> automations.isLeftRiffScore()),
+                new Trigger(() -> automations.isLeftReefScore()),
                 driver.povLeft()
         );
         configureBindings();

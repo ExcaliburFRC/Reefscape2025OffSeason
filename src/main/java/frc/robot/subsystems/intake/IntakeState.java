@@ -6,8 +6,8 @@ public enum IntakeState {
     DEFAULT(0.8635,0,0),
     HANDOFF(0.8635,0.8,0),
 
-    L1_SCORE_PRE(1.352, -0.1, 0.1),
-    L1_SCORE(1.352, 0.3,0),
+    L1_SCORE_PRE(1.352, -0.1, 0),
+    L1_SCORE(1.352, 0.2,0),
 
     REVERSE_HANDOFF(0.8635, -0.3, 0.1),
     EJECT_CORAL(2, 1, 0);
