@@ -15,16 +15,17 @@ public enum ElevatorStates {
 
     HANDOFF(0.95),
 
-    NET(1.3),
+    NET(1.44),
     PROCESSOR(0.442),
 
     DEFAULT_WITH_CORAL(0.4),
     DEFAULT_WITH_ALGAE(0.6),
-    SAFE_HEIGHT(1);
+    SAFE_HEIGHT(1),
+    L1_HEIGHT(1.10);
 
     private final double height;
 
-    private ElevatorStates(double height) {
+    ElevatorStates(double height) {
         this.height = height;
     }
 

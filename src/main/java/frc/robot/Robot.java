@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.Threads;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -19,7 +20,7 @@ public class Robot extends TimedRobot implements Logged {
         m_robotContainer = new RobotContainer();
 
         boolean fileOnly = false;
-        boolean lazyLogging = false;
+        boolean lazyLogging = true;
         Monologue.setupMonologue(m_robotContainer, "Robot", fileOnly, lazyLogging);
     }
 
@@ -31,9 +32,12 @@ public class Robot extends TimedRobot implements Logged {
 
     @Override
     public void robotPeriodic() {
+        Threads.setCurrentThreadPriority(true, 99);
         TalonFXMotor.refreshAll();
         CommandScheduler.getInstance().run();
         Monologue.updateAll();
+        Threads.setCurrentThreadPriority(false, 10);
+
     }
 
     @Override

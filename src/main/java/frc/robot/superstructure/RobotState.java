@@ -21,9 +21,9 @@ public enum RobotState {
     POST_L4(ArmPosition.L4_POST, ElevatorStates.L4_POST, IntakeState.DEFAULT, GripperStates.RELEASE_CORAL),
 
     // L1 SCORING
-    L1_DEFAULT(ArmPosition.DOWNWARDS, ElevatorStates.SAFE_HEIGHT, IntakeState.DEFAULT, GripperStates.VACENT),
-    PRE_L1(ArmPosition.UPWARDS, ElevatorStates.SAFE_HEIGHT, IntakeState.L1_SCORE_PRE, GripperStates.VACENT),
-    SCORE_L1(ArmPosition.UPWARDS, ElevatorStates.SAFE_HEIGHT, IntakeState.L1_SCORE, GripperStates.VACENT),
+    L1_DEFAULT(ArmPosition.DOWNWARDS, ElevatorStates.L1_HEIGHT, IntakeState.DEFAULT, GripperStates.VACENT),
+    PRE_L1(ArmPosition.DOWNWARDS, ElevatorStates.L1_HEIGHT, IntakeState.L1_SCORE_PRE, GripperStates.VACENT),
+    SCORE_L1(ArmPosition.DOWNWARDS, ElevatorStates.L1_HEIGHT, IntakeState.L1_SCORE, GripperStates.VACENT),
 
     // ALGAE INTAKE
     ALGAE2_INTAKE(ArmPosition.INTAKE_ALGAE, ElevatorStates.ALGAE2, IntakeState.DEFAULT, GripperStates.INTAKE_ALGAE),

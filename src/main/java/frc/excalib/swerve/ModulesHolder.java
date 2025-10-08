@@ -15,7 +15,7 @@ import java.util.function.Supplier;
 import static frc.robot.Constants.SwerveConstants.MAX_VEL;
 import static monologue.Annotations.*;
 
-public class ModulesHolder implements Logged {
+public class ModulesHolder  {
     public final SwerveModule m_frontLeft;
     public final SwerveModule m_frontRight;
     public final SwerveModule m_backLeft;

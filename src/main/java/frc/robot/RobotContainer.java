@@ -19,6 +19,7 @@ import frc.robot.superstructure.Superstructure;
 import frc.robot.superstructure.automations.Automations;
 import frc.robot.util.AlgaeScoreState;
 import frc.robot.util.CoralScoreState;
+import monologue.Annotations;
 import monologue.Logged;
 
 import static frc.robot.Constants.AURORA_CLIENT_PORT;
@@ -45,7 +46,10 @@ public class RobotContainer implements Logged {
                 new Trigger(() -> swerve.isAtPosition()),
                 driver.L1(),
                 driver.R1(),
-                new Trigger(() -> swerve.getPose2D().getTranslation().getDistance(AllianceUtils.getReefCenter()) > 0.5)
+                new Trigger(() -> swerve.getPose2D().getTranslation().getDistance(AllianceUtils.getReefCenter()) > 0.5),
+                new Trigger(() -> automations.atL2Slice()),
+                new Trigger(()->automations.isLeftRiffScore()),
+                driver.povRight()
         );
         configureBindings();
     }
@@ -104,6 +108,10 @@ public class RobotContainer implements Logged {
     @NT
     public Pose2d getAuroraPose() {
         return client.getPose2d();
+    }
+    @Annotations.Log.NT
+    public boolean r2(){
+        return driver.R2().getAsBoolean();
     }
 
 }

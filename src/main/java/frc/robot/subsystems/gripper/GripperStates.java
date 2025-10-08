@@ -7,7 +7,7 @@ public enum GripperStates {
     CORAL(0),
     HANDOFF(0),
     RELEASE_CORAL(0.8),
-    RELEASE_ALGAE(0),
+    RELEASE_ALGAE(8),
     VACENT(0);
 
     final double output;

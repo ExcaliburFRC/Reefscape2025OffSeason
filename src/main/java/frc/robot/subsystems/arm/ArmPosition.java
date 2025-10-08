@@ -1,27 +1,29 @@
 package frc.robot.subsystems.arm;
 
 public enum ArmPosition { // todo
-    PRE_CORAL_SCORE(1.084),
+    PRE_CORAL_SCORE(1.084, true),
 
-    TILTED_BRANCH_CORAL_SCORE(0.421),
-    TILTED_BRANCH_CORAL_SCORE_POST(1.841),
+    TILTED_BRANCH_CORAL_SCORE(0.421, true),
+    TILTED_BRANCH_CORAL_SCORE_POST(1.841, true),
 
-    L4(0.5614),
-    L4_POST(1.841),
+    L4(0.5614, true),
+    L4_POST(1.841, true),
 
-    INTAKE_ALGAE(0),
+    INTAKE_ALGAE(0, false),
 
-    NET(1.193),
+    NET(1.193, false),
 
-    DOWNWARDS(1.5 * Math.PI),
+    DOWNWARDS(1.5 * Math.PI, false),
 
-    UPWARDS(Math.PI / 2),
+    UPWARDS(Math.PI / 2, false),
 
-    PROCESSOR(-0.223);
+    PROCESSOR(-0.223, false);
 
     private final double angle;
+    public final boolean mirrorable;
 
-    ArmPosition(double angle) {
+    ArmPosition(double angle, boolean mirrorable) {
+        this.mirrorable = mirrorable;
         this.angle = angle;
     }
 

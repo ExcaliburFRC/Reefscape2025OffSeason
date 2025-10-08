@@ -86,6 +86,11 @@ public class Gripper extends SubsystemBase implements Logged {
                                 () -> this.currentHoldingState = HoldingState.CORAL_EXPECTED),
                         new InstantCommand(),
                         () -> stateToSet.equals(GripperStates.INTAKE_CORAL)),
+                new ConditionalCommand(
+                        new InstantCommand(
+                                () -> this.currentHoldingState = HoldingState.ALAGE_EXPECTED),
+                        new InstantCommand(),
+                        () -> stateToSet.equals(GripperStates.INTAKE_ALGAE)),
                 new InstantCommand(() -> currentState = stateToSet));
     }
 
