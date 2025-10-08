@@ -4,6 +4,7 @@ import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.excalib.commands.CommandMutex;
 import frc.robot.subsystems.arm.ArmSubsystem;
+import frc.robot.subsystems.climber.ClimberSubsystem;
 import frc.robot.subsystems.elevator.ElevatorSubsystem;
 import frc.robot.subsystems.gripper.Gripper;
 import frc.robot.subsystems.intake.Intake;
@@ -77,8 +78,8 @@ public class Superstructure implements Logged {
         this.safeCloseTrigger = safeCloseTrigger;
 
         currentProcess = Process.DEFAULT;
-        algaeScoreState = AlgaeScoreState.PROCESSOR;
-        coralScoreState = CoralScoreState.L2;
+        algaeScoreState = AlgaeScoreState.NET;
+        coralScoreState = CoralScoreState.L1;
         algaeHeightSuppier = () -> CoralScoreState.L2;
 
         this.l2Slice = l2Slice;
