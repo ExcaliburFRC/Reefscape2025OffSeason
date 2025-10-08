@@ -15,7 +15,7 @@ import java.util.function.Supplier;
 import static frc.robot.Constants.SwerveConstants.MAX_VEL;
 import static monologue.Annotations.*;
 
-public class ModulesHolder implements Logged {
+public class ModulesHolder  {
     public final SwerveModule m_frontLeft;
     public final SwerveModule m_frontRight;
     public final SwerveModule m_backLeft;
@@ -90,15 +90,15 @@ public class ModulesHolder implements Logged {
         return new Vector2D(totalX * 0.25, totalY * 0.25);
     }
 
-    @Log.NT(key = "angular vel")
-    public double getOmegaRadPerSec() {
-        return new SwerveDriveKinematics(
-                m_frontLeft.m_MODULE_LOCATION,
-                m_frontRight.m_MODULE_LOCATION,
-                m_backLeft.m_MODULE_LOCATION,
-                m_backRight.m_MODULE_LOCATION
-        ).toChassisSpeeds(logStates()).omegaRadiansPerSecond;
-    }
+//    @Log.NT(key = "angular vel")
+//    public double getOmegaRadPerSec() {
+//        return new SwerveDriveKinematics(
+//                m_frontLeft.m_MODULE_LOCATION,
+//                m_frontRight.m_MODULE_LOCATION,
+//                m_backLeft.m_MODULE_LOCATION,
+//                m_backRight.m_MODULE_LOCATION
+//        ).toChassisSpeeds(logStates()).omegaRadiansPerSecond;
+//    }
 
     @Log.NT(key = "swerve velocity")
     public double getVelocityDistance() {

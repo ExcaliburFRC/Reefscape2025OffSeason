@@ -41,23 +41,29 @@ public class Automations implements Logged {
         return swerve
                 .pidToPoseCommand(
                         () -> getAlignmentTargetPose(
-                                rightBranch))
-                .unless
-                        (isInTranslationTolerance(
-                                AllianceUtils.getReefCenter(),
-                                () -> Constants.MAX_AUTO_ALIGNMENT_DISTANCE
-                        ));
+                                rightBranch)
+                );
+//                .unless(
+//                        isInTranslationTolerance(
+//                                AllianceUtils.getReefCenter(),
+//                                () -> Constants.MAX_AUTO_ALIGNMENT_DISTANCE
+//                        ));
+    }
+    @Log.NT
+    public boolean isLeftRiffScore(){
+        if (AllianceUtils.isBlueAlliance()) return getSlice().angle - swerve.getPose2D().getRotation().getDegrees() > 180;
+        return (getSlice().angle - swerve.getPose2D().getRotation().getDegrees() + 90) % 360 > 180;
     }
 
     public Pose2d getAlignmentTargetPose(boolean rightBranch) {
         if (rightBranch) {
-            if (getSlice().angle - swerve.getPose2D().getRotation().getDegrees() < 90) {
+            if (isLeftRiffScore()) {
                 currentSetpoint = AllianceUtils.switchAlliance(getSlice().rightBranchLeftScorePose.get());
             } else {
                 currentSetpoint = AllianceUtils.switchAlliance(getSlice().rightBranchRightScorePose.get());
             }
         } else {
-            if (getSlice().angle - swerve.getPose2D().getRotation().getDegrees() < 90) {
+            if (isLeftRiffScore()) {
                 currentSetpoint = AllianceUtils.switchAlliance(getSlice().leftBranchLeftScorePose.get());
             } else {
                 currentSetpoint = AllianceUtils.switchAlliance(getSlice().leftBranchRightScorePose.get());
@@ -66,6 +72,14 @@ public class Automations implements Logged {
         return currentSetpoint;
     }
 
+    @Log.NT
+    public boolean atL2Slice(){
+        Side slice = getSlice();
+        if (slice.equals(Side.SOUTH) || slice.equals(Side.NORTH_WEST)  || slice.equals(Side.SOUTH_EAST)){
+            return true;
+        }
+        return false;
+    }
     @Log.NT
     public Side getSlice() {
         double angle = getAngleDiff();
@@ -88,8 +102,8 @@ public class Automations implements Logged {
     }
 
     public BooleanSupplier isInTranslationTolerance(Translation2d translationCenter, DoubleSupplier tolerance) {
-        Translation2d cuurentPose = swerve.getPose2D().getTranslation();
-        return () -> cuurentPose.getDistance(translationCenter) < tolerance.getAsDouble();
+        Translation2d current = swerve.getPose2D().getTranslation();
+        return () -> current.getDistance(translationCenter) < tolerance.getAsDouble();
     }
 
     @Log.NT

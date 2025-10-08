@@ -12,7 +12,6 @@ public class Constants {
     public static final double ARM_POSITION_CONVERSION_FACTOR = Math.PI * 2 / 14.8;
 
 
-    public static final int LEFT_SENSOR_CHANNEL = 2;
-    public static final int RIGHT_SENSOR_CHANNEL = 3;
-    public static final int LIMIT_SWICH_CHANNEL = 9;
+    public static final int LEFT_SENSOR_CHANNEL = 3;
+    public static final int RIGHT_SENSOR_CHANNEL = 2;
 }

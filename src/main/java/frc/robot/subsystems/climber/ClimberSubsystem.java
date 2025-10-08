@@ -8,6 +8,7 @@ import frc.excalib.control.limits.SoftLimit;
 import frc.excalib.control.motor.controllers.MotorGroup;
 import frc.excalib.control.motor.controllers.SparkMaxMotor;
 import frc.excalib.control.motor.controllers.TalonFXMotor;
+import frc.excalib.control.motor.motor_specs.IdleState;
 import frc.excalib.mechanisms.Arm.Arm;
 import monologue.Annotations.Log;
 import monologue.Logged;
@@ -36,6 +37,7 @@ public class ClimberSubsystem extends SubsystemBase implements Logged {
         limitsConfigs.SupplyCurrentLimit = 35;
         limitsConfigs.SupplyCurrentLimitEnable = true;
         motorGroup = new MotorGroup(firstMotor, secondMotor);
+        motorGroup.setIdleState(IdleState.BRAKE);
         firstMotor.getConfigurator().apply(limitsConfigs);
         secondMotor.getConfigurator().apply(limitsConfigs);
         limit = new SoftLimit(() -> 0, () -> 2.6);

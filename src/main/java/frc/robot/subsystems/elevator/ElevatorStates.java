@@ -5,26 +5,27 @@ public enum ElevatorStates {
     L2_POST(0.16),
 
     L3(0.855),
-    L3_POST(0.56),
+    L3_POST(0.5),
 
-    L4(1.46),
+    L4(1.40),
     L4_POST(1),
 
-    ALGAE2(0.16), // todo
-    ALGAE3(0.16), // todo
+    ALGAE2(0.67), // todo
+    ALGAE3(1), // todo
 
     HANDOFF(0.95),
 
-    NET(0),
-    PROCESSOR(0),
+    NET(1.44),
+    PROCESSOR(0.442),
 
     DEFAULT_WITH_CORAL(0.4),
     DEFAULT_WITH_ALGAE(0.6),
-    SAFE_HEIGHT(0.98);
+    SAFE_HEIGHT(1),
+    L1_HEIGHT(1.10);
 
     private final double height;
 
-    private ElevatorStates(double height) {
+    ElevatorStates(double height) {
         this.height = height;
     }
 

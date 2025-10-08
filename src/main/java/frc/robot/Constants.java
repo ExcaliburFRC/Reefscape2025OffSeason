@@ -63,13 +63,13 @@ public final class Constants {
                 );
 
         public static final double MAX_MODULE_VEL = 4.45;
-        public static final double MAX_FRONT_ACC = 2;
+        public static final double MAX_FRONT_ACC = 4;
         public static final double MAX_SIDE_ACC = 6;
         public static final double MAX_SKID_ACC = 9;
         public static final double MAX_FORWARD_ACC = 9;
-        public static final double MAX_VEL = 4;
-        public static final double MAX_OMEGA_RAD_PER_SEC = 1;
-        public static final double MAX_OMEGA_RAD_PER_SEC_SQUARE = 1;
+        public static final double MAX_VEL = 4.5;
+        public static final double MAX_OMEGA_RAD_PER_SEC = 2;
+        public static final double MAX_OMEGA_RAD_PER_SEC_SQUARE = 3;
 
         public static final PathConstraints MAX_PATH_CONSTRAINTS = new PathConstraints(
                 MAX_VEL,
@@ -170,45 +170,46 @@ public final class Constants {
                         new Rotation2d())
         ).getTranslation();
 
-        public static Translation2d B1_LEFT_SCORE = new Translation2d(CURRENT_REEF_CENTER.getX() - 1.276, CURRENT_REEF_CENTER.getY() + 0.45);
-        public static Translation2d B1_RIGHT_SCORE = new Translation2d(CURRENT_REEF_CENTER.getX() - 1.276, CURRENT_REEF_CENTER.getY() + 0.322);
-        public static Translation2d B12_LEFT_SCORE = new Translation2d(CURRENT_REEF_CENTER.getX() - 1.276, CURRENT_REEF_CENTER.getY() - 0.329);
-        public static Translation2d B12_RIGHT_SCORE = new Translation2d(CURRENT_REEF_CENTER.getX() - 1.276, CURRENT_REEF_CENTER.getY() - 0.45);
+        public static Translation2d B1_LEFT_SCORE = new Translation2d(CURRENT_REEF_CENTER.getX() - 1.52, CURRENT_REEF_CENTER.getY() + 0.45);
+        public static Translation2d B1_RIGHT_SCORE = new Translation2d(CURRENT_REEF_CENTER.getX() - 1.52, CURRENT_REEF_CENTER.getY() + 0.01);
+        public static Translation2d B12_LEFT_SCORE = new Translation2d(CURRENT_REEF_CENTER.getX() - 1.52, CURRENT_REEF_CENTER.getY() - 0.01);
+        public static Translation2d B12_RIGHT_SCORE = new Translation2d(CURRENT_REEF_CENTER.getX() - 1.52, CURRENT_REEF_CENTER.getY() - 0.45);
+//        public static Translation2d B12_RIGHT_SCORE = new Translation2d(CURRENT_REEF_CENTER.getX() - 1.276, CURRENT_REEF_CENTER.getY() - 0.45);
         public static Translation2d BASE_ALGAE = new Translation2d();
 
         public static final AllianceUtils.AlliancePose[] LEFT_BRANCHES_LEFT_SCORE = {
-                new AllianceUtils.AlliancePose(B1_LEFT_SCORE, Rotation2d.fromDegrees(180)),
-                new AllianceUtils.AlliancePose(B1_LEFT_SCORE.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-60)), Rotation2d.fromDegrees(120)),
-                new AllianceUtils.AlliancePose(B1_LEFT_SCORE.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-120)), Rotation2d.fromDegrees(60)),
-                new AllianceUtils.AlliancePose(B1_LEFT_SCORE.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-180)), new Rotation2d()),
-                new AllianceUtils.AlliancePose(B1_LEFT_SCORE.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-240)), Rotation2d.fromDegrees(-60)),
-                new AllianceUtils.AlliancePose(B1_LEFT_SCORE.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-300)), Rotation2d.fromDegrees(-120)),
+                new AllianceUtils.AlliancePose(B1_LEFT_SCORE, Rotation2d.fromDegrees(270)),
+                new AllianceUtils.AlliancePose(B1_LEFT_SCORE.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-60)), Rotation2d.fromDegrees(120 + 90)),
+                new AllianceUtils.AlliancePose(B1_LEFT_SCORE.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-120)), Rotation2d.fromDegrees(60 + 90)),
+                new AllianceUtils.AlliancePose(B1_LEFT_SCORE.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-180)), Rotation2d.fromDegrees(90)),
+                new AllianceUtils.AlliancePose(B1_LEFT_SCORE.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-240)), Rotation2d.fromDegrees(-60 + 90)),
+                new AllianceUtils.AlliancePose(B1_LEFT_SCORE.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-300)), Rotation2d.fromDegrees(-120 + 90)),
         };
         public static final AllianceUtils.AlliancePose[] LEFT_BRANCHES_RIGHT_SCORE = {
-                new AllianceUtils.AlliancePose(B1_RIGHT_SCORE,new Rotation2d()),
-                new AllianceUtils.AlliancePose(B1_RIGHT_SCORE.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-60)), Rotation2d.fromDegrees(-60)),
-                new AllianceUtils.AlliancePose(B1_RIGHT_SCORE.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-120)), Rotation2d.fromDegrees(-120)),
-                new AllianceUtils.AlliancePose(B1_RIGHT_SCORE.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-180)), new Rotation2d(180)),
-                new AllianceUtils.AlliancePose(B1_RIGHT_SCORE.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-240)), Rotation2d.fromDegrees(120)),
-                new AllianceUtils.AlliancePose(B1_RIGHT_SCORE.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-300)), Rotation2d.fromDegrees(60)),
+                new AllianceUtils.AlliancePose(B1_RIGHT_SCORE, Rotation2d.fromDegrees(90)),
+                new AllianceUtils.AlliancePose(B1_RIGHT_SCORE.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-60)), Rotation2d.fromDegrees(-60+90)),
+                new AllianceUtils.AlliancePose(B1_RIGHT_SCORE.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-120)), Rotation2d.fromDegrees(-120+90)),
+                new AllianceUtils.AlliancePose(B1_RIGHT_SCORE.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-180)), new Rotation2d(180+90)),
+                new AllianceUtils.AlliancePose(B1_RIGHT_SCORE.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-240)), Rotation2d.fromDegrees(120+90)),
+                new AllianceUtils.AlliancePose(B1_RIGHT_SCORE.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-300)), Rotation2d.fromDegrees(60+90)),
         };
 
         public static final AllianceUtils.AlliancePose[] RIGHT_BRANCHES_LEFT_SCORE = {
-                new AllianceUtils.AlliancePose(B12_LEFT_SCORE, Rotation2d.fromDegrees(180)),
-                new AllianceUtils.AlliancePose(B12_LEFT_SCORE.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-60)), Rotation2d.fromDegrees(120)),
-                new AllianceUtils.AlliancePose(B12_LEFT_SCORE.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-120)), Rotation2d.fromDegrees(60)),
-                new AllianceUtils.AlliancePose(B12_LEFT_SCORE.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-180)), new Rotation2d()),
-                new AllianceUtils.AlliancePose(B12_LEFT_SCORE.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-240)), Rotation2d.fromDegrees(-60)),
-                new AllianceUtils.AlliancePose(B12_LEFT_SCORE.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-300)), Rotation2d.fromDegrees(-120))
+                new AllianceUtils.AlliancePose(B12_LEFT_SCORE, Rotation2d.fromDegrees(180+90)),
+                new AllianceUtils.AlliancePose(B12_LEFT_SCORE.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-60)), Rotation2d.fromDegrees(120-90)),
+                new AllianceUtils.AlliancePose(B12_LEFT_SCORE.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-120)), Rotation2d.fromDegrees(60-90)),
+                new AllianceUtils.AlliancePose(B12_LEFT_SCORE.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-180)), Rotation2d.fromDegrees(-90)),
+                new AllianceUtils.AlliancePose(B12_LEFT_SCORE.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-240)), Rotation2d.fromDegrees(-60-90)),
+                new AllianceUtils.AlliancePose(B12_LEFT_SCORE.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-300)), Rotation2d.fromDegrees(-120-90))
         };
 
         public static final AllianceUtils.AlliancePose[] RIGHT_BRANCHES_RIGHT_SCORE = {
-                new AllianceUtils.AlliancePose(B12_RIGHT_SCORE, new Rotation2d()),
-                new AllianceUtils.AlliancePose(B12_RIGHT_SCORE.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-60)), Rotation2d.fromDegrees(-60)),
-                new AllianceUtils.AlliancePose(B12_RIGHT_SCORE.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-120)), Rotation2d.fromDegrees(-120)),
-                new AllianceUtils.AlliancePose(B12_RIGHT_SCORE.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-180)), new Rotation2d(180)),
-                new AllianceUtils.AlliancePose(B12_RIGHT_SCORE.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-240)), Rotation2d.fromDegrees(120)),
-                new AllianceUtils.AlliancePose(B12_RIGHT_SCORE.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-300)), Rotation2d.fromDegrees(60))
+                new AllianceUtils.AlliancePose(B12_RIGHT_SCORE, Rotation2d.fromDegrees(90)),
+                new AllianceUtils.AlliancePose(B12_RIGHT_SCORE.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-60)), Rotation2d.fromDegrees(-60-90)),
+                new AllianceUtils.AlliancePose(B12_RIGHT_SCORE.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-120)), Rotation2d.fromDegrees(-120-90)),
+                new AllianceUtils.AlliancePose(B12_RIGHT_SCORE.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-180)), new Rotation2d(180-90)),
+                new AllianceUtils.AlliancePose(B12_RIGHT_SCORE.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-240)), Rotation2d.fromDegrees(120-90)),
+                new AllianceUtils.AlliancePose(B12_RIGHT_SCORE.rotateAround(CURRENT_REEF_CENTER, Rotation2d.fromDegrees(-300)), Rotation2d.fromDegrees(60-90))
         };
 
         public static final AllianceUtils.AlliancePose[] ALGAE_POSES = {
@@ -226,7 +227,7 @@ public final class Constants {
             SOUTH_EAST(LEFT_BRANCHES_LEFT_SCORE[2], LEFT_BRANCHES_RIGHT_SCORE[2], RIGHT_BRANCHES_RIGHT_SCORE[2], RIGHT_BRANCHES_LEFT_SCORE[2], ALGAE_POSES[2], -120),
             SOUTH(LEFT_BRANCHES_LEFT_SCORE[3], LEFT_BRANCHES_RIGHT_SCORE[3], RIGHT_BRANCHES_RIGHT_SCORE[3], RIGHT_BRANCHES_LEFT_SCORE[3], ALGAE_POSES[3], 180),
             SOUTH_WEST(LEFT_BRANCHES_LEFT_SCORE[4], LEFT_BRANCHES_RIGHT_SCORE[4], RIGHT_BRANCHES_RIGHT_SCORE[4], RIGHT_BRANCHES_LEFT_SCORE[4], ALGAE_POSES[4], 60),
-            NORTH_WEST(LEFT_BRANCHES_LEFT_SCORE[5], LEFT_BRANCHES_RIGHT_SCORE[5], RIGHT_BRANCHES_RIGHT_SCORE[5], RIGHT_BRANCHES_LEFT_SCORE[5], ALGAE_POSES[5],120);
+            NORTH_WEST(LEFT_BRANCHES_LEFT_SCORE[5], LEFT_BRANCHES_RIGHT_SCORE[5], RIGHT_BRANCHES_RIGHT_SCORE[5], RIGHT_BRANCHES_LEFT_SCORE[5], ALGAE_POSES[5], 120);
 
             public final AllianceUtils.AlliancePose leftBranchLeftScorePose,
                     leftBranchRightScorePose, rightBranchRightScorePose,
@@ -251,7 +252,7 @@ public final class Constants {
     }
 
     public static int DRIVER_CONTROLLER_PORT = 0;
-    public static double MAX_AUTO_ALIGNMENT_DISTANCE = 0;
+    public static double MAX_AUTO_ALIGNMENT_DISTANCE = 6;
 
     public static final int AURORA_CLIENT_PORT = 5000;
 

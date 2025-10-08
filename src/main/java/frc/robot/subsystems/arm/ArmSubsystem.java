@@ -1,5 +1,6 @@
 package frc.robot.subsystems.arm;
 
+import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -21,12 +22,15 @@ import static frc.excalib.control.motor.motor_specs.IdleState.COAST;
 import static frc.robot.subsystems.arm.Constants.*;
 import static frc.robot.subsystems.intake.Constants.POSITION_TOLERANCE_RAD;
 
+
 public class ArmSubsystem extends SubsystemBase implements Logged {
 
     // === Hardware ===
     private final TalonFXMotor armMotor;
     private final CANcoder canCoder;
     private final Arm armMechanism;
+
+    private Trigger mirror = new Trigger(()->false);
 
     // === Suppliers ===
     private final DoubleSupplier angleSupplier;
@@ -46,7 +50,8 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
 //    private Trigger mirrorArmSetpoint;
 
 
-    public ArmSubsystem() {
+    public ArmSubsystem(Trigger isLeftRiffScore) {
+        this.mirror = isLeftRiffScore;
         currentState = ArmPosition.UPWARDS;
 
         armMotor = new TalonFXMotor(FIRST_MOTOR_ID);
@@ -63,7 +68,7 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
         armMotor.setMotorPosition(angleSupplier.getAsDouble());
 
         limitsConfigs = new CurrentLimitsConfigs();
-        limitsConfigs.SupplyCurrentLimit = 40;
+        limitsConfigs.SupplyCurrentLimit = 45;
         limitsConfigs.SupplyCurrentLimitEnable = true;
 
         armMotor.getConfigurator().apply(limitsConfigs);
@@ -128,9 +133,9 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
     public Command goToStateCommand() {
         return armMechanism.anglePositionControlCommand(
                 () -> softLimit.limit(
-                        softLimit.getSetpoint(
+                        limitHelper.getSetpoint(
                                 angleSupplier.getAsDouble(),
-                                currentState.getAngle()
+                                mirror(currentState)
                         )
                 ),
                 (at) -> at = false,
@@ -217,5 +222,11 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
         double heightDiff = elevatorHeightSupplier.getAsDouble() - INTAKE_HEIGHT;
         double maxLimit = Math.asin(-heightDiff / ARM_LENGTH);
         return Math.PI - maxLimit;
+    }
+    private double mirror(ArmPosition armPosition){
+        if (armPosition.mirrorable && mirror.getAsBoolean()){
+            return Math.PI - armPosition.getAngle();
+        }
+        return armPosition.getAngle();
     }
 }

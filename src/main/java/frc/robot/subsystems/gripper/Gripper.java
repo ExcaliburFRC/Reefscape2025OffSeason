@@ -2,6 +2,8 @@ package frc.robot.subsystems.gripper;
 
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import edu.wpi.first.wpilibj.AnalogInput;
+import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.excalib.control.gains.Gains;
@@ -22,9 +24,12 @@ public class Gripper extends SubsystemBase implements Logged {
     public Trigger setEmptyTrigger;
     private HoldingState currentHoldingState = HoldingState.EMPTY;
     private final Trigger hasGamePieceTrigger;
+    private final double alpha = 0.01;
+    private double filteredValue = 200;
 
     public final Trigger hasCoral;
     public final Trigger hasAlgae;
+
 
     // === Inputs ===
     private final FlyWheel gripperWheels;
@@ -37,6 +42,7 @@ public class Gripper extends SubsystemBase implements Logged {
         limitsConfigs.SupplyCurrentLimitEnable = true;
 
         gripperMotor.getConfigurator().apply(limitsConfigs);
+
         gripperWheels = new FlyWheel(
                 gripperMotor,
                 MAX_ACCELERATION,
@@ -49,7 +55,8 @@ public class Gripper extends SubsystemBase implements Logged {
         hasAlgae = new Trigger(() -> currentHoldingState.equals(HoldingState.ALGAE));
         hasCoral = new Trigger(() -> currentHoldingState.equals(HoldingState.CORAL));
 
-        hasGamePieceTrigger = new Trigger(() -> sensor.getValue() < 150).debounce(0.15);
+//        hasGamePieceTrigger = new Trigger(() -> filteredValue < 150).debounce(0.25).negate().debounce(0.15).negate();
+        hasGamePieceTrigger = new Trigger(() -> getFilteredState(sensor.getValue())).debounce(0.1);
 
         setCoralStateTrigger = new Trigger(
                 () -> currentHoldingState.equals(HoldingState.CORAL_EXPECTED))
@@ -79,7 +86,17 @@ public class Gripper extends SubsystemBase implements Logged {
                                 () -> this.currentHoldingState = HoldingState.CORAL_EXPECTED),
                         new InstantCommand(),
                         () -> stateToSet.equals(GripperStates.INTAKE_CORAL)),
+                new ConditionalCommand(
+                        new InstantCommand(
+                                () -> this.currentHoldingState = HoldingState.ALAGE_EXPECTED),
+                        new InstantCommand(),
+                        () -> stateToSet.equals(GripperStates.INTAKE_ALGAE)),
                 new InstantCommand(() -> currentState = stateToSet));
+    }
+
+    @Override
+    public void periodic() {
+        filteredValue = alpha * (sensor.getValue()) + (1 - alpha) * sensor.getValue();
     }
 
     @Log.NT
@@ -102,10 +119,10 @@ public class Gripper extends SubsystemBase implements Logged {
         return hasGamePieceTrigger.getAsBoolean();
     }
 
-    @Log.NT
-    public double getSensorValue() {
-        return sensor.getValue();
-    }
+//    @Log.NT
+//    public double getSensorValue() {
+//        return sensor.getValue();
+//    }
 
     enum HoldingState {
         ALGAE,
@@ -114,5 +131,34 @@ public class Gripper extends SubsystemBase implements Logged {
         CORAL_EXPECTED,
         ALAGE_EXPECTED,
     }
+
+    @Log.NT
+    public double getSensorVal() {
+        return sensor.getValue();
+    }
+
+    @Log
+    public double getFilteredValue() {
+        return filteredValue;
+    }
+
+
+
+    double trueCount= 0, falseCount = 0;
+    boolean getFilteredState(double reading) {
+        if (reading < 80) {
+            trueCount++;
+            falseCount = 0;
+        } else if (reading > 180) {
+            falseCount++;
+            trueCount = 0;
+        }
+
+        if (trueCount > STABLE_COUNT) filtered = true;
+        if (falseCount > STABLE_COUNT) filtered = false;
+
+        return filtered;
+    }
+
 
 }

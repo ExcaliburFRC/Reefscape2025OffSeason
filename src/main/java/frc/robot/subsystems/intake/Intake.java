@@ -27,7 +27,6 @@ public class Intake extends SubsystemBase implements Logged {
     private final TalonFXMotor rollersMotor, centerlizerMotor;
     public final Arm arm;
     private final Mechanism centralizer, rollers;
-    private final DigitalInput limitSwitch;
 
     // === Inputs and Triggers ===
     private final AnalogInput rightSensor, leftSensor;
@@ -55,8 +54,6 @@ public class Intake extends SubsystemBase implements Logged {
         centralizer = new Mechanism(centerlizerMotor);
         rollers = new Mechanism(rollersMotor);
 
-        limitSwitch = new DigitalInput(9);
-
         armMotor.setPositionConversionFactor(ARM_POSITION_CONVERSION_FACTOR);
         armMotor.setVelocityConversionFactor(ARM_POSITION_CONVERSION_FACTOR);
 
@@ -79,7 +76,6 @@ public class Intake extends SubsystemBase implements Logged {
 
         armMotor.setNeutralMode(NeutralModeValue.Brake);
 
-
         rightSensor = new AnalogInput(RIGHT_SENSOR_CHANNEL);
         leftSensor = new AnalogInput(LEFT_SENSOR_CHANNEL);
 
@@ -91,9 +87,7 @@ public class Intake extends SubsystemBase implements Logged {
         rightSensorTrigger = new Trigger(() -> false);
         leftSensorTrigger = new Trigger(() -> false);
 
-        atPosition = new Trigger(
-                () -> Math.abs(currentState.intakeAngle - angleSupplier.getAsDouble()) < TOLERANCE
-        );
+        atPosition = new Trigger(() -> Math.abs(currentState.intakeAngle - angleSupplier.getAsDouble()) < TOLERANCE);
 
         sensorTrigger.onTrue(new PrintCommand("The Trigger Changed!"));
 
@@ -124,8 +118,8 @@ public class Intake extends SubsystemBase implements Logged {
         either = new Trigger(() -> (getRightSensorData() || getLeftSensorData()));
         both = new Trigger(() -> (getRightSensorData() && getLeftSensorData()));
 
-        leftSensorTrigger = new Trigger(() -> rightSensor.getValue() < 4000);
-        rightSensorTrigger = new Trigger(() -> leftSensor.getValue() < 4000);
+        leftSensorTrigger = new Trigger(() -> leftSensor.getValue() < 4000);
+        rightSensorTrigger = new Trigger(() -> rightSensor.getValue() < 4000);
     }
 
 
@@ -236,6 +230,16 @@ public class Intake extends SubsystemBase implements Logged {
 
     public Command resetAngleCommand() {
         return new InstantCommand(() -> armMotor.setMotorPosition(ARM_DEFAULT_START_RAD));
+    }
+
+    @NT
+    public double getRightSendorValue(){
+        return rightSensor.getValue();
+    }
+
+ @NT
+    public double getLeftSendorValue(){
+        return leftSensor.getValue();
     }
 
 
