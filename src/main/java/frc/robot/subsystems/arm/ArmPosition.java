@@ -6,7 +6,7 @@ public enum ArmPosition { // todo
     TILTED_BRANCH_CORAL_SCORE(0.421, true),
     TILTED_BRANCH_CORAL_SCORE_POST(1.841, true),
 
-    L4(0.5614, true),
+    L4(0.36, true), //0.51
     L4_POST(1.841, true),
 
     INTAKE_ALGAE(0, false),

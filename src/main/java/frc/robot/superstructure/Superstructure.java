@@ -67,7 +67,7 @@ public class Superstructure implements Logged {
     private Supplier<CoralScoreState> algaeHeightSuppier;
 
     public Superstructure(Trigger isSwerveAtPlace, Trigger alageButton, Trigger coralButton, Trigger safeCloseTrigger, Trigger l2Slice, Trigger leftRiffScoreTrigger, Trigger cancelTrigger) {
-        currentState = DEFAULT_WITHOUT_GAME_PIECE;
+        currentState = DEFAULT_WITH_CORAL;
 
         armSubsystem = new ArmSubsystem(leftRiffScoreTrigger);
         elevatorSubsystem = new ElevatorSubsystem();
@@ -77,7 +77,7 @@ public class Superstructure implements Logged {
         this.coralButton = coralButton;
         this.safeCloseTrigger = safeCloseTrigger;
 
-        currentProcess = Process.DEFAULT;
+        currentProcess = Process.CORAL_DEFAULT;
         algaeScoreState = AlgaeScoreState.NET;
         coralScoreState = CoralScoreState.L1;
         algaeHeightSuppier = () -> CoralScoreState.L2;
@@ -124,12 +124,12 @@ public class Superstructure implements Logged {
 
         scoreCoralSideMap.put(CoralScoreState.L1, setCurrentStateCommand(SCORE_L1).andThen(new WaitUntilCommand(intakeSubsystem.either.negate().debounce(0.4))));
         scoreCoralSideMap.put(CoralScoreState.L2, setCurrentStateCommand(SCORE_L2));
-        scoreCoralSideMap.put(CoralScoreState.L3, setCurrentStateCommand(SCORE_L3));
-        scoreCoralSideMap.put(CoralScoreState.L4, setCurrentStateCommand(SCORE_L4));
+        scoreCoralSideMap.put(CoralScoreState.L3, setCurrentStateCommand(SCORE_L3_1).andThen(setCurrentStateCommand(SCORE_L3_2)));
+        scoreCoralSideMap.put(CoralScoreState.L4, setCurrentStateCommand(SCORE_L4_1).andThen(setCurrentStateCommand(SCORE_L4_2)));
 
         postScoreCoralSideMap.put(CoralScoreState.L1, setCurrentStateCommand(DEFAULT_WITHOUT_GAME_PIECE));
         postScoreCoralSideMap.put(CoralScoreState.L2, setCurrentStateCommand(POST_L2));
-        postScoreCoralSideMap.put(CoralScoreState.L3, setCurrentStateCommand(POST_L3));
+        postScoreCoralSideMap.put(CoralScoreState.L3, new WaitCommand(0.3).andThen(setCurrentStateCommand(POST_L3)));
         postScoreCoralSideMap.put(CoralScoreState.L4, new WaitCommand(0.24).andThen(setCurrentStateCommand(POST_L4)));
 
         commandMutex = new CommandMutex();
@@ -244,7 +244,8 @@ public class Superstructure implements Logged {
                         getAlgaeIntakeCommand(AlgaeIntakeState.L2),
                         getAlgaeIntakeCommand(AlgaeIntakeState.L3),
                         this.l2Slice),
-                new WaitUntilCommand(gripperSubsystem.hasAlgae), // algae present and robot is at safe distance from reef // todo
+                new WaitUntilCommand(gripperSubsystem.hasAlgae),// algae present and robot is at safe distance from reef // todo
+                new WaitUntilCommand(safeCloseTrigger),
                 setCurrentProcessCommand(Process.ALGAE_DEFAULT)
         );
     }
@@ -304,6 +305,7 @@ public class Superstructure implements Logged {
         return new ConditionalCommand(
                 new SequentialCommandGroup(
                         setCurrentStateCommand(ALGAE2_INTAKE)
+
                 ),
                 new SequentialCommandGroup(
                         setCurrentStateCommand(ALGAE3_INTAKE)
@@ -332,7 +334,8 @@ public class Superstructure implements Logged {
                 setCurrentStateCommand(NET_SCORE_STAGE_2),
                 setCurrentStateCommand(NET_SCORE_STAGE_3),
                 new WaitUntilCommand(gripperSubsystem.hasAlgae.negate().debounce(0.3)),
-                setCurrentStateCommand(NET_SCORE_STAGE_4)
+                setCurrentStateCommand(NET_SCORE_STAGE_4),
+                setCurrentStateCommand(NET_SCORE_STAGE_5)
         );
     }
 
@@ -413,6 +416,16 @@ public class Superstructure implements Logged {
 
     private enum AlgaeIntakeState {
         L2, L3
+    }
+
+    @Log.NT
+    public boolean getSafeCloseTrigger() {
+        return safeCloseTrigger.getAsBoolean();
+    }
+
+    @Log.NT
+    public boolean getCoralButton() {
+        return coralButton.getAsBoolean();
     }
 }
 

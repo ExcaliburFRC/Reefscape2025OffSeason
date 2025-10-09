@@ -170,10 +170,10 @@ public final class Constants {
                 new Rotation2d()
         ).get().getTranslation();
 
-        public static Translation2d B1_LEFT_SCORE = new Translation2d(CURRENT_REEF_CENTER.getX() + 1.159, CURRENT_REEF_CENTER.getY() - 0.025-0.36);
-        public static Translation2d B1_RIGHT_SCORE = new Translation2d(CURRENT_REEF_CENTER.getX() + 1.159, CURRENT_REEF_CENTER.getY() - 0.375 + 0.36);
-        public static Translation2d B12_LEFT_SCORE = new Translation2d(CURRENT_REEF_CENTER.getX() + 1.159, CURRENT_REEF_CENTER.getY() + 0.375-0.36);
-        public static Translation2d B12_RIGHT_SCORE = new Translation2d(CURRENT_REEF_CENTER.getX() + 1.159, CURRENT_REEF_CENTER.getY() + 0.025 + 0.36);
+        public static Translation2d B1_LEFT_SCORE = new Translation2d(CURRENT_REEF_CENTER.getX() + 1.159+0.02, CURRENT_REEF_CENTER.getY() - 0.025-0.36);
+        public static Translation2d B1_RIGHT_SCORE = new Translation2d(CURRENT_REEF_CENTER.getX() + 1.159+0.02, CURRENT_REEF_CENTER.getY() - 0.375 + 0.36);
+        public static Translation2d B12_LEFT_SCORE = new Translation2d(CURRENT_REEF_CENTER.getX() + 1.159+0.02, CURRENT_REEF_CENTER.getY() + 0.375-0.36);
+        public static Translation2d B12_RIGHT_SCORE = new Translation2d(CURRENT_REEF_CENTER.getX() + 1.159+0.02, CURRENT_REEF_CENTER.getY() + 0.025 + 0.36);
         public static Translation2d BASE_ALGAE = new Translation2d();
 
         public static final AllianceUtils.AlliancePose[] LEFT_BRANCHES_LEFT_SCORE = {
