@@ -130,7 +130,7 @@ public class Superstructure implements Logged {
         postScoreCoralSideMap.put(CoralScoreState.L1, setCurrentStateCommand(DEFAULT_WITHOUT_GAME_PIECE));
         postScoreCoralSideMap.put(CoralScoreState.L2, setCurrentStateCommand(POST_L2));
         postScoreCoralSideMap.put(CoralScoreState.L3, setCurrentStateCommand(POST_L3));
-        postScoreCoralSideMap.put(CoralScoreState.L4, setCurrentStateCommand(POST_L4));
+        postScoreCoralSideMap.put(CoralScoreState.L4, new WaitCommand(0.24).andThen(setCurrentStateCommand(POST_L4)));
 
         commandMutex = new CommandMutex();
 
