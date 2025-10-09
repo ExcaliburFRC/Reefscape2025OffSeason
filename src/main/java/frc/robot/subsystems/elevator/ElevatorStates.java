@@ -7,7 +7,7 @@ public enum ElevatorStates {
     L3(0.855),
     L3_POST(0.5),
 
-    L4(1.40),
+    L4(1.45),
     L4_POST(1),
 
     ALGAE2(0.67), // todo

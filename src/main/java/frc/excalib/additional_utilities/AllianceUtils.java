@@ -59,7 +59,8 @@ public class AllianceUtils {
         return switchAlliance(bluePose);
     }
 
-    public static Pose2d switchAlliance(Pose2d pose) {
+    public static Pose2d
+    switchAlliance(Pose2d pose) {
         return new Pose2d(
                 FIELD_LENGTH_METERS - pose.getX(), FIELD_WIDTH_METERS - pose.getY(),
                 pose.getRotation().minus(Rotation2d.fromDegrees(180))

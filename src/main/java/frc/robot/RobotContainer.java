@@ -7,24 +7,26 @@ package frc.robot;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.excalib.additional_utilities.AllianceUtils;
 import frc.excalib.control.math.Vector2D;
 import frc.excalib.slam.mapper.AuroraClient;
 import frc.excalib.swerve.Swerve;
+import frc.robot.subsystems.climber.ClimberSubsystem;
 import frc.robot.superstructure.Superstructure;
 import frc.robot.superstructure.automations.Automations;
 import frc.robot.util.AlgaeScoreState;
 import frc.robot.util.CoralScoreState;
-import monologue.Annotations;
 import monologue.Logged;
 
 import static frc.robot.Constants.AURORA_CLIENT_PORT;
 import static frc.robot.Constants.DRIVER_CONTROLLER_PORT;
 import static frc.robot.Constants.SwerveConstants.MAX_OMEGA_RAD_PER_SEC;
 import static frc.robot.Constants.SwerveConstants.MAX_VEL;
+import static monologue.Annotations.*;
 import static monologue.Annotations.Log.*;
 
 
@@ -41,15 +43,14 @@ public class RobotContainer implements Logged {
     Automations automations = new Automations(swerve);
 
 
-
     public RobotContainer() {
         superstructure = new Superstructure(
                 new Trigger(() -> swerve.isAtPosition()),
                 driver.L1(),
                 driver.R1(),
-                new Trigger(() -> swerve.getPose2D().getTranslation().getDistance(AllianceUtils.getReefCenter()) > 0.5),
+                new Trigger(() -> swerve.getPose2D().getTranslation().getDistance(AllianceUtils.getReefCenter()) > 2.13456),
                 new Trigger(() -> automations.atL2Slice()),
-                new Trigger(()->automations.isLeftRiffScore()),
+                new Trigger(() -> automations.isLeftReefScore()),
                 driver.povLeft()
         );
         configureBindings();
@@ -69,8 +70,8 @@ public class RobotContainer implements Logged {
         swerve.setDefaultCommand(
                 swerve.driveCommand(
                         () -> new Vector2D(
-                                applyDeadband(driver.getLeftY()) * MAX_VEL,
-                                applyDeadband(driver.getLeftX()) * MAX_VEL),
+                                applyDeadband(-driver.getLeftY()) * MAX_VEL,
+                                applyDeadband(-driver.getLeftX()) * MAX_VEL),
                         () -> applyDeadband(-driver.getRightX()) * MAX_OMEGA_RAD_PER_SEC,
                         () -> true
                 )
@@ -82,6 +83,11 @@ public class RobotContainer implements Logged {
         driver.options().toggleOnTrue(superstructure.intakeSubsystem.resetAngleCommand().ignoringDisable(true));
         driver.create().onTrue(superstructure.elevatorSubsystem.setElevatorHeightCommand(0.16).ignoringDisable(true));
 
+//        climberSubsystem.setDefaultCommand(
+//                climberSubsystem.manualCommand(
+//                        () -> operator.getLeftY(),
+//                        () -> operator.getRightY())
+//        );
     }
 
     public void perodic() {
@@ -96,7 +102,15 @@ public class RobotContainer implements Logged {
 
 
     public Command getAutonomousCommand() {
-        return Commands.none();
+        Command auto = swerve.driveCommand(
+                        () -> new Vector2D(2, 0),
+                        () -> 0,
+                        () -> false)
+                .withTimeout(2.7);
+//                .andThen(new InstantCommand(() -> flag = true))
+//                .andThen(new InstantCommand(() -> flag = true)).andThen(superstructure.getCurrentProcessSupplier().equals())
+//                .andThen(new InstantCommand(() -> flag = true));
+        return auto;
     }
 
     @NT
@@ -108,8 +122,9 @@ public class RobotContainer implements Logged {
     public Pose2d getAuroraPose() {
         return client.getPose2d();
     }
-    @Annotations.Log.NT
-    public boolean r2(){
+
+    @Log.NT
+    public boolean r2() {
         return driver.R2().getAsBoolean();
     }
 

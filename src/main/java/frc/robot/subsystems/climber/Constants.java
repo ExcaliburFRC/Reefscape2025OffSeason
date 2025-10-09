@@ -8,7 +8,7 @@ public class Constants {
 
     public static final int MOTOR1_ID = 60;
     public static final int MOTOR2_ID = 61;
-    public static final int ROLLER_MOTOR_ID = 13;
+    public static final int ROLLER_MOTOR_ID = 62;
 
     public static final double ARM_POSITION_CONVERSION_FACTOR = 0.0051282;
 

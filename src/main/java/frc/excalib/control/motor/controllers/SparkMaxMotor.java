@@ -18,7 +18,6 @@ public class SparkMaxMotor extends SparkMax implements Motor {
 
     public SparkMaxMotor(int deviceId, MotorType type) {
         super(deviceId, type);
-
     }
 
     @Override

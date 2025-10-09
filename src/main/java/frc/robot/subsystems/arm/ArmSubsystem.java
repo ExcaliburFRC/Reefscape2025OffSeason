@@ -225,8 +225,8 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
     }
     private double mirror(ArmPosition armPosition){
         if (armPosition.mirrorable && mirror.getAsBoolean()){
-            return Math.PI - armPosition.getAngle();
+            return armPosition.getAngle();
         }
-        return armPosition.getAngle();
+        return Math.PI - armPosition.getAngle();
     }
 }

@@ -10,6 +10,7 @@ import frc.excalib.control.motor.controllers.SparkMaxMotor;
 import frc.excalib.control.motor.controllers.TalonFXMotor;
 import frc.excalib.control.motor.motor_specs.IdleState;
 import frc.excalib.mechanisms.Arm.Arm;
+import frc.excalib.mechanisms.Mechanism;
 import monologue.Annotations.Log;
 import monologue.Logged;
 
@@ -25,6 +26,7 @@ public class ClimberSubsystem extends SubsystemBase implements Logged {
     private final Trigger atPosition; //
     private DoubleSupplier setpoint; //
     private SoftLimit limit;
+    private final Mechanism wheelsMechanism;
 
     public ClimberSubsystem() {
         firstMotor = new TalonFXMotor(MOTOR1_ID);
@@ -45,6 +47,8 @@ public class ClimberSubsystem extends SubsystemBase implements Logged {
         motorGroup.setPositionConversionFactor(ARM_POSITION_CONVERSION_FACTOR);
         motorGroup.setVelocityConversionFactor(ARM_POSITION_CONVERSION_FACTOR);
 
+        wheelsMechanism = new Mechanism(rollerMotor);
+
         motorGroup.setMotorPosition(INITIAL_START_ANGLE);
 
         climberMechanism = new Arm(motorGroup, motorGroup::getMotorPosition, VELOCITY_SOFTLIMIT, GAINS, MASS);
@@ -61,6 +65,16 @@ public class ClimberSubsystem extends SubsystemBase implements Logged {
         return command;
     }
 
+    public Command manualCommand(DoubleSupplier wheelVoltage, DoubleSupplier armVoltage) {
+        Command command = new ParallelCommandGroup(
+                climberMechanism.manualCommand(armVoltage),
+                wheelsMechanism.manualCommand(wheelVoltage)
+        );
+        command.addRequirements(this);
+        return command;
+    }
+
+
     public Command goToState(double angle) {
         Command command = new ParallelCommandGroup(
                 climberMechanism.anglePositionControlCommand(
@@ -72,6 +86,7 @@ public class ClimberSubsystem extends SubsystemBase implements Logged {
         );
         command.addRequirements(this);
         return command;
+
     }
 
     @Log.NT
