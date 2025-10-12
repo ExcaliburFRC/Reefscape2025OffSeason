@@ -78,8 +78,8 @@ public class Swerve extends SubsystemBase implements Logged {
 
 
         angleController.enableContinuousInput(-Math.PI, Math.PI);
-        xController.setTolerance(0.03);
-        yController.setTolerance(0.03);
+        xController.setTolerance(0.01);
+        yController.setTolerance(0.01);
         angleController.setTolerance(0.0628);
 
 
@@ -264,16 +264,6 @@ public class Swerve extends SubsystemBase implements Logged {
      */
     public void updateOdometry() {
         m_odometry.updateOdometry(modules.getModulesPositions());
-
-//        Optional<EstimatedRobotPose> backPose = m_backCamera.getEstimatedGlobalPose(m_odometry.getEstimatedPosition());
-//        if (backPose.isPresent()) {
-//            m_odometry.addVisionMeasurement(backPose.get().estimatedPose.toPose2d(), backPose.get().timestampSeconds);
-//        }
-//
-//        Optional<EstimatedRobotPose> frontPose = m_frontCamera.getEstimatedGlobalPose(m_odometry.getEstimatedPosition());
-//        if (frontPose.isPresent()) {
-//            m_odometry.addVisionMeasurement(frontPose.get().estimatedPose.toPose2d(), frontPose.get().timestampSeconds);
-//        }
     }
 
     /**

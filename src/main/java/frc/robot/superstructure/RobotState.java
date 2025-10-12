@@ -13,11 +13,13 @@ public enum RobotState {
     POST_L2(ArmPosition.TILTED_BRANCH_CORAL_SCORE_POST, ElevatorStates.L2_POST, IntakeState.DEFAULT, GripperStates.RELEASE_CORAL),
 
     PRE_L3(ArmPosition.PRE_CORAL_SCORE, ElevatorStates.L3, IntakeState.DEFAULT, GripperStates.CORAL),
-    SCORE_L3(ArmPosition.TILTED_BRANCH_CORAL_SCORE, ElevatorStates.L3, IntakeState.DEFAULT, GripperStates.CORAL),
+    SCORE_L3_1(ArmPosition.TILTED_BRANCH_CORAL_SCORE, ElevatorStates.L3, IntakeState.DEFAULT, GripperStates.CORAL),
+    SCORE_L3_2(ArmPosition.TILTED_BRANCH_CORAL_SCORE, ElevatorStates.L3, IntakeState.DEFAULT, GripperStates.RELEASE_CORAL),
     POST_L3(ArmPosition.TILTED_BRANCH_CORAL_SCORE_POST, ElevatorStates.L3_POST, IntakeState.DEFAULT, GripperStates.RELEASE_CORAL),
 
-    PRE_L4(ArmPosition.PRE_CORAL_SCORE, ElevatorStates.L4, IntakeState.DEFAULT, GripperStates.CORAL),
-    SCORE_L4(ArmPosition.L4, ElevatorStates.L4, IntakeState.DEFAULT, GripperStates.CORAL),
+    PRE_L4(ArmPosition.PRE_CORAL_SCORE, ElevatorStates.PRE_L4, IntakeState.DEFAULT, GripperStates.CORAL),
+    SCORE_L4_1(ArmPosition.L4, ElevatorStates.L4, IntakeState.DEFAULT, GripperStates.CORAL),
+    SCORE_L4_2(ArmPosition.L4, ElevatorStates.L4, IntakeState.DEFAULT, GripperStates.RELEASE_CORAL),
     POST_L4(ArmPosition.L4_POST, ElevatorStates.L4_POST, IntakeState.DEFAULT, GripperStates.RELEASE_CORAL),
 
     // L1 SCORING
@@ -37,6 +39,7 @@ public enum RobotState {
     NET_SCORE_STAGE_2(ArmPosition.NET, ElevatorStates.NET, IntakeState.DEFAULT, GripperStates.ALGAE),
     NET_SCORE_STAGE_3(ArmPosition.NET, ElevatorStates.NET, IntakeState.DEFAULT, GripperStates.RELEASE_ALGAE),
     NET_SCORE_STAGE_4(ArmPosition.UPWARDS, ElevatorStates.NET, IntakeState.DEFAULT, GripperStates.VACENT),
+    NET_SCORE_STAGE_5(ArmPosition.UPWARDS, ElevatorStates.DEFAULT_WITH_ALGAE, IntakeState.DEFAULT, GripperStates.VACENT),
 
     // CORAL INTAKE
     FLOOR_INTAKE(ArmPosition.DOWNWARDS, ElevatorStates.SAFE_HEIGHT, IntakeState.FLOOR_INTAKE, GripperStates.VACENT),
@@ -54,7 +57,7 @@ public enum RobotState {
     REVERSE_HANDOFF(ArmPosition.DOWNWARDS, ElevatorStates.HANDOFF, IntakeState.REVERSE_HANDOFF, GripperStates.RELEASE_CORAL),
 
     // OTHERS
-    CLIMB(ArmPosition.UPWARDS, ElevatorStates.HANDOFF, IntakeState.HANDOFF, GripperStates.INTAKE_CORAL),
+    CLIMB(ArmPosition.CLIMB, ElevatorStates.CLIMB, IntakeState.DEFAULT , GripperStates.VACENT),
     CENTERLIZE(ArmPosition.DOWNWARDS, ElevatorStates.SAFE_HEIGHT, IntakeState.CENTERLIZE, GripperStates.VACENT),
     EJECT(ArmPosition.DOWNWARDS, ElevatorStates.SAFE_HEIGHT, IntakeState.EJECT_CORAL, GripperStates.VACENT);
 

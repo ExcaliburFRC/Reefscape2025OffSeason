@@ -4,11 +4,12 @@ public enum ElevatorStates {
     L2(0.455),
     L2_POST(0.16),
 
-    L3(0.855),
+    L3(0.83),
     L3_POST(0.5),
 
-    L4(1.45),
-    L4_POST(1),
+    PRE_L4(1.46),
+    L4(1.46),
+    L4_POST(0.98),
 
     ALGAE2(0.67), // todo
     ALGAE3(1), // todo
@@ -21,7 +22,9 @@ public enum ElevatorStates {
     DEFAULT_WITH_CORAL(0.4),
     DEFAULT_WITH_ALGAE(0.6),
     SAFE_HEIGHT(1),
-    L1_HEIGHT(1.10);
+    L1_HEIGHT(1.10),
+
+    CLIMB(0.72);
 
     private final double height;
 

@@ -30,7 +30,7 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
     private final CANcoder canCoder;
     private final Arm armMechanism;
 
-    private Trigger mirror = new Trigger(()->false);
+    private Trigger mirror = new Trigger(() -> false);
 
     // === Suppliers ===
     private final DoubleSupplier angleSupplier;
@@ -132,12 +132,7 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
 
     public Command goToStateCommand() {
         return armMechanism.anglePositionControlCommand(
-                () -> softLimit.limit(
-                        limitHelper.getSetpoint(
-                                angleSupplier.getAsDouble(),
-                                mirror(currentState)
-                        )
-                ),
+                this::getLimitedSetpoint,
                 (at) -> at = false,
                 POSITION_TOLERANCE_RAD,
                 this
@@ -194,7 +189,12 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
 
     @NT
     public double getLimitedSetpoint() {
-        return softLimit.limit(softLimit.getSetpoint(angleSupplier.getAsDouble(), currentState.getAngle()));
+        return softLimit.limit(
+                limitHelper.getSetpoint(
+                        angleSupplier.getAsDouble(),
+                        mirror(currentState)
+                )
+        );
     }
 
     @NT
@@ -223,8 +223,9 @@ public class ArmSubsystem extends SubsystemBase implements Logged {
         double maxLimit = Math.asin(-heightDiff / ARM_LENGTH);
         return Math.PI - maxLimit;
     }
-    private double mirror(ArmPosition armPosition){
-        if (armPosition.mirrorable && mirror.getAsBoolean()){
+
+    private double mirror(ArmPosition armPosition) {
+        if (armPosition.mirrorable && mirror.getAsBoolean()) {
             return armPosition.getAngle();
         }
         return Math.PI - armPosition.getAngle();

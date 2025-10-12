@@ -5,9 +5,12 @@
 package frc.robot;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -16,6 +19,7 @@ import frc.excalib.control.math.Vector2D;
 import frc.excalib.slam.mapper.AuroraClient;
 import frc.excalib.swerve.Swerve;
 import frc.robot.subsystems.climber.ClimberSubsystem;
+import frc.robot.superstructure.RobotState;
 import frc.robot.superstructure.Superstructure;
 import frc.robot.superstructure.automations.Automations;
 import frc.robot.util.AlgaeScoreState;
@@ -33,12 +37,18 @@ import static monologue.Annotations.Log.*;
 public class RobotContainer implements Logged {
 
     CommandPS5Controller driver = new CommandPS5Controller(DRIVER_CONTROLLER_PORT);
+    CommandPS5Controller operator = new CommandPS5Controller(1);
 
     AuroraClient client = new AuroraClient(AURORA_CLIENT_PORT);
 
     Superstructure superstructure;
 
     Swerve swerve = Constants.SwerveConstants.configureSwerve(new Pose2d());
+
+    boolean coralFlag = false;
+    Trigger virtualCoralButton = new Trigger(() -> DriverStation.isAutonomous() && coralFlag);
+
+    ClimberSubsystem climber = new ClimberSubsystem();
 
     Automations automations = new Automations(swerve);
 
@@ -47,7 +57,7 @@ public class RobotContainer implements Logged {
         superstructure = new Superstructure(
                 new Trigger(() -> swerve.isAtPosition()),
                 driver.L1(),
-                driver.R1(),
+                driver.R1().or(virtualCoralButton),
                 new Trigger(() -> swerve.getPose2D().getTranslation().getDistance(AllianceUtils.getReefCenter()) > 2.13456),
                 new Trigger(() -> automations.atL2Slice()),
                 new Trigger(() -> automations.isLeftReefScore()),
@@ -83,11 +93,13 @@ public class RobotContainer implements Logged {
         driver.options().toggleOnTrue(superstructure.intakeSubsystem.resetAngleCommand().ignoringDisable(true));
         driver.create().onTrue(superstructure.elevatorSubsystem.setElevatorHeightCommand(0.16).ignoringDisable(true));
 
-//        climberSubsystem.setDefaultCommand(
-//                climberSubsystem.manualCommand(
-//                        () -> operator.getLeftY(),
-//                        () -> operator.getRightY())
-//        );
+        climber.setDefaultCommand(
+                climber.manualCommand(
+                        () -> operator.getLeftY(),
+                        () -> operator.getRightY()*6)
+        );
+
+        operator.triangle().onTrue(superstructure.setCurrentStateCommand(RobotState.CLIMB));
     }
 
     public void perodic() {
@@ -100,13 +112,27 @@ public class RobotContainer implements Logged {
         return Math.abs(val) < 0.09 ? 0 : val;
     }
 
+    public Command pressVirtualButton() {
+        return new InstantCommand(() -> coralFlag = true);
+    }
+
+    public Command releaseVirtualButton() {
+        return new InstantCommand(() -> coralFlag = false);
+    }
 
     public Command getAutonomousCommand() {
         Command auto = swerve.driveCommand(
                         () -> new Vector2D(2, 0),
                         () -> 0,
                         () -> false)
-                .withTimeout(2.7);
+                .withTimeout(2.7).andThen(
+                        superstructure.setCoralScoreStateCommand(CoralScoreState.L1)
+                ).andThen(pressVirtualButton()
+                ).andThen(releaseVirtualButton()
+                ).andThen(new WaitUntilCommand(superstructure.atPositionTrigger.and(() -> superstructure.getCurrentState().equals(RobotState.PRE_L1)))
+                ).andThen(pressVirtualButton()
+                ).andThen(new WaitCommand(0.5)
+                ).andThen(releaseVirtualButton());
 //                .andThen(new InstantCommand(() -> flag = true))
 //                .andThen(new InstantCommand(() -> flag = true)).andThen(superstructure.getCurrentProcessSupplier().equals())
 //                .andThen(new InstantCommand(() -> flag = true));
@@ -128,4 +154,13 @@ public class RobotContainer implements Logged {
         return driver.R2().getAsBoolean();
     }
 
+    @Log.NT
+    public double getSupposedClimberHeight() {
+        return 0.063;
+    }
+
+    @Log.NT
+    public double getSupposedOpenClimberHeight() {
+        return -Math.PI/2;
+    }
 }

@@ -26,13 +26,11 @@ public class Automations implements Logged {
     private Pose2d currentSetpoint = new Pose2d();
     public Swerve swerve;
 
-    public ClimberSubsystem climber;
     public ClimbOperator climbOperator;
 
     public Automations(Swerve swerve) {
         this.swerve = swerve;
         climbOperator = new ClimbOperator();
-        climber = new ClimberSubsystem();
     }
 
     public Command alignToSide(boolean rightBranch) {
@@ -51,10 +49,16 @@ public class Automations implements Logged {
     @Log.NT
     public boolean isLeftReefScore() {
         double toCheck = getRotationCheck();
+        boolean flag;
         if (toCheck > 0) {
-            return true;
+            flag =  true;
+        } else {
+            flag = false;
         }
-        return false;
+        if (isRedAlliance()){
+            return !flag;
+        }
+        return flag;
     }
 
     public Pose2d getAlignmentTargetPose(boolean rightBranch) {
@@ -64,6 +68,7 @@ public class Automations implements Logged {
         if (!rightBranch && openingDirection.equals(OpeningDirection.LEFT)) {
             targetTranslation = Constants.FieldConstants.B1_LEFT_SCORE;
         } else if (!rightBranch && openingDirection.equals(OpeningDirection.RIGHT)) {
+
             targetTranslation = Constants.FieldConstants.B1_RIGHT_SCORE;
         } else if (openingDirection.equals(OpeningDirection.LEFT)) {
             targetTranslation = Constants.FieldConstants.B12_LEFT_SCORE;
@@ -76,7 +81,8 @@ public class Automations implements Logged {
                 FIELD_WIDTH / 2));
 
         if (isRedAlliance()) {
-            return new Pose2d(translation2d, pose2d.getRotation().plus(Rotation2d.k180deg));
+//            return new Pose2d(translation2d, pose2d.getRotation().plus(Rotation2d.k180deg));
+            return new Pose2d(translation2d, pose2d.getRotation());
         }
         return pose2d;
     }
@@ -161,9 +167,9 @@ public class Automations implements Logged {
     @Log.NT
     public double getRotationCheck() {
         Rotation2d val = swerve.getRotation2D().minus(getSlice().angle);
-        if (isRedAlliance()) {
+//        if (isRedAlliance()) {
             val.plus(Rotation2d.k180deg);
-        }
+//        }
         return val.getDegrees();
     }
 }
