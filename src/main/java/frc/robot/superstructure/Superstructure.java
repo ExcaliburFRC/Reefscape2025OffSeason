@@ -180,7 +180,7 @@ public class Superstructure implements Logged {
         this.isSwerveAtPlace = isSwerveAtPlace;
     }
 
-    private Command setCurrentStateCommand(RobotState state) {
+    public Command setCurrentStateCommand(RobotState state) {
         return new ParallelCommandGroup(
                 new InstantCommand(() -> currentState = state),
                 new PrintCommand("Changed State to:" + state),

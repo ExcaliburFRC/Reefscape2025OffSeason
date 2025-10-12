@@ -48,7 +48,7 @@ public class RobotContainer implements Logged {
     boolean coralFlag = false;
     Trigger virtualCoralButton = new Trigger(() -> DriverStation.isAutonomous() && coralFlag);
 
-//    ClimberSubsystem climber = new ClimberSubsystem();
+    ClimberSubsystem climber = new ClimberSubsystem();
 
     Automations automations = new Automations(swerve);
 
@@ -93,11 +93,13 @@ public class RobotContainer implements Logged {
         driver.options().toggleOnTrue(superstructure.intakeSubsystem.resetAngleCommand().ignoringDisable(true));
         driver.create().onTrue(superstructure.elevatorSubsystem.setElevatorHeightCommand(0.16).ignoringDisable(true));
 
-//        climber.setDefaultCommand(
-//                climber.manualCommand(
-//                        () -> operator.getLeftY(),
-//                        () -> operator.getRightY())
-//        );
+        climber.setDefaultCommand(
+                climber.manualCommand(
+                        () -> operator.getLeftY(),
+                        () -> operator.getRightY()*6)
+        );
+
+        operator.triangle().onTrue(superstructure.setCurrentStateCommand(RobotState.CLIMB));
     }
 
     public void perodic() {
@@ -150,5 +152,15 @@ public class RobotContainer implements Logged {
     @Log.NT
     public boolean r2() {
         return driver.R2().getAsBoolean();
+    }
+
+    @Log.NT
+    public double getSupposedClimberHeight() {
+        return 0.063;
+    }
+
+    @Log.NT
+    public double getSupposedOpenClimberHeight() {
+        return -Math.PI/2;
     }
 }

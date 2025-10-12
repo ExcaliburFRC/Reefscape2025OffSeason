@@ -22,7 +22,9 @@ public enum ElevatorStates {
     DEFAULT_WITH_CORAL(0.4),
     DEFAULT_WITH_ALGAE(0.6),
     SAFE_HEIGHT(1),
-    L1_HEIGHT(1.10);
+    L1_HEIGHT(1.10),
+
+    CLIMB(0.72);
 
     private final double height;
 

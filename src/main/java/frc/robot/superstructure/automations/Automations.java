@@ -26,13 +26,11 @@ public class Automations implements Logged {
     private Pose2d currentSetpoint = new Pose2d();
     public Swerve swerve;
 
-    public ClimberSubsystem climber;
     public ClimbOperator climbOperator;
 
     public Automations(Swerve swerve) {
         this.swerve = swerve;
         climbOperator = new ClimbOperator();
-        climber = new ClimberSubsystem();
     }
 
     public Command alignToSide(boolean rightBranch) {

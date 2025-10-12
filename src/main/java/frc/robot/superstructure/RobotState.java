@@ -57,7 +57,7 @@ public enum RobotState {
     REVERSE_HANDOFF(ArmPosition.DOWNWARDS, ElevatorStates.HANDOFF, IntakeState.REVERSE_HANDOFF, GripperStates.RELEASE_CORAL),
 
     // OTHERS
-    CLIMB(ArmPosition.UPWARDS, ElevatorStates.HANDOFF, IntakeState.HANDOFF, GripperStates.INTAKE_CORAL),
+    CLIMB(ArmPosition.CLIMB, ElevatorStates.CLIMB, IntakeState.DEFAULT , GripperStates.VACENT),
     CENTERLIZE(ArmPosition.DOWNWARDS, ElevatorStates.SAFE_HEIGHT, IntakeState.CENTERLIZE, GripperStates.VACENT),
     EJECT(ArmPosition.DOWNWARDS, ElevatorStates.SAFE_HEIGHT, IntakeState.EJECT_CORAL, GripperStates.VACENT);
 

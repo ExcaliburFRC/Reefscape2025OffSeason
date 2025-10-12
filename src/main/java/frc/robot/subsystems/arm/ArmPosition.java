@@ -12,6 +12,7 @@ public enum ArmPosition { // todo
     INTAKE_ALGAE(0, false),
 
     NET(1.193, false),
+    CLIMB(0, false),
 
     DOWNWARDS(1.5 * Math.PI, false),
 
