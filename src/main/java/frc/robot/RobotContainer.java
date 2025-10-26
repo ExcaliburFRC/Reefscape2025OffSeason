@@ -6,7 +6,6 @@ package frc.robot;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -19,6 +18,7 @@ import frc.excalib.control.math.Vector2D;
 import frc.excalib.slam.mapper.AuroraClient;
 import frc.excalib.swerve.Swerve;
 import frc.robot.subsystems.climber.ClimberSubsystem;
+import frc.robot.subsystems.test.Test;
 import frc.robot.superstructure.RobotState;
 import frc.robot.superstructure.Superstructure;
 import frc.robot.superstructure.automations.Automations;
@@ -27,7 +27,6 @@ import frc.robot.util.CoralScoreState;
 import monologue.Logged;
 
 import static frc.robot.Constants.AURORA_CLIENT_PORT;
-import static frc.robot.Constants.DRIVER_CONTROLLER_PORT;
 import static frc.robot.Constants.SwerveConstants.MAX_OMEGA_RAD_PER_SEC;
 import static frc.robot.Constants.SwerveConstants.MAX_VEL;
 import static monologue.Annotations.*;
@@ -36,7 +35,8 @@ import static monologue.Annotations.Log.*;
 
 public class RobotContainer implements Logged {
 
-    CommandPS5Controller driver = new CommandPS5Controller(DRIVER_CONTROLLER_PORT);
+    CommandPS5Controller driver = new CommandPS5Controller(2);
+    CommandPS5Controller simulatorController = new CommandPS5Controller(0);
     CommandPS5Controller operator = new CommandPS5Controller(1);
 
     AuroraClient client = new AuroraClient(AURORA_CLIENT_PORT);
@@ -52,6 +52,7 @@ public class RobotContainer implements Logged {
 
     Automations automations = new Automations(swerve);
 
+    Test test = new Test();
 
     public RobotContainer() {
         superstructure = new Superstructure(
@@ -87,6 +88,9 @@ public class RobotContainer implements Logged {
                 )
         );
 
+        simulatorController.square().whileTrue(new InstantCommand(() -> test.setSetpoint(2)));
+        simulatorController.triangle().whileTrue(new InstantCommand(() -> test.setSetpoint(1)));
+
 //        driver.povUp().toggleOnTrue(new InstantCommand(() -> swerve.resetOdometry(new Pose2d())));
 
         driver.touchpad().whileTrue(superstructure.elevatorSubsystem.coastCommand().ignoringDisable(true));
@@ -96,7 +100,7 @@ public class RobotContainer implements Logged {
         climber.setDefaultCommand(
                 climber.manualCommand(
                         () -> operator.getLeftY(),
-                        () -> operator.getRightY()*6)
+                        () -> operator.getRightY() * 6)
         );
 
         operator.triangle().onTrue(superstructure.setCurrentStateCommand(RobotState.CLIMB));
@@ -161,6 +165,6 @@ public class RobotContainer implements Logged {
 
     @Log.NT
     public double getSupposedOpenClimberHeight() {
-        return -Math.PI/2;
+        return -Math.PI / 2;
     }
 }
