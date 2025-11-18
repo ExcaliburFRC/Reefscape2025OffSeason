@@ -11,9 +11,11 @@ Excalib has been integrated with [AdvantageKit](https://github.com/Mechanical-Ad
 - **Replay support** for debugging and analysis without physical hardware
 - **Type-safe logging** using AdvantageKit's `@AutoLog` annotation
 
-### Motor Controller IO Pattern
+### Hardware IO Patterns
 
-All motor controllers in excalib now support the AdvantageKit IO pattern:
+All hardware components in excalib now support the AdvantageKit IO pattern:
+
+#### Motor Controllers
 
 #### TalonFX Motors
 
@@ -74,30 +76,83 @@ Logger.processInputs("Motor/Shooter", inputs);
 motorIO.setVoltage(10.0);
 ```
 
+#### IMU/Gyroscope
+
+```java
+import frc.excalib.control.imu.IMUIO;
+import frc.excalib.control.imu.PigeonIOReal;
+import frc.excalib.control.imu.NavXIOReal;
+import edu.wpi.first.math.geometry.Rotation3d;
+import org.littletonrobotics.junction.Logger;
+
+// Create IO layer for Pigeon2
+IMUIO gyroIO = new PigeonIOReal(5, new Rotation3d()); // CAN ID 5
+IMUIO.IMUInputsAutoLogged inputs = new IMUIO.IMUInputsAutoLogged();
+
+// Or for NavX
+IMUIO gyroIO = new NavXIOReal(new Rotation3d());
+
+// In periodic method
+gyroIO.updateInputs(inputs);
+Logger.processInputs("Gyro", inputs);
+
+// Use the gyro
+gyroIO.reset();
+```
+
 ### Logged Data
 
-Each motor IO class logs the following data automatically:
-
+**Motor IO classes** log the following data automatically:
 - **Position** (rotations)
 - **Velocity** (rotations per second)
 - **Applied Voltage** (volts)
 - **Current Draw** (amps)
 - **Temperature** (celsius)
 
+**IMU IO classes** log the following data automatically:
+- **Yaw** (degrees)
+- **Pitch** (degrees)
+- **Roll** (degrees)
+- **Acceleration X, Y, Z** (g-forces)
+- **Connection Status** (boolean)
+
 ### Simulation and Testing
 
-For simulation or unit testing, use the base IO classes (without "Real" suffix):
+For simulation, unit testing, or replay, use the base IO classes (without "Real" suffix):
 
 ```java
-// For simulation/testing - no actual hardware
+// For simulation/testing/replay - no actual hardware
 TalonFXMotorIO motorIO = new TalonFXMotorIO();
+IMUIO gyroIO = new IMUIO();
 ```
 
 The base IO classes provide default no-op implementations, perfect for:
 - Unit testing
 - Simulation mode
-- Log replay
+- **Log replay** - Test code changes against recorded robot logs
 - Development without hardware
+
+### Complete Example Subsystems
+
+The `examples/` directory contains **complete, production-ready** subsystem implementations (no placeholder code):
+
+#### Simple Examples
+- **ExampleMotorSubsystem.java** - Basic single-motor subsystem with IO pattern
+- **ExampleFlyWheelSubsystem.java** - FlyWheel with feedforward velocity control
+
+#### Advanced Examples  
+- **ExampleDriveSubsystem.java** - Tank/arcade drive with motors and IMU
+- **ExampleArmSubsystem.java** - Arm with full PID + feedforward + gravity compensation
+- **ExampleTurretSubsystem.java** - Turret with profiled PID and continuous angle wrapping
+
+Each example includes:
+- ✅ Complete, working control algorithms (PID, feedforward, motion profiling)
+- ✅ Factory methods for real hardware vs. simulation/replay
+- ✅ Comprehensive periodic logging with Logger.processInputs()
+- ✅ Command factories for common operations
+- ✅ Telemetry access methods
+- ✅ Safety features (soft limits, voltage clamping)
+- ✅ **No missing code** - ready to copy and use
 
 ### Accessing Underlying Motor Controllers
 
