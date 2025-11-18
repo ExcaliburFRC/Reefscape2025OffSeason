@@ -42,35 +42,67 @@ Created AdvantageKit IO patterns for all motor controllers in excalib:
 - **FlexMotorIO.java** - Base IO interface with `@AutoLog` annotation
 - **FlexMotorIOReal.java** - Real hardware implementation using `FlexMotor`
 
-### 3. Logged Motor Telemetry
+### 3. IMU/Gyroscope IO Patterns
 
-Each motor IO class automatically logs the following data:
+Created AdvantageKit IO patterns for all IMU hardware in excalib:
+
+#### Generic IMU Interface
+- **IMUIO.java** - Base IO interface with `@AutoLog` annotation for gyroscope data
+
+#### Pigeon2 Gyroscope
+- **PigeonIOReal.java** - Real hardware implementation using `Pigeon` (CTRE Pigeon2)
+
+#### NavX Gyroscope
+- **NavXIOReal.java** - Real hardware implementation using `NavX` (Kauai Labs NavX)
+
+### 4. Logged Telemetry
+
+**Motor IO classes** automatically log:
 - **Position** (rotations) - `positionRotations`
 - **Velocity** (rotations per second) - `velocityRotationsPerSecond`
 - **Applied Voltage** (volts) - `appliedVolts`
 - **Current Draw** (amps) - `currentAmps`
 - **Temperature** (celsius) - `temperatureCelsius`
 
+**IMU IO classes** automatically log:
+- **Yaw, Pitch, Roll** (degrees) - `yawDegrees`, `pitchDegrees`, `rollDegrees`
+- **Acceleration X, Y, Z** (g-forces) - `accelerationXGs`, `accelerationYGs`, `accelerationZGs`
+- **Connection Status** (boolean) - `connected`
+
 The `@AutoLog` annotation generates the necessary boilerplate code for logging these inputs.
 
-### 4. Documentation
+### 5. Complete Example Subsystems
+
+**Five production-ready examples** with zero placeholder code:
+
+#### Simple Examples
+- **ExampleMotorSubsystem.java** - Basic single-motor control with IO pattern
+- **ExampleFlyWheelSubsystem.java** - Velocity control with feedforward
+
+#### Advanced Examples
+- **ExampleDriveSubsystem.java** - Tank/arcade drive with motors and IMU integration
+- **ExampleArmSubsystem.java** - Complete arm with PID + feedforward + gravity compensation
+- **ExampleTurretSubsystem.java** - Turret with profiled PID and continuous angle wrapping
+
+Each example includes:
+- ✅ Complete, functional control algorithms (no TODOs or placeholders)
+- ✅ Factory methods: `createReal()` for hardware, `createSim()` for replay
+- ✅ Comprehensive logging via `Logger.processInputs()`
+- ✅ Command factories for all operations
+- ✅ Safety features (soft limits, voltage clamping)
+- ✅ Telemetry access methods
+
+### 6. Documentation
 
 **File Added:** `src/main/java/frc/excalib/README.md`
 
 Comprehensive documentation including:
 - Overview of AdvantageKit integration
-- Usage examples for each motor controller type
-- Simulation and testing guidance
-- Library structure
-- Requirements
-
-**File Added:** `src/main/java/frc/excalib/examples/ExampleMotorSubsystem.java`
-
-Example subsystem demonstrating:
-- Proper IO pattern usage in a subsystem
-- Factory methods for real hardware vs. simulation
-- Periodic logging with `Logger.processInputs()`
-- Accessing motor telemetry from logged inputs
+- Usage examples for motors and IMUs
+- Logged data specifications
+- Simulation and replay guidance
+- Complete example descriptions
+- Library structure and requirements
 
 ## Usage Example
 
