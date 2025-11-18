@@ -3,13 +3,13 @@ package frc.excalib.control.motor.controllers;
 import org.littletonrobotics.junction.AutoLog;
 
 /**
- * IO interface for TalonFX motors with AdvantageKit logging support.
+ * IO interface for SparkMax motors with AdvantageKit logging support.
  * This follows the AdvantageKit IO pattern for hardware abstraction and logging.
  */
-public class TalonFXMotorIO {
+public class SparkMaxMotorIO {
 
     @AutoLog
-    public static class TalonFXMotorInputs {
+    public static class SparkMaxMotorInputs {
         public double positionRotations = 0.0;
         public double velocityRotationsPerSecond = 0.0;
         public double appliedVolts = 0.0;
@@ -23,7 +23,7 @@ public class TalonFXMotorIO {
      *
      * @param inputs The inputs object to populate with current sensor values
      */
-    public void updateInputs(TalonFXMotorInputsAutoLogged inputs) {
+    public void updateInputs(SparkMaxMotorInputsAutoLogged inputs) {
         // Default implementation does nothing (for simulation/replay)
     }
 
