@@ -47,7 +47,134 @@ Excalib is a comprehensive robotics library designed to give FRC teams a competi
 
 ## 🆕 New Productivity Features
 
-### 1. Auto-Tuning Utilities (`control/autotuning/`)
+### 1. Subsystem Builder (`subsystems/`)
+**SUPER EASY** - Create subsystems with zero boilerplate:
+
+```java
+public class IntakeSubsystem extends SubsystemBase {
+    private final SubsystemBuilder builder;
+    
+    public IntakeSubsystem() {
+        builder = SubsystemBuilder.create(this, "intake")
+            .withState("idle", motor::stopMotor)
+            .withState("intaking", () -> motor.setPercentage(0.8))
+            .withTrigger("has_piece", sensor::hasGamePiece)
+            .withAutoTelemetry()
+            .build();
+    }
+    
+    public Command intakeCommand() {
+        return builder.commandForState("intaking");
+    }
+}
+```
+
+**Benefits:** Write subsystems 10x faster, automatic telemetry, zero boilerplate
+
+### 2. Quick Subsystem (`subsystems/`)
+**ULTRA FAST** - Complete subsystem in 10 lines:
+
+```java
+public class IntakeSubsystem extends QuickSubsystem {
+    public IntakeSubsystem(Motor motor, DigitalInput sensor) {
+        super("intake");
+        addState("idle", motor::stopMotor);
+        addState("intaking", () -> motor.setPercentage(0.8));
+        addSensor("has_piece", sensor::get);
+        setDefaultState("idle");
+    }
+}
+```
+
+**Benefits:** Fastest possible subsystem creation, perfect for simple subsystems
+
+### 3. Smart Motor (`subsystems/`)
+Motors with superpowers - automatic telemetry, safety, PID:
+
+```java
+SmartMotor shooter = SmartMotor.wrap(shooterMotor, "shooter")
+    .withCurrentLimit(60.0)
+    .withTelemetry()
+    .withSmartVelocityControl(gains)
+    .build();
+
+shooter.setTargetVelocity(3000); // Automatic PID + telemetry!
+```
+
+**Benefits:** No manual telemetry, built-in safety, smart control
+
+### 4. State Machine (`subsystems/`)
+Professional state machines for autonomous:
+
+```java
+StateMachine auto = StateMachine.builder()
+    .state("drive", driveCommand)
+        .onCondition(() -> atTarget(), "intake")
+    .state("intake", intakeCommand)
+        .onCondition(() -> hasGamePiece(), "score")
+    .state("score", scoreCommand)
+    .initialState("drive")
+    .build();
+```
+
+**Benefits:** Clean autonomous code, automatic transitions, visual debugging
+
+### 5. Command Factory (`subsystems/`)
+Common command patterns, zero boilerplate:
+
+```java
+// Position control with one line
+Command move = CommandFactory.positionControl(
+    arm, () -> arm.setPosition(target), 
+    arm::getPosition, target, 0.01
+);
+
+// Run until condition
+Command intake = CommandFactory.runUntil(
+    intake, intake::run, sensor::hasGamePiece
+);
+
+// Ramp smoothly
+Command spinUp = CommandFactory.ramp(
+    shooter, shooter::setSpeed, 0, 3000, 2.0
+);
+```
+
+**Benefits:** No repetitive command code, standard patterns, fast development
+
+### 6. Subsystem Health (`subsystems/`)
+Automatic health monitoring and diagnostics:
+
+```java
+SubsystemHealth health = SubsystemHealth.monitor("shooter")
+    .checkMotor("motor", motor::isConnected)
+    .checkValue("velocity", motor::getVelocity, 0, 6000)
+    .checkValue("temp", motor::getTemperature, 0, 80)
+    .build();
+
+health.update(); // In periodic
+if (!health.isHealthy()) { /* handle errors */ }
+```
+
+**Benefits:** Catch problems before matches, automatic diagnostics, driver alerts
+
+### 7. Auto Selector (`subsystems/`)
+Simple autonomous selection:
+
+```java
+AutoSelector auto = AutoSelector.builder()
+    .addAuto("Score 3", scoreThree())
+    .addAuto("Score 2", scoreTwo())
+    .addAuto("Mobility", mobility())
+    .withDefault("Score 3")
+    .build();
+
+return auto.getSelected(); // In getAutonomousCommand()
+```
+
+**Benefits:** Dashboard selection, easy configuration, no code changes needed
+
+### 8. Auto-Tuning Utilities (`control/autotuning/`)
 Automatically tune PID controllers using characterization data:
 
 ```java
@@ -61,28 +188,10 @@ motor.configPID(optimizedGains);
 
 **Benefits:** Eliminates hours of manual PID tuning, ensures consistent performance
 
-### 2. State Machine Builder (`commands/statemachine/`)
-Fluent API for complex autonomous sequences:
-
-```java
-StateMachine auto = StateMachine.builder()
-    .state("intake", intakeCommand)
-        .transitionOn(() -> hasGamePiece(), "score")
-    .state("score", scoreCommand)
-        .transitionOn(Command::isFinished, "intake")
-    .initialState("intake")
-    .build();
-```
-
-**Benefits:** Cleaner autonomous code, easier debugging, visual state tracking
-
-### 3. Telemetry Suite (`telemetry/`)
+### 9. Telemetry Suite (`telemetry/`)
 Enhanced logging with automatic performance tracking:
 
 ```java
-@Telemetry(key = "drivetrain/speed", units = "m/s")
-private double currentSpeed;
-
 TelemetryManager.getInstance()
     .recordLatency("vision/processing")
     .recordEvent("auto/milestone", "reached_scoring_position");
@@ -90,7 +199,7 @@ TelemetryManager.getInstance()
 
 **Benefits:** Real-time performance monitoring, historical data analysis, competition debugging
 
-### 4. Simulation Helpers (`simulation/`)
+### 10. Simulation Helpers (`simulation/`)
 Mock objects for comprehensive unit testing:
 
 ```java
