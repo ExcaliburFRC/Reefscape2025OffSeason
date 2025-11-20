@@ -5,8 +5,8 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.excalib.control.motor.controllers.TalonFXMotorIO;
-import frc.excalib.control.motor.controllers.TalonFXMotorIO.TalonFXMotorInputsAutoLogged;
 import frc.excalib.control.motor.controllers.TalonFXMotorIOReal;
+import frc.excalib.control.motor.controllers.TalonFXMotorInputsAutoLogged;
 import org.littletonrobotics.junction.Logger;
 
 import java.util.function.DoubleSupplier;

@@ -15,10 +15,11 @@ import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.excalib.additional_utilities.AllianceUtils;
 import frc.excalib.control.math.Vector2D;
+import frc.excalib.examples.ExampleArmSubsystem;
 import frc.excalib.slam.mapper.AuroraClient;
 import frc.excalib.swerve.Swerve;
 import frc.robot.subsystems.climber.ClimberSubsystem;
-import frc.robot.subsystems.test.Test;
+//import frc.robot.subsystems.test.Test;
 import frc.robot.superstructure.RobotState;
 import frc.robot.superstructure.Superstructure;
 import frc.robot.superstructure.automations.Automations;
@@ -52,7 +53,10 @@ public class RobotContainer implements Logged {
 
     Automations automations = new Automations(swerve);
 
-    Test test = new Test();
+//    Test test = new Test();
+
+
+    ExampleArmSubsystem exampleArmSubsystem = ExampleArmSubsystem.createSim();
 
     public RobotContainer() {
         superstructure = new Superstructure(
@@ -88,9 +92,8 @@ public class RobotContainer implements Logged {
                 )
         );
 
-        simulatorController.square().whileTrue(new InstantCommand(() -> test.setSetpoint(2)));
-        simulatorController.triangle().whileTrue(new InstantCommand(() -> test.setSetpoint(1)));
 
+        simulatorController.square().whileTrue(exampleArmSubsystem.moveToPosition(() -> 3));
 //        driver.povUp().toggleOnTrue(new InstantCommand(() -> swerve.resetOdometry(new Pose2d())));
 
         driver.touchpad().whileTrue(superstructure.elevatorSubsystem.coastCommand().ignoringDisable(true));

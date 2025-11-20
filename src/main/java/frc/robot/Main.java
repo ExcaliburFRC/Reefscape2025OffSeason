@@ -11,7 +11,7 @@ public final class Main {
 
   public static void main(String... args) {
     // Default robot code
-    RobotBase.startRobot(Robot::new);
+    RobotBase.startRobot(RobotWithExamples::new);
     
     // To test AdvantageKit example subsystems with simulated controller:
     // Uncomment the line below and comment out the line above

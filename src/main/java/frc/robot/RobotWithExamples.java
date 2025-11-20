@@ -90,8 +90,7 @@ public class RobotWithExamples extends LoggedRobot implements Logged {
         commandScheduler.run();
         
         // Log scheduler info
-        Logger.recordOutput("CommandScheduler/CommandCount", 
-            commandScheduler.getScheduledCommands().size());
+        Logger.recordOutput("CommandScheduler/CommandCount", 30); // todo: get cs length / size
     }
     
     @Override

@@ -25,7 +25,7 @@ import static monologue.Annotations.Log;
 public class RobotContainerWithExamples implements Logged {
 
     // Controllers
-    private final CommandXboxController driverController = new CommandXboxController(0);
+    private final CommandPS5Controller driverController = new CommandPS5Controller(0);
     
     // Example Subsystems with AdvantageKit integration
     private final ExampleMotorSubsystem motorSubsystem;
@@ -55,7 +55,18 @@ public class RobotContainerWithExamples implements Logged {
         configureBindings();
         configureDefaultCommands();
     }
-    
+
+    // Simple helper to log a message and then run a Runnable
+    private void logAndRun(String msg, Runnable r) {
+        System.out.println(msg);
+        r.run();
+    }
+
+    // Public helper you can call from anywhere to indicate a function was invoked
+    public void notifyFunctionCalled(String name) {
+        System.out.println("Function called: " + name);
+    }
+
     /**
      * Configure button bindings for the simulated controller.
      */
@@ -65,88 +76,84 @@ public class RobotContainerWithExamples implements Logged {
         // Right stick X = rotate
         // These are set up in configureDefaultCommands()
         
-        // A Button = Reset gyro heading
-        driverController.a().onTrue(
-            Commands.runOnce(() -> driveSubsystem.resetHeading(), driveSubsystem)
+        // A Button = b gyro heading
+        driverController.triangle().onTrue(
+            Commands.runOnce(() -> logAndRun("Triagnle pressed: ResetHeading", () -> driveSubsystem.resetHeading()), driveSubsystem)
                 .withName("ResetHeading")
         );
         
         // B Button = Stop drive
-        driverController.b().onTrue(driveSubsystem.stopCommand());
-        
+        driverController.square().onTrue(
+            Commands.runOnce(() -> logAndRun("square pressed: Stop drive", () -> driveSubsystem.stopCommand().schedule()))
+        );
+
         // ========== Arm Subsystem Controls ==========
         // Y Button = Move arm to 45 degrees
-        driverController.y().whileTrue(
-            armSubsystem.moveToPosition(() -> Math.PI / 4)
-                .withName("ArmTo45Deg")
+        driverController.cross().onTrue(
+            Commands.runOnce(() -> logAndRun("cross pressed: ArmTo45Deg", () -> armSubsystem.moveToPosition(() -> Math.PI / 4).schedule()))
         );
         
         // X Button = Move arm to horizontal (0 degrees)
-        driverController.x().whileTrue(
-            armSubsystem.moveToPosition(() -> 0.0)
-                .withName("ArmToHorizontal")
+        driverController.circle().onTrue(
+            Commands.runOnce(() -> logAndRun("circle pressed: ArmToHorizontal", () -> armSubsystem.moveToPosition(() -> 0.0).schedule()))
         );
         
         // Left Bumper = Move arm to 90 degrees (vertical)
-        driverController.leftBumper().whileTrue(
-            armSubsystem.moveToPosition(() -> Math.PI / 2)
-                .withName("ArmToVertical")
+        driverController.L1().onTrue(
+            Commands.runOnce(() -> logAndRun("Left Bumper pressed: ArmToVertical", () -> armSubsystem.moveToPosition(() -> Math.PI / 2).schedule()))
         );
         
         // Right Bumper = Arm manual control (right trigger controls voltage)
-        driverController.rightBumper().whileTrue(
-            armSubsystem.manualControl(() -> driverController.getRightTriggerAxis() * 3.0)
-                .withName("ArmManual")
+        driverController.R1().onTrue(
+            Commands.runOnce(() -> logAndRun("Right Bumper pressed: ArmManual", () -> armSubsystem.manualControl(() -> driverController.getR2Axis() * 3.0).schedule()))
         );
         
         // ========== Turret Subsystem Controls ==========
         // D-Pad Up = Turret to 0 degrees
         driverController.povUp().onTrue(
-            turretSubsystem.rotateToAngleAndHold(new Rotation2d())
-                .withTimeout(2.0)
-                .withName("TurretTo0")
+            Commands.runOnce(() -> logAndRun("POV Up pressed: TurretTo0", () -> turretSubsystem.rotateToAngleAndHold(new Rotation2d()).withTimeout(2.0).schedule()))
         );
         
         // D-Pad Right = Turret to 90 degrees
         driverController.povRight().onTrue(
-            turretSubsystem.rotateToAngleAndHold(Rotation2d.fromDegrees(90))
-                .withTimeout(2.0)
-                .withName("TurretTo90")
+            Commands.runOnce(() -> logAndRun("POV Right pressed: TurretTo90", () -> turretSubsystem.rotateToAngleAndHold(Rotation2d.fromDegrees(90)).withTimeout(2.0).schedule()))
         );
         
         // D-Pad Down = Turret to 180 degrees
         driverController.povDown().onTrue(
-            turretSubsystem.rotateToAngleAndHold(Rotation2d.fromDegrees(180))
-                .withTimeout(2.0)
-                .withName("TurretTo180")
+            Commands.runOnce(() -> logAndRun("POV Down pressed: TurretTo180", () -> turretSubsystem.rotateToAngleAndHold(Rotation2d.fromDegrees(180)).withTimeout(2.0).schedule()))
         );
         
         // D-Pad Left = Turret to -90 degrees
         driverController.povLeft().onTrue(
-            turretSubsystem.rotateToAngleAndHold(Rotation2d.fromDegrees(-90))
-                .withTimeout(2.0)
-                .withName("TurretToNeg90")
+            Commands.runOnce(() -> logAndRun("POV Left pressed: TurretToNeg90", () -> turretSubsystem.rotateToAngleAndHold(Rotation2d.fromDegrees(-90)).withTimeout(2.0).schedule()))
         );
         
         // ========== Flywheel Subsystem Controls ==========
         // Start Button = Run flywheel at 50 RPS
-        driverController.start().whileTrue(
-            flywheelSubsystem.runVelocity(() -> 50.0)
-                .withName("FlywheelRun")
+        driverController.options().onTrue(
+            Commands.runOnce(() -> logAndRun("Start pressed: FlywheelRun", () -> flywheelSubsystem.runVelocity(() -> 50.0).schedule()))
         );
         
         // Back Button = Stop flywheel
-        driverController.back().onTrue(flywheelSubsystem.stopCommand());
-        
+        driverController.create().onTrue(
+            Commands.runOnce(() -> logAndRun("Back pressed: FlywheelStop", () -> flywheelSubsystem.stopCommand().schedule()))
+        );
+
         // ========== Motor Subsystem Controls ==========
         // Left Trigger = Run simple motor forward
-        driverController.leftTrigger(0.1).whileTrue(
-            Commands.run(() -> motorSubsystem.setVoltage(6.0), motorSubsystem)
-                .withName("MotorForward")
-        );
+//         Print when trigger crosses threshold, keep original whileTrue for continuous control
+//        driverController.getL2Axis().onTrue(
+//            Commands.runOnce(() -> System.out.println("Left Trigger pressed: starting simple motor"))
+//        );
+//        driverController.getR2Axis().whileTrue(
+//            Commands.run(() -> motorSubsystem.setVoltage(6.0), motorSubsystem)
+//                .withName("MotorForward")
+//        );
     }
-    
+
     /**
+     * yehuda.2009
      * Configure default commands that run continuously.
      */
     private void configureDefaultCommands() {
@@ -193,6 +200,7 @@ public class RobotContainerWithExamples implements Logged {
      */
     public Command getAutonomousCommand() {
         return Commands.sequence(
+            Commands.runOnce(() -> { logAndRun("Autonomous starting", () -> {}); }),
             Commands.print("=== Starting Autonomous ==="),
             
             // Move arm to 45 degrees
@@ -200,26 +208,26 @@ public class RobotContainerWithExamples implements Logged {
                 armSubsystem.moveToPosition(() -> Math.PI / 4),
                 Commands.waitSeconds(2.0)
             ),
-            
+
             // Spin turret 360 degrees
             turretSubsystem.rotateToAngleAndHold(Rotation2d.fromDegrees(180))
                 .withTimeout(2.0),
             turretSubsystem.rotateToAngleAndHold(new Rotation2d())
                 .withTimeout(2.0),
-            
+
             // Run flywheel
             Commands.parallel(
                 flywheelSubsystem.runVelocity(() -> 30.0),
                 Commands.waitSeconds(3.0)
             ),
-            
+
             // Stop everything
             Commands.parallel(
                 flywheelSubsystem.stopCommand(),
                 turretSubsystem.stopCommand(),
                 armSubsystem.stopCommand()
             ),
-            
+
             Commands.print("=== Autonomous Complete ===")
         ).withName("ExampleAuto");
     }

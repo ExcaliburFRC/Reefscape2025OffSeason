@@ -6,9 +6,9 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.excalib.control.motor.controllers.SparkMaxMotorIO;
-import frc.excalib.control.motor.controllers.SparkMaxMotorIO.SparkMaxMotorInputsAutoLogged;
 import frc.excalib.control.motor.controllers.SparkMaxMotorIOReal;
 import com.revrobotics.spark.SparkMax;
+import frc.excalib.control.motor.controllers.SparkMaxMotorInputsAutoLogged;
 import org.littletonrobotics.junction.Logger;
 
 import java.util.function.Supplier;
