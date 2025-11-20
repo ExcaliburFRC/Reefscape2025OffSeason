@@ -25,7 +25,7 @@ import static monologue.Annotations.Log;
 public class RobotContainerWithExamples implements Logged {
 
     // Controllers
-    private final CommandPS5Controller driverController = new CommandPS5Controller(0);
+    private final CommandXboxController driverController = new CommandXboxController(0);
     
     // Example Subsystems with AdvantageKit integration
     private final ExampleMotorSubsystem motorSubsystem;
@@ -33,6 +33,7 @@ public class RobotContainerWithExamples implements Logged {
     private final ExampleDriveSubsystem driveSubsystem;
     private final ExampleArmSubsystem armSubsystem;
     private final ExampleTurretSubsystem turretSubsystem;
+    private final ExampleSwerveSubsystem swerveSubsystem;
     
     public RobotContainerWithExamples() {
         // Initialize subsystems based on robot mode
@@ -43,6 +44,8 @@ public class RobotContainerWithExamples implements Logged {
             driveSubsystem = ExampleDriveSubsystem.createReal(3, 4, 5);
             armSubsystem = ExampleArmSubsystem.createReal(6);
             turretSubsystem = ExampleTurretSubsystem.createReal(7);
+            // Note: Swerve requires actual swerve modules - see comments below for setup
+            swerveSubsystem = ExampleSwerveSubsystem.createSim();
         } else {
             // Simulation or replay - use simulated hardware
             motorSubsystem = ExampleMotorSubsystem.createSim();
@@ -50,6 +53,7 @@ public class RobotContainerWithExamples implements Logged {
             driveSubsystem = ExampleDriveSubsystem.createSim();
             armSubsystem = ExampleArmSubsystem.createSim();
             turretSubsystem = ExampleTurretSubsystem.createSim();
+            swerveSubsystem = ExampleSwerveSubsystem.createSim();
         }
         
         configureBindings();
@@ -150,6 +154,21 @@ public class RobotContainerWithExamples implements Logged {
 //            Commands.run(() -> motorSubsystem.setVoltage(6.0), motorSubsystem)
 //                .withName("MotorForward")
 //        );
+        
+        // ========== Swerve Subsystem Controls ==========
+        // Touchpad = Reset swerve pose
+        driverController.touchpad().onTrue(
+            Commands.runOnce(() -> logAndRun("Touchpad pressed: ResetSwervePose", 
+                () -> swerveSubsystem.resetPose(new edu.wpi.first.math.geometry.Pose2d())), 
+                swerveSubsystem)
+                .withName("ResetSwervePose")
+        );
+        
+        // PS Button = Stop swerve
+        driverController.PS().onTrue(
+            Commands.runOnce(() -> logAndRun("PS pressed: StopSwerve", 
+                () -> swerveSubsystem.stopCommand().schedule()))
+        );
     }
 
     /**
@@ -157,7 +176,17 @@ public class RobotContainerWithExamples implements Logged {
      * Configure default commands that run continuously.
      */
     private void configureDefaultCommands() {
-        // Drive subsystem default command - arcade drive
+        // Swerve subsystem default command - field-centric drive
+        // Uses left stick for translation and right stick for rotation
+        swerveSubsystem.setDefaultCommand(
+            swerveSubsystem.driveFieldCentric(
+                () -> -applyDeadband(driverController.getLeftY()) * swerveSubsystem.getMaxVelocity() * 0.8,  // Forward/backward (80% speed)
+                () -> -applyDeadband(driverController.getLeftX()) * swerveSubsystem.getMaxVelocity() * 0.8,  // Strafe (80% speed)
+                () -> -applyDeadband(driverController.getRightX()) * swerveSubsystem.getMaxAngularVelocity() * 0.6  // Rotation (60% speed)
+            ).withName("DefaultSwerveDrive")
+        );
+        
+        // Drive subsystem default command - arcade drive (tank drive example)
         driveSubsystem.setDefaultCommand(
             driveSubsystem.arcadeDrive(
                 () -> -applyDeadband(driverController.getLeftY()) * 0.5, // Forward/backward (50% speed)
@@ -267,6 +296,26 @@ public class RobotContainerWithExamples implements Logged {
     @Log.NT
     public double getFlywheelVelocityRPS() {
         return flywheelSubsystem.getVelocityRPS();
+    }
+    
+    @Log.NT
+    public boolean isSwerveGyroConnected() {
+        return swerveSubsystem.isGyroConnected();
+    }
+    
+    @Log.NT
+    public double getSwerveHeadingDegrees() {
+        return swerveSubsystem.getHeading().getDegrees();
+    }
+    
+    @Log.NT
+    public double getSwervePoseX() {
+        return swerveSubsystem.getPose().getX();
+    }
+    
+    @Log.NT
+    public double getSwervePoseY() {
+        return swerveSubsystem.getPose().getY();
     }
     
     @Log.NT

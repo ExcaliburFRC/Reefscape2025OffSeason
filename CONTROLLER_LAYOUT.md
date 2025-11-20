@@ -1,33 +1,35 @@
-# Xbox Controller Layout for Example Subsystems
+# PS5 Controller Layout for Example Subsystems with Swerve
 
 ```
                     ╔════════════════════════════════════════════╗
-                    ║         Xbox Controller (Port 0)          ║
+                    ║     PS5 Controller (Port 0) - UPDATED     ║
+                    ║         WITH SWERVE DRIVE SUPPORT         ║
                     ╚════════════════════════════════════════════╝
 
-                              [Back] [Start]
+                        [Create] [Options]
+                          [PS] [Touchpad]
                                 │     │
                   ┌─────────────┴─────┴─────────────┐
                   │                                   │
-                  │    D-Pad        [XYAB]   Bumpers │
+                  │    D-Pad        [△○□✕]   Bumpers │
                   │      🎮           🎮        🎮    │
                   │                                   │
                   │  [LStick]              [RStick]   │
                   │     🕹️                   🕹️       │
                   │                                   │
                   └───────────────────────────────────┘
-                      [LT]                    [RT]
+                      [L2]                    [R2]
 
 ═══════════════════════════════════════════════════════════════
 
 🎮 FACE BUTTONS (Right Side)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-    Y Button (▲)  →  Arm to 45° (hold)
+    △ (Triangle)  →  Reset gyro heading (tank drive)
     │
-    X   B         →  X: Arm to 0° (hold)
-    │   │         →  B: Stop drive motors
-    A             →  A: Reset gyro heading
+    □   ○         →  □ (Square): Stop tank drive motors
+    │   │         →  ○ (Circle): Arm to 0° horizontal (hold)
+    ✕ (Cross)     →  Arm to 45° (hold)
 
 ═══════════════════════════════════════════════════════════════
 
@@ -45,42 +47,50 @@
 
 ═══════════════════════════════════════════════════════════════
 
-🕹️ LEFT STICK - DRIVE CONTROL
+🕹️ LEFT STICK - SWERVE DRIVE (PRIMARY)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-    Forward/Backward  →  Y-axis (forward/backward at 50% speed)
-    Left/Right        →  X-axis (strafe left/right at 50% speed)
+    Forward/Backward  →  Y-axis (field-centric forward/back at 80% speed)
+    Left/Right        →  X-axis (field-centric strafe at 80% speed)
+    
+    ⚠️  NOTE: This controls the SWERVE DRIVE subsystem (4-wheel holonomic)
+           Field-centric means forward is always away from driver station
 
 ═══════════════════════════════════════════════════════════════
 
-🕹️ RIGHT STICK - ROTATION CONTROL
+🕹️ RIGHT STICK - ROTATION CONTROL (SWERVE)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-    X-axis (left/right)  →  Rotate robot (30% speed)
+    X-axis (left/right)  →  Rotate robot (60% angular speed)
+    
+    ⚠️  NOTE: Rotation works for both swerve and tank drive
+           Tank drive uses 30% speed, swerve uses 60%
 
 ═══════════════════════════════════════════════════════════════
 
 🎮 BUMPERS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-    [LB] Left Bumper   →  Arm to 90° vertical (hold)
-    [RB] Right Bumper  →  Arm manual control (use RT for voltage)
+    [L1] Left Bumper   →  Arm to 90° vertical (hold)
+    [R1] Right Bumper  →  Arm manual control (use R2 for voltage)
 
 ═══════════════════════════════════════════════════════════════
 
 🎮 TRIGGERS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-    [LT] Left Trigger   →  Run motor forward at 6V
-    [RT] Right Trigger  →  Control arm voltage (when RB is held)
+    [L2] Left Trigger   →  (Available for custom mapping)
+    [R2] Right Trigger  →  Control arm voltage (when R1 is held)
 
 ═══════════════════════════════════════════════════════════════
 
 🎮 CENTER BUTTONS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-    [Back]  (◄◄)  →  Stop flywheel
-    [Start] (►)   →  Run flywheel at 50 RPS (hold)
+    [Create]   (◄◄)  →  Stop flywheel
+    [Options]  (►)   →  Run flywheel at 50 RPS (hold)
+    [PS]       (⊙)   →  Stop swerve drive
+    [Touchpad] (▭)   →  Reset swerve pose to (0,0)
 
 ═══════════════════════════════════════════════════════════════
 
