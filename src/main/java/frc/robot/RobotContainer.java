@@ -32,11 +32,14 @@ import static frc.robot.Constants.SwerveConstants.MAX_OMEGA_RAD_PER_SEC;
 import static frc.robot.Constants.SwerveConstants.MAX_VEL;
 import static monologue.Annotations.*;
 import static monologue.Annotations.Log.*;
+import org.littletonrobotics.junction.Logger;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.RobotBase;
 
 
 public class RobotContainer implements Logged {
 
-    CommandPS5Controller driver = new CommandPS5Controller(2);
+    CommandPS5Controller driver = RobotBase.isSimulation() ? new CommandPS5Controller(0) : new CommandPS5Controller(2);
     CommandPS5Controller simulatorController = new CommandPS5Controller(0);
     CommandPS5Controller operator = new CommandPS5Controller(1);
 
@@ -57,6 +60,10 @@ public class RobotContainer implements Logged {
 
 
     ExampleArmSubsystem exampleArmSubsystem = ExampleArmSubsystem.createSim();
+
+    // Simulation yaw integration (used when gyro doesn't provide real data)
+    private double m_lastPeriodicTime = -1.0;
+    private double m_simYaw = 0.0; // radians
 
     public RobotContainer() {
         superstructure = new Superstructure(
@@ -109,9 +116,33 @@ public class RobotContainer implements Logged {
         operator.triangle().onTrue(superstructure.setCurrentStateCommand(RobotState.CLIMB));
     }
 
-    public void perodic() {
-        if (!client.getPose2d().equals(new Pose2d())) {
-            swerve.m_odometry.addVisionMeasurement(client.getPose2d(), Timer.getFPGATimestamp());
+    // Periodic hook to integrate vision measurements into swerve odometry
+    public void periodic() {
+        double now = Timer.getFPGATimestamp();
+        double dt = (m_lastPeriodicTime < 0) ? 0.0 : (now - m_lastPeriodicTime);
+        m_lastPeriodicTime = now;
+
+        // If we're in simulation (or gyro not connected), integrate yaw from controller's right stick
+        if (RobotBase.isSimulation()) {
+            double omega = applyDeadband(-driver.getRightX()) * MAX_OMEGA_RAD_PER_SEC; // rad/s
+            m_simYaw += omega * dt;
+            // publish sim yaw to swerve IMU so field-oriented driving uses controller rotation
+            try {
+                swerve.setIMURotation(new Rotation2d(m_simYaw));
+            } catch (Exception e) {
+                // ignore if IMU not settable
+            }
+            Logger.recordOutput("SimYaw/Deg", Math.toDegrees(m_simYaw));
+        }
+
+        boolean hasPose = !client.getPose2d().equals(new Pose2d());
+        Logger.recordOutput("Aurora/HasPose", hasPose);
+        if (hasPose) {
+            Pose2d p = client.getPose2d();
+            Logger.recordOutput("Aurora/Pose/X", p.getX());
+            Logger.recordOutput("Aurora/Pose/Y", p.getY());
+            Logger.recordOutput("Aurora/Pose/ThetaDeg", p.getRotation().getDegrees());
+            swerve.m_odometry.addVisionMeasurement(p, Timer.getFPGATimestamp());
         }
     }
 

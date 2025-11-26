@@ -14,6 +14,7 @@ import frc.excalib.mechanisms.turret.Turret;
 import frc.excalib.control.math.physics.Mass;
 import frc.excalib.control.limits.SoftLimit;
 
+import java.util.Map;
 import java.util.function.DoubleSupplier;
 
 /**
@@ -220,7 +221,7 @@ public class MechanismSetupHelper {
             () -> Double.POSITIVE_INFINITY
         );
         
-        Mass mass = new Mass(armMassKg);
+        Mass mass = new Mass(()-> Math.cos(angleSupplier.getAsDouble()), ()-> Math.sin(angleSupplier.getAsDouble()), armMassKg);
         
         return new Arm(
             motor,

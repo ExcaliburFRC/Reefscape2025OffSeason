@@ -25,7 +25,7 @@ import static monologue.Annotations.Log;
 public class RobotContainerWithExamples implements Logged {
 
     // Controllers
-    private final CommandXboxController driverController = new CommandXboxController(0);
+    private final CommandPS5Controller driverController = new CommandPS5Controller(0);
     
     // Example Subsystems with AdvantageKit integration
     private final ExampleMotorSubsystem motorSubsystem;

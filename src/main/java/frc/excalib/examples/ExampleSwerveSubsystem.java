@@ -11,12 +11,14 @@ import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.excalib.control.imu.IMUIO;
-import frc.excalib.control.imu.IMUIO.IMUInputsAutoLogged;
+import frc.excalib.control.imu.IMUInputsAutoLogged;
 import frc.excalib.control.imu.PigeonIOReal;
 import frc.excalib.swerve.SwerveModuleIO;
-import frc.excalib.swerve.SwerveModuleIO.SwerveModuleInputsAutoLogged;
 import frc.excalib.swerve.SwerveModuleIOReal;
+import frc.excalib.swerve.SwerveModuleInputsAutoLogged;
 import org.littletonrobotics.junction.Logger;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.networktables.NetworkTableInstance;
 
 import java.util.function.DoubleSupplier;
 
@@ -44,7 +46,9 @@ public class ExampleSwerveSubsystem extends SubsystemBase {
     
     // Odometry
     private Pose2d pose = new Pose2d();
-    
+    // Previous average drive position for simple dead-reckoning
+    private double prevAvgDrivePosition = 0.0;
+
     // Physical constants
     private static final double MAX_VELOCITY_METERS_PER_SEC = 4.5;
     private static final double MAX_ANGULAR_VELOCITY_RAD_PER_SEC = 2.0 * Math.PI;
@@ -137,17 +141,39 @@ public class ExampleSwerveSubsystem extends SubsystemBase {
             moduleIOs[i].updateInputs(moduleInputs[i]);
             Logger.processInputs("Swerve/Module" + i, moduleInputs[i]);
         }
-        
+
         // Update gyro inputs and log them
         gyroIO.updateInputs(gyroInputs);
         Logger.processInputs("Swerve/Gyro", gyroInputs);
-        
+
         // Update odometry
         updateOdometry();
-        
+
         // Log pose and additional data
         Logger.recordOutput("Swerve/Pose", pose);
         Logger.recordOutput("Swerve/Heading", getHeading().getDegrees());
+
+        // Also publish the Example swerve pose under RobotPose/* so AKIT/poser finds it
+        Logger.recordOutput("RobotPose/X", pose.getX());
+        Logger.recordOutput("RobotPose/Y", pose.getY());
+        Logger.recordOutput("RobotPose/ThetaRad", pose.getRotation().getRadians());
+
+        SmartDashboard.putNumber("RobotPose/X", pose.getX());
+        SmartDashboard.putNumber("RobotPose/Y", pose.getY());
+        SmartDashboard.putNumber("RobotPose/ThetaDeg", pose.getRotation().getDegrees());
+
+        var nt = NetworkTableInstance.getDefault();
+        var table = nt.getTable("RobotPose");
+        table.getEntry("x").setDouble(pose.getX());
+        table.getEntry("y").setDouble(pose.getY());
+        table.getEntry("thetaDeg").setDouble(pose.getRotation().getDegrees());
+        table.getEntry("string").setString(pose.getX() + "," + pose.getY() + "," + pose.getRotation().getRadians());
+
+        // Human-readable debug
+        String poseStr = String.format("EX Swerve POSE: x=%.3f y=%.3f thetaDeg=%.2f", pose.getX(), pose.getY(), pose.getRotation().getDegrees());
+        Logger.recordOutput("Diag/ExampleSwervePose", poseStr);
+        SmartDashboard.putString("RobotPose/Debug", poseStr);
+        System.out.println(poseStr);
     }
     
     /**
@@ -155,19 +181,22 @@ public class ExampleSwerveSubsystem extends SubsystemBase {
      */
     private void updateOdometry() {
         SwerveModulePosition[] positions = new SwerveModulePosition[4];
+        double sum = 0.0;
         for (int i = 0; i < 4; i++) {
             positions[i] = new SwerveModulePosition(
                 moduleInputs[i].drivePositionMeters,
                 new Rotation2d(moduleInputs[i].turnPositionRad)
             );
+            sum += moduleInputs[i].drivePositionMeters;
         }
-        
-        // Simple odometry update (in real implementation, use SwerveDriveOdometry)
-        // This is simplified for the example
-        pose = new Pose2d(
-            pose.getTranslation(),
-            Rotation2d.fromDegrees(gyroInputs.yawDegrees)
-        );
+        double avg = sum / 4.0;
+        // Simple dead-reckoning: integrate average wheel travel along gyro heading
+        double delta = avg - prevAvgDrivePosition;
+        double yawRad = Math.toRadians(gyroInputs.yawDegrees);
+        double dx = delta * Math.cos(yawRad);
+        double dy = delta * Math.sin(yawRad);
+        pose = new Pose2d(pose.getX() + dx, pose.getY() + dy, Rotation2d.fromDegrees(gyroInputs.yawDegrees));
+        prevAvgDrivePosition = avg;
     }
     
     /**

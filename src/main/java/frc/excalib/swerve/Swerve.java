@@ -9,6 +9,7 @@ import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
@@ -24,6 +25,7 @@ import frc.excalib.control.imu.IMU;
 import frc.excalib.control.math.Vector2D;
 import frc.excalib.slam.mapper.Odometry;
 import monologue.Logged;
+import org.littletonrobotics.junction.Logger;
 import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
@@ -43,7 +45,16 @@ public class Swerve extends SubsystemBase implements Logged {
     public final ModulesHolder modules;
     private final IMU m_imu;
     public final Odometry m_odometry;
+    // Diagnostic history for module wheel positions (meters)
+    private final double[] m_lastModuleDistances = new double[4];
+    private int m_periodicCounter = 0;
+    // Fallback dead-reckoning (used only if odometry appears stuck)
+    private double m_prevAvgDistance = 0.0;
+    private Pose2d m_fallbackPose = new Pose2d();
     private ChassisSpeeds m_desiredChassisSpeeds = new ChassisSpeeds();
+    // Simulated yaw (radians) when IMU isn't providing valid rotation (useful in sim)
+    private double m_simYawRad = 0.0;
+    private double m_lastPeriodicTime = -1.0;
     private Trigger finishTrigger;
     private Rotation2d pi = new Rotation2d(Math.PI);
 
@@ -75,6 +86,18 @@ public class Swerve extends SubsystemBase implements Logged {
         this.modules = modules;
         this.m_imu = imu;
         m_imu.setRotation(new Rotation2d(Math.PI / 2));
+
+        // Initialize diagnostic last positions
+        var initPositions = this.modules.getModulesPositions();
+        if (initPositions != null && initPositions.length >= 4) {
+            for (int i = 0; i < 4; i++) {
+                m_lastModuleDistances[i] = initPositions[i].distanceMeters;
+            }
+            // initialize fallback average distance
+            double sum = 0.0;
+            for (int i = 0; i < 4; i++) sum += initPositions[i].distanceMeters;
+            m_prevAvgDistance = sum / 4.0;
+        }
 
 
         angleController.enableContinuousInput(-Math.PI, Math.PI);
@@ -276,6 +299,14 @@ public class Swerve extends SubsystemBase implements Logged {
     }
 
     /**
+     * Set the IMU rotation (useful for simulation to inject a simulated yaw).
+     * @param rotation rotation to set on the IMU
+     */
+    public void setIMURotation(Rotation2d rotation) {
+        m_imu.setRotation(rotation);
+    }
+
+    /**
      * Gets the robot's rotation.
      *
      * @return The current rotation of the robot.
@@ -410,6 +441,12 @@ public class Swerve extends SubsystemBase implements Logged {
 
         ShuffleboardTab swerveTab = Shuffleboard.getTab("Swerve");
 
+        // Show pose values directly on the Swerve tab so they're visible by default
+        swerveTab.add("RobotPose/X", 0).withWidget(kTextView).getEntry();
+        swerveTab.add("RobotPose/Y", 0).withWidget(kTextView).getEntry();
+        swerveTab.add("RobotPose/ThetaDeg", 0).withWidget(kTextView).getEntry();
+        swerveTab.add("RobotPose/Debug", "").withWidget(kTextView).getEntry();
+
         GenericEntry odometryXEntry = swerveTab.add("odometryX", 0).withWidget(kTextView).getEntry();
         GenericEntry odometryYEntry = swerveTab.add("odometryY", 0).withWidget(kTextView).getEntry();
         GenericEntry odometryAngleEntry = swerveTab.add("odometryAngle", 0).withWidget(kTextView).getEntry();
@@ -491,9 +528,184 @@ public class Swerve extends SubsystemBase implements Logged {
 
     @Override
     public void periodic() {
+        // compute loop dt for simulated yaw integration
+        double now = edu.wpi.first.wpilibj.Timer.getFPGATimestamp();
+        double dt = (m_lastPeriodicTime < 0) ? 0.0 : (now - m_lastPeriodicTime);
+        m_lastPeriodicTime = now;
+
         modules.periodic();
-        field.setRobotPose(getPose2D());
+        // Update odometry first so the pose we publish to the Field2d / AKIT poser
+        // reflects the most recent module readings.
         updateOdometry();
+        field.setRobotPose(getPose2D());
+
+        // Per-loop module encoder delta debug (log every 10 loops to reduce spam)
+        m_periodicCounter = (m_periodicCounter + 1) % 10;
+        var modulePositionsForDelta = modules.getModulesPositions();
+        double maxDelta = 0.0;
+        double avgPos = 0.0;
+        if (modulePositionsForDelta != null && modulePositionsForDelta.length >= 4) {
+            for (int i = 0; i < 4; i++) {
+                double delta = Math.abs(modulePositionsForDelta[i].distanceMeters - m_lastModuleDistances[i]);
+                if (delta > maxDelta) maxDelta = delta;
+                // update history
+                m_lastModuleDistances[i] = modulePositionsForDelta[i].distanceMeters;
+                if (m_periodicCounter == 0) Logger.recordOutput("Diag/ModuleDelta/" + i, delta);
+                avgPos += modulePositionsForDelta[i].distanceMeters;
+            }
+            avgPos /= 4.0;
+            if (m_periodicCounter == 0) Logger.recordOutput("Diag/ModuleDeltaMax", maxDelta);
+            if (maxDelta == 0.0) {
+                Logger.recordOutput("Diag/Warning", "Modules not updating");
+            }
+        }
+
+        // Compute fallback dead-reckoning based on avg wheel distance delta
+        double deltaAvg = avgPos - m_prevAvgDistance;
+        // Choose yaw to use: prefer IMU, but if IMU reports zero yaw (common in sim), integrate from commanded omega
+        Rotation2d imuYaw = m_imu.getZRotation();
+        boolean imuZero = Math.abs(imuYaw.getRadians()) < 1e-6;
+        if (imuZero) {
+            // integrate simulated yaw from commanded chassis omega
+            m_simYawRad += m_desiredChassisSpeeds.omegaRadiansPerSecond * dt;
+        } else {
+            // if IMU provides data, keep simulated yaw in sync
+            m_simYawRad = imuYaw.getRadians();
+        }
+        Rotation2d yawUsed = imuZero ? new Rotation2d(m_simYawRad) : imuYaw;
+
+        // Prefer integrating measured chassis speeds (robot-relative) when available
+        ChassisSpeeds measuredSpeeds = getRobotRelativeSpeeds();
+        // Diagnostics: record desired/measured chassis speeds so we can see what is being integrated
+        if (m_periodicCounter == 0) {
+            Logger.recordOutput("Diag/DesiredChassis/vx", m_desiredChassisSpeeds.vxMetersPerSecond);
+            Logger.recordOutput("Diag/DesiredChassis/vy", m_desiredChassisSpeeds.vyMetersPerSecond);
+            Logger.recordOutput("Diag/DesiredChassis/omega", m_desiredChassisSpeeds.omegaRadiansPerSecond);
+            Logger.recordOutput("Diag/MeasuredChassis/vx", measuredSpeeds.vxMetersPerSecond);
+            Logger.recordOutput("Diag/MeasuredChassis/vy", measuredSpeeds.vyMetersPerSecond);
+        }
+         // If measured speeds are effectively zero (simulation may not provide perfect feedback),
+         // fall back to using the desired chassis speeds (what the driver commanded).
+         double measuredMag = Math.abs(measuredSpeeds.vxMetersPerSecond) + Math.abs(measuredSpeeds.vyMetersPerSecond);
+         ChassisSpeeds fallbackSpeeds = measuredSpeeds;
+         if (measuredMag < 1e-6) {
+             fallbackSpeeds = m_desiredChassisSpeeds; // robot-relative desired speeds are already stored
+         }
+         double speedMag = Math.abs(fallbackSpeeds.vxMetersPerSecond) + Math.abs(fallbackSpeeds.vyMetersPerSecond);
+         if (speedMag > 1e-9 && dt > 0) {
+             // Integrate robot-relative velocities over dt and rotate into field frame using yawUsed
+             double dxRobot = fallbackSpeeds.vxMetersPerSecond * dt;
+             double dyRobot = fallbackSpeeds.vyMetersPerSecond * dt;
+             double cos = Math.cos(yawUsed.getRadians());
+             double sin = Math.sin(yawUsed.getRadians());
+             double dxField = dxRobot * cos - dyRobot * sin;
+             double dyField = dxRobot * sin + dyRobot * cos;
+            if (m_periodicCounter == 0) {
+                Logger.recordOutput("Diag/Integrate/dxRobot", dxRobot);
+                Logger.recordOutput("Diag/Integrate/dyRobot", dyRobot);
+                Logger.recordOutput("Diag/Integrate/dxField", dxField);
+                Logger.recordOutput("Diag/Integrate/dyField", dyField);
+            }
+             m_fallbackPose = new Pose2d(
+                     m_fallbackPose.getX() + dxField,
+                     m_fallbackPose.getY() + dyField,
+                     yawUsed
+             );
+         } else if (Math.abs(deltaAvg) > 1e-6) {
+             // move forward by deltaAvg in robot's current heading (yawUsed) as a fallback
+             double dx = deltaAvg * Math.cos(yawUsed.getRadians());
+             double dy = deltaAvg * Math.sin(yawUsed.getRadians());
+            if (m_periodicCounter == 0) {
+                Logger.recordOutput("Diag/Integrate/dxAvg", dx);
+                Logger.recordOutput("Diag/Integrate/dyAvg", dy);
+            }
+             m_fallbackPose = new Pose2d(
+                     m_fallbackPose.getX() + dx,
+                     m_fallbackPose.getY() + dy,
+                     yawUsed
+             );
+         }
+         m_prevAvgDistance = avgPos;
+
+        // Diagnostic outputs: IMU and module states so we can debug why odometry isn't moving
+        Pose2d pose = getPose2D();
+        // Use yawUsed for publishing so simulated yaw is reflected when IMU is not present
+        Logger.recordOutput("IMU/YawDeg", yawUsed.getDegrees());
+        SmartDashboard.putNumber("IMU/YawDeg", yawUsed.getDegrees());
+
+        var modulePositions = modules.getModulesPositions();
+        if (modulePositions != null && modulePositions.length >= 4) {
+            // Log module positions (distance and angle) and velocities
+            Logger.recordOutput("Module/FL/pos_m", modulePositions[0].distanceMeters);
+            Logger.recordOutput("Module/FL/angle_deg", modulePositions[0].angle.getDegrees());
+            Logger.recordOutput("Module/FR/pos_m", modulePositions[1].distanceMeters);
+            Logger.recordOutput("Module/FR/angle_deg", modulePositions[1].angle.getDegrees());
+            Logger.recordOutput("Module/BL/pos_m", modulePositions[2].distanceMeters);
+            Logger.recordOutput("Module/BL/angle_deg", modulePositions[2].angle.getDegrees());
+            Logger.recordOutput("Module/BR/pos_m", modulePositions[3].distanceMeters);
+            Logger.recordOutput("Module/BR/angle_deg", modulePositions[3].angle.getDegrees());
+
+            SmartDashboard.putNumber("Module/FL/pos_m", modulePositions[0].distanceMeters);
+            SmartDashboard.putNumber("Module/FL/angle_deg", modulePositions[0].angle.getDegrees());
+            SmartDashboard.putNumber("Module/FR/pos_m", modulePositions[1].distanceMeters);
+            SmartDashboard.putNumber("Module/FR/angle_deg", modulePositions[1].angle.getDegrees());
+            SmartDashboard.putNumber("Module/BL/pos_m", modulePositions[2].distanceMeters);
+            SmartDashboard.putNumber("Module/BL/angle_deg", modulePositions[2].angle.getDegrees());
+            SmartDashboard.putNumber("Module/BR/pos_m", modulePositions[3].distanceMeters);
+            SmartDashboard.putNumber("Module/BR/angle_deg", modulePositions[3].angle.getDegrees());
+        }
+
+        // Also log module velocities from ModulesHolder.getVelocity and per-module velocities
+        Vector2D avgVel = modules.getVelocity();
+        Logger.recordOutput("Modules/AvgVel_mps", avgVel.getDistance());
+        SmartDashboard.putNumber("Modules/AvgVel_mps", avgVel.getDistance());
+
+        Logger.recordOutput("Odometry/poseX", pose.getX());
+        Logger.recordOutput("Odometry/poseY", pose.getY());
+        Logger.recordOutput("Odometry/poseThetaDeg", yawUsed.getDegrees());
+
+        // Publish pose components to AdvantageKit so the poser in AdvantageScope can read them.
+        // If odometry pose appears to be stuck at 0, use fallback pose for publishing so AKIT poser moves
+        boolean odomZero = Math.abs(pose.getX()) < 1e-6 && Math.abs(pose.getY()) < 1e-6 && Math.abs(pose.getRotation().getRadians()) < 1e-6;
+        Pose2d publishPose = odomZero && maxDelta > 1e-6 ? m_fallbackPose : pose;
+        // Ensure the published pose uses yawUsed for rotation so simulated yaw is visible
+        publishPose = new Pose2d(publishPose.getX(), publishPose.getY(), yawUsed);
+        Logger.recordOutput("RobotPose/X", publishPose.getX());
+        Logger.recordOutput("RobotPose/Y", publishPose.getY());
+        Logger.recordOutput("RobotPose/ThetaRad", publishPose.getRotation().getRadians());
+
+        // Additional naming variants commonly used by tools
+        Logger.recordOutput("Robot Pose/X", publishPose.getX());
+        Logger.recordOutput("Robot Pose/Y", publishPose.getY());
+        Logger.recordOutput("Robot Pose/Rotation", publishPose.getRotation().getDegrees());
+
+        Logger.recordOutput("EstimatedRobotPose/X", publishPose.getX());
+        Logger.recordOutput("EstimatedRobotPose/Y", publishPose.getY());
+        Logger.recordOutput("EstimatedRobotPose/ThetaDeg", publishPose.getRotation().getDegrees());
+
+        // String fallback
+        Logger.recordOutput("RobotPose/String", publishPose.getX() + "," + publishPose.getY() + "," + publishPose.getRotation().getRadians());
+
+        // Also publish to SmartDashboard so you can inspect values directly in Shuffleboard
+        SmartDashboard.putNumber("RobotPose/X", publishPose.getX());
+        SmartDashboard.putNumber("RobotPose/Y", publishPose.getY());
+        SmartDashboard.putNumber("RobotPose/ThetaDeg", publishPose.getRotation().getDegrees());
+
+        // Publish to NetworkTables explicitly so external tools (AKIT/AdvantageScope) can read the pose easily
+         var nt = NetworkTableInstance.getDefault();
+         var table = nt.getTable("RobotPose");
+        table.getEntry("x").setDouble(publishPose.getX());
+        table.getEntry("y").setDouble(publishPose.getY());
+        table.getEntry("thetaDeg").setDouble(publishPose.getRotation().getDegrees());
+        table.getEntry("string").setString(publishPose.getX() + "," + publishPose.getY() + "," + publishPose.getRotation().getRadians());
+
+        // Console + Shuffleboard debug: print a human-readable pose periodically so you can see it even if NT widgets aren't added
+        if (m_periodicCounter == 0) {
+            String poseStr = String.format("POSE publish: x=%.4f y=%.4f thetaDeg=%.2f", publishPose.getX(), publishPose.getY(), publishPose.getRotation().getDegrees());
+            System.out.println(poseStr);
+            Logger.recordOutput("Diag/ConsolePose", poseStr);
+            SmartDashboard.putString("RobotPose/Debug", poseStr);
+        }
 
     }
 
