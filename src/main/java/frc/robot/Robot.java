@@ -6,12 +6,9 @@ package frc.robot;
 
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.Threads;
-import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.excalib.control.motor.controllers.TalonFXMotor;
-import frc.robot.subsystems.test.Test;
-import frc.robot.subsystems.test.TestReal;
 import monologue.Logged;
 import monologue.Monologue;
 import org.littletonrobotics.junction.LogFileUtil;
@@ -24,11 +21,14 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 public class Robot extends LoggedRobot implements Logged {
     private Command m_autonomousCommand;
     private final RobotContainer m_robotContainer;
+    private final RobotContainerWithExamples m_examplesContainer;
     private CommandScheduler commandScheduler = CommandScheduler.getInstance();
-    public static boolean isReplay = true;
+    public static boolean isReplay = false;
 
     public Robot() {
         m_robotContainer = new RobotContainer();
+        // Also construct the example container so we can use example subsystems in simulation
+        m_examplesContainer = new RobotContainerWithExamples();
         Logger.recordMetadata("Offseason2025", "Offseason2025"); // Set a metadata value
 
         if (isSimulation() && !isReplay) {
@@ -46,7 +46,8 @@ public class Robot extends LoggedRobot implements Logged {
 
     @Override
     public void robotInit() {
-//        addPeriodic(m_robotContainer::perodic, 0.02);
+        // RobotContainer::periodic is no longer scheduled via addPeriodic (not available in this LoggedRobot API).
+        // Vision and subsystem periodic behavior are handled by the CommandScheduler and subsystem periodic methods.
         CameraServer.startAutomaticCapture();
     }
 
@@ -55,9 +56,15 @@ public class Robot extends LoggedRobot implements Logged {
     public void robotPeriodic() {
         Threads.setCurrentThreadPriority(true, 99);
         TalonFXMotor.refreshAll();
-        Monologue.updateAll();
         Threads.setCurrentThreadPriority(false, 10);
+        // Run RobotContainer periodic BEFORE CommandScheduler so simulation inputs (like IMU yaw)
+        // are injected before subsystems' periodic() are run by the scheduler.
+        try {
+            m_robotContainer.periodic();
+        } catch (Exception ignored) {}
         commandScheduler.run();
+         // Update monologue (NT/Monologue logging) after commands and subsystems run so it reads latest values
+         Monologue.updateAll();
     }
 
     @Override
@@ -70,7 +77,12 @@ public class Robot extends LoggedRobot implements Logged {
 
     @Override
     public void autonomousInit() {
-        m_autonomousCommand = m_robotContainer.getAutonomousCommand();
+        // Use example container's autonomous in simulation (it contains ExampleSwerveSubsystem), otherwise use normal container
+        if (isSimulation()) {
+            m_autonomousCommand = m_examplesContainer.getAutonomousCommand();
+        } else {
+            m_autonomousCommand = m_robotContainer.getAutonomousCommand();
+        }
 
         if (m_autonomousCommand != null) {
             m_autonomousCommand.schedule();
