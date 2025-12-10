@@ -37,7 +37,6 @@ import static monologue.Annotations.Log.*;
 public class RobotContainer implements Logged {
 
     CommandPS5Controller driver = new CommandPS5Controller(DRIVER_CONTROLLER_PORT);
-    CommandPS5Controller operator = new CommandPS5Controller(1);
 
     AuroraClient client = new AuroraClient(AURORA_CLIENT_PORT);
 
@@ -48,7 +47,7 @@ public class RobotContainer implements Logged {
     boolean coralFlag = false;
     Trigger virtualCoralButton = new Trigger(() -> DriverStation.isAutonomous() && coralFlag);
 
-    ClimberSubsystem climber = new ClimberSubsystem();
+//    ClimberSubsystem climber = new ClimberSubsystem();
 
     Automations automations = new Automations(swerve);
 
@@ -65,6 +64,8 @@ public class RobotContainer implements Logged {
         );
         configureBindings();
     }
+
+
 
     private void configureBindings() {
         driver.R2().whileTrue(automations.alignToSide(true));
@@ -93,13 +94,13 @@ public class RobotContainer implements Logged {
         driver.options().toggleOnTrue(superstructure.intakeSubsystem.resetAngleCommand().ignoringDisable(true));
         driver.create().onTrue(superstructure.elevatorSubsystem.setElevatorHeightCommand(0.16).ignoringDisable(true));
 
-        climber.setDefaultCommand(
-                climber.manualCommand(
-                        () -> operator.getLeftY(),
-                        () -> operator.getRightY()*6)
-        );
-
-        operator.triangle().onTrue(superstructure.setCurrentStateCommand(RobotState.CLIMB));
+//        climber.setDefaultCommand(
+//                climber.manualCommand(
+//                        () -> operator.getLeftY(),
+//                        () -> operator.getRightY()*6)
+//        );
+//
+//        operator.triangle().onTrue(superstructure.setCurrentStateCommand(RobotState.CLIMB));
     }
 
     public void perodic() {
