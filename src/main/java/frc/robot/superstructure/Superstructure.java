@@ -67,7 +67,7 @@ public class Superstructure implements Logged {
     private Supplier<CoralScoreState> algaeHeightSuppier;
 
     public Superstructure(Trigger isSwerveAtPlace, Trigger alageButton, Trigger coralButton, Trigger safeCloseTrigger, Trigger l2Slice, Trigger leftRiffScoreTrigger, Trigger cancelTrigger) {
-        currentState = DEFAULT_WITH_CORAL;
+        currentState = DEFAULT_WITHOUT_GAME_PIECE;
 
         armSubsystem = new ArmSubsystem(leftRiffScoreTrigger);
         elevatorSubsystem = new ElevatorSubsystem();
@@ -77,7 +77,7 @@ public class Superstructure implements Logged {
         this.coralButton = coralButton;
         this.safeCloseTrigger = safeCloseTrigger;
 
-        currentProcess = Process.CORAL_DEFAULT;
+        currentProcess = Process.DEFAULT;
         algaeScoreState = AlgaeScoreState.NET;
         coralScoreState = CoralScoreState.L1;
         algaeHeightSuppier = () -> CoralScoreState.L2;
