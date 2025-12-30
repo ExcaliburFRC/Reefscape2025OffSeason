@@ -4,7 +4,9 @@
 
 package frc.robot;
 
-import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.*;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
@@ -17,6 +19,8 @@ import frc.robot.superstructure.Superstructure;
 import frc.robot.superstructure.automations.Automations;
 import frc.robot.util.CoralScoreState;
 import monologue.Logged;
+
+import java.util.function.DoubleSupplier;
 
 import static frc.robot.Constants.AURORA_CLIENT_PORT;
 import static frc.robot.Constants.DRIVER_CONTROLLER_PORT;
@@ -36,12 +40,11 @@ public class RobotContainer implements Logged {
 
     Swerve swerve = Constants.SwerveConstants.configureSwerve(new Pose2d());
 
-    boolean coralFlag = false;
-//    Trigger virtualCoralButton = new Trigger(() -> DriverStation.isAutonomous() && coralFlag);
-
-//    ClimberSubsystem climber = new ClimberSubsystem();
-
     Automations automations = new Automations(swerve);
+
+    NetworkTable auroraTable = NetworkTableInstance.getDefault().getTable("Aurora");
+    DoubleSupplier x = ()-> 0 , y=()-> 0 , z=()-> 0 , roll=()-> 0, pitch=()-> 0, yaw=()-> 0;
+
 
 
     public RobotContainer() {
@@ -52,23 +55,18 @@ public class RobotContainer implements Logged {
 //                new Trigger(() -> swerve.getPose2D().getTranslation().getDistance(AllianceUtils.getReefCenter()) > 2.13456),
 //                new Trigger(() -> automations.atL2Slice()),
 //                new Trigger(() -> automations.isLeftReefScore()),
-//                driver.povLeft()
-//        );
+//                driver.povLeft(),
+//                driver.PS()
+//       );
         configureBindings();
     }
 
 
-
     private void configureBindings() {
-        driver.R2().whileTrue(automations.alignToSide(true));
-        driver.L2().whileTrue(automations.alignToSide(false));
-
 //        driver.triangle().onTrue(superstructure.setCoralScoreStateCommand(CoralScoreState.L4));
 //        driver.circle().onTrue(superstructure.setCoralScoreStateCommand(CoralScoreState.L3));
 //        driver.square().onTrue(superstructure.setCoralScoreStateCommand(CoralScoreState.L2));
 //        driver.cross().onTrue(superstructure.setCoralScoreStateCommand(CoralScoreState.L1));
-//
-//        driver.povUp().onTrue(superstructure.setAlgaeScoreStateCommand(AlgaeScoreState.NET));
 
         swerve.setDefaultCommand(
                 swerve.driveCommand(
@@ -83,6 +81,7 @@ public class RobotContainer implements Logged {
         driver.povUp().toggleOnTrue(new InstantCommand(() -> swerve.resetOdometry(new Pose2d())));
 
 //        driver.touchpad().whileTrue(superstructure.elevatorSubsystem.coastCommand().ignoringDisable(true));
+//
 //        driver.options().toggleOnTrue(superstructure.intakeSubsystem.resetAngleCommand().ignoringDisable(true));
 //        driver.create().onTrue(superstructure.elevatorSubsystem.setElevatorHeightCommand(0.16).ignoringDisable(true));
 
@@ -96,41 +95,22 @@ public class RobotContainer implements Logged {
     }
 
     public void perodic() {
-        if (!client.getPose2d().equals(new Pose2d())) {
-            swerve.m_odometry.addVisionMeasurement(client.getPose2d(), Timer.getFPGATimestamp());
-        }
+
+        x = () -> auroraTable.getEntry("robotPose/x").getDouble(0.0);
+        y = () -> auroraTable.getEntry("robotPose/y").getDouble(0.0);
+        z = () -> auroraTable.getEntry("robotPose/z").getDouble(0.0);
+
+        yaw = () -> auroraTable.getEntry("robotPose/yaw").getDouble(0.0);
+        roll = () -> auroraTable.getEntry("robotPose/roll").getDouble(0.0);
+        pitch = () -> auroraTable.getEntry("robotPose/pitch").getDouble(0.0);
+
     }
 
     public double applyDeadband(double val) {
         return Math.abs(val) < 0.09 ? 0 : val;
     }
 
-    public Command pressVirtualButton() {
-        return new InstantCommand(() -> coralFlag = true);
-    }
 
-    public Command releaseVirtualButton() {
-        return new InstantCommand(() -> coralFlag = false);
-    }
-
-//    public Command getAutonomousCommand() {
-//        Command auto = swerve.driveCommand(
-//                        () -> new Vector2D(2, 0),
-//                        () -> 0,
-//                        () -> false)
-//                .withTimeout(2.7).andThen(
-//                        superstructure.setCoralScoreStateCommand(CoralScoreState.L1)
-//                ).andThen(pressVirtualButton()
-//                ).andThen(releaseVirtualButton()
-//                ).andThen(new WaitUntilCommand(superstructure.atPositionTrigger.and(() -> superstructure.getCurrentState().equals(RobotState.PRE_L1)))
-//                ).andThen(pressVirtualButton()
-//                ).andThen(new WaitCommand(0.5)
-//                ).andThen(releaseVirtualButton());
-////                .andThen(new InstantCommand(() -> flag = true))
-////                .andThen(new InstantCommand(() -> flag = true)).andThen(superstructure.getCurrentProcessSupplier().equals())
-////                .andThen(new InstantCommand(() -> flag = true));
-//        return auto;
-//    }
     public Command getAutonomousCommand() {
 
         return Commands.none();
@@ -138,12 +118,10 @@ public class RobotContainer implements Logged {
 
     @NT
     public Pose2d getRobotPose() {
-        return swerve.getPose2D();
-    }
-
-    @NT
-    public Pose2d getAuroraPose() {
-        return client.getPose2d();
+        return new Pose2d(
+                new Translation2d(x.getAsDouble(), y.getAsDouble()),
+                new Rotation2d(yaw.getAsDouble())
+        );
     }
 
     @Log.NT
@@ -158,6 +136,7 @@ public class RobotContainer implements Logged {
 
     @Log.NT
     public double getSupposedOpenClimberHeight() {
-        return -Math.PI/2;
+        return -Math.PI / 2;
     }
+
 }

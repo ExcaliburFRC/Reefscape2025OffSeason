@@ -66,13 +66,13 @@ public class Superstructure implements Logged {
 
     private Supplier<CoralScoreState> algaeHeightSuppier;
 
-    public Superstructure(Trigger isSwerveAtPlace, Trigger alageButton, Trigger coralButton, Trigger safeCloseTrigger, Trigger l2Slice, Trigger leftRiffScoreTrigger, Trigger cancelTrigger) {
+    public Superstructure(Trigger isSwerveAtPlace, Trigger alageButton, Trigger coralButton, Trigger safeCloseTrigger, Trigger l2Slice, Trigger leftRiffScoreTrigger, Trigger cancelTrigger, Trigger hasCoralTriggerButton) {
         currentState = DEFAULT_WITHOUT_GAME_PIECE;
 
         armSubsystem = new ArmSubsystem(leftRiffScoreTrigger);
         elevatorSubsystem = new ElevatorSubsystem();
         intakeSubsystem = new Intake();
-        gripperSubsystem = new Gripper();
+        gripperSubsystem = new Gripper(hasCoralTriggerButton);
 
         this.coralButton = coralButton;
         this.safeCloseTrigger = safeCloseTrigger;
@@ -103,7 +103,7 @@ public class Superstructure implements Logged {
         );
 
         levelChangeTrigger = new LevelChangeTrigger(() -> this.coralScoreState);
-        hasCoralInRobot = gripperSubsystem.hasCoral.or(intakeSubsystem.either);
+        hasCoralInRobot = (gripperSubsystem.hasCoral.or(intakeSubsystem.either)).or(hasCoralTriggerButton);
 
         processChangeDefaultTrigger = new Trigger(() -> currentProcess.equals(Process.DEFAULT));
         processChangeCoralDefaultTrigger = new Trigger(() -> currentProcess.equals(Process.CORAL_DEFAULT));

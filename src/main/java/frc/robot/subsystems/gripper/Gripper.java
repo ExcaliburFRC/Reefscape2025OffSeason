@@ -34,7 +34,7 @@ public class Gripper extends SubsystemBase implements Logged {
     // === Inputs ===
     private final FlyWheel gripperWheels;
 
-    public Gripper() {
+    public Gripper(Trigger hasGamePieceTrigger2) {
         gripperMotor = new TalonFXMotor(MOTOR_ID);
 
         CurrentLimitsConfigs limitsConfigs = new CurrentLimitsConfigs();
@@ -53,7 +53,7 @@ public class Gripper extends SubsystemBase implements Logged {
         setDefaultCommand(gripperWheels.manualCommand(() -> currentState.output, this));
 
         hasAlgae = new Trigger(() -> currentHoldingState.equals(HoldingState.ALGAE));
-        hasCoral = new Trigger(() -> currentHoldingState.equals(HoldingState.CORAL));
+        hasCoral = new Trigger(() -> currentHoldingState.equals(HoldingState.CORAL)).or(hasGamePieceTrigger2);
 
 //        hasGamePieceTrigger = new Trigger(() -> filteredValue < 150).debounce(0.25).negate().debounce(0.15).negate();
         hasGamePieceTrigger = new Trigger(() -> getFilteredState(sensor.getValue())).debounce(0.1);

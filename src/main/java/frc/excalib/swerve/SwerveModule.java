@@ -52,13 +52,13 @@ public class SwerveModule implements Logged {
         driveMotor.setVelocityConversionFactor(velocityConversionFactor);
         driveMotor.setIdleState(BRAKE);
         driveMotor.setPositionConversionFactor(positionConversionFactor);
-        driveMotor.setCurrentLimit(0, 60);
+        driveMotor.setCurrentLimit(0, 30);
 
         rotationMotor.setIdleState(BRAKE);
         rotationMotor.setVelocityConversionFactor(rotationVelocityConversionFactor);
         rotationMotor.setInverted(REVERSE);
 
-        m_driveWheel = new FlyWheel(driveMotor, 10, 10, velocityGains);
+        m_driveWheel = new FlyWheel(driveMotor, 60, 60, velocityGains);
 
         m_turret = new Turret(rotationMotor, new ContinuousSoftLimit(() -> Double.NEGATIVE_INFINITY, () -> Double.POSITIVE_INFINITY),
                 angleGains, PIDTolerance, angleSupplier);
