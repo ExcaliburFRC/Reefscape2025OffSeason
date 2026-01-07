@@ -28,7 +28,6 @@ public class Robot extends TimedRobot implements Logged {
     @Override
     public void robotInit() {
         addPeriodic(m_robotContainer::perodic, 0.02);
-        CameraServer.startAutomaticCapture();
     }
 
 
